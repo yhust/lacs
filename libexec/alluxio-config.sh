@@ -29,6 +29,7 @@ this="${config_bin}/${script}"
 # set system installation locations.
 VERSION=1.7.1-SNAPSHOT
 ALLUXIO_HOME=$(dirname $(dirname "${this}"))
+#echo $ALLUXIO_HOME
 ALLUXIO_ASSEMBLY_CLIENT_JAR="${ALLUXIO_HOME}/assembly/client/target/alluxio-assembly-client-${VERSION}-jar-with-dependencies.jar"
 ALLUXIO_ASSEMBLY_SERVER_JAR="${ALLUXIO_HOME}/assembly/server/target/alluxio-assembly-server-${VERSION}-jar-with-dependencies.jar"
 ALLUXIO_CONF_DIR="${ALLUXIO_CONF_DIR:-${ALLUXIO_HOME}/conf}"
@@ -88,6 +89,7 @@ if [[ -n "${ALLUXIO_LOGSERVER_PORT}" ]]; then
 fi
 
 ALLUXIO_CLIENT_CLASSPATH="${ALLUXIO_CONF_DIR}/:${ALLUXIO_CLASSPATH}:${ALLUXIO_ASSEMBLY_CLIENT_JAR}"
+echo $ALLUXIO_CLIENT_CLASSPATH
 ALLUXIO_SERVER_CLASSPATH="${ALLUXIO_CONF_DIR}/:${ALLUXIO_CLASSPATH}:${ALLUXIO_ASSEMBLY_SERVER_JAR}"
 
 # Master specific parameters based on ALLUXIO_JAVA_OPTS.

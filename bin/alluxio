@@ -323,6 +323,16 @@ function main {
     ALLUXIO_SHELL_JAVA_OPTS+=" -Dalluxio.logger.type=Console"
     runJavaClass "$@"
   ;;
+
+  "runWriterTest")
+      CLASS="latests.WriterTest"
+      LB_JAR="${ALLUXIO_HOME}/loadaware/target/loadbalance-1.0-SNAPSHOT.jar"
+      CLASSPATH="${ALLUXIO_CLIENT_CLASSPATH}:${LB_JAR}"
+      ALLUXIO_SHELL_JAVA_OPTS+=" -Dalluxio.logger.type=Console"
+      runJavaClass "$@"
+   ;;
+
+
   "readJournal")
     CLASS="alluxio.master.journal.JournalTool"
     CLASSPATH=${ALLUXIO_SERVER_CLASSPATH}

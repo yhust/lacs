@@ -166,6 +166,7 @@
   <modules>
     <module>assembly</module>
     <module>core</module>
+    <module>loadaware</module>
     <module>examples</module>
     <module>integration</module>
     <module>keyvalue</module>
