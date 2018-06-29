@@ -11,3 +11,4 @@
 
 # An Alluxio Worker will be started on each of the machines listed below.
 localhost
+#127.0.0.1
