@@ -11,46 +11,29 @@
 
 package alluxio.hadoop;
 
-import static java.util.stream.Collectors.toList;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.any;
-
 import alluxio.AlluxioURI;
 import alluxio.ConfigurationRule;
 import alluxio.Constants;
 import alluxio.PropertyKey;
-import alluxio.client.block.AlluxioBlockStore;
-import alluxio.client.block.BlockWorkerInfo;
 import alluxio.client.file.FileSystemContext;
 import alluxio.client.file.FileSystemMasterClient;
 import alluxio.client.file.URIStatus;
 import alluxio.exception.status.UnavailableException;
-import alluxio.wire.BlockInfo;
-import alluxio.wire.FileBlockInfo;
 import alluxio.wire.FileInfo;
-import alluxio.wire.WorkerNetAddress;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Lists;
-import com.google.common.net.HostAndPort;
-import org.apache.hadoop.fs.BlockLocation;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.security.UserGroupInformation;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PowerMockIgnore;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -60,13 +43,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Closeable;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import javax.security.auth.Subject;
@@ -75,8 +55,7 @@ import javax.security.auth.Subject;
  * Unit tests for {@link AbstractFileSystem}.
  */
 @RunWith(PowerMockRunner.class)
-@PrepareForTest({AlluxioBlockStore.class, FileSystemContext.class, FileSystemMasterClient.class,
-    UserGroupInformation.class})
+@PrepareForTest({FileSystemContext.class, FileSystemMasterClient.class, UserGroupInformation.class})
 /*
  * [ALLUXIO-1384] Tell PowerMock to defer the loading of javax.security classes to the system
  * classloader in order to avoid linkage error when running this test with CDH.
@@ -129,11 +108,10 @@ public class AbstractFileSystemTest {
     try (Closeable c = new ConfigurationRule(ImmutableMap.of(
         PropertyKey.MASTER_HOSTNAME, uri.getHost(),
         PropertyKey.MASTER_RPC_PORT, Integer.toString(uri.getPort()),
-        PropertyKey.ZOOKEEPER_ENABLED, "true",
-        PropertyKey.ZOOKEEPER_ADDRESS, "ignored")).toResource()) {
+            PropertyKey.ZOOKEEPER_ENABLED, "true")).toResource()) {
       final org.apache.hadoop.fs.FileSystem fs =
           org.apache.hadoop.fs.FileSystem.get(uri, getConf());
-      assertTrue(fs instanceof FaultTolerantFileSystem);
+      Assert.assertTrue(fs instanceof FaultTolerantFileSystem);
     }
   }
 
@@ -143,12 +121,10 @@ public class AbstractFileSystemTest {
   @Test
   public void loadFaultTolerantSystemWhenUsingNoAuthority() throws Exception {
     URI uri = URI.create(Constants.HEADER_FT + "/tmp/path.txt");
-    try (Closeable c = new ConfigurationRule(ImmutableMap.of(
-        PropertyKey.ZOOKEEPER_ENABLED, "true",
-        PropertyKey.ZOOKEEPER_ADDRESS, "ignored")).toResource()) {
+    try (Closeable c = new ConfigurationRule(PropertyKey.ZOOKEEPER_ENABLED, "true").toResource()) {
       final org.apache.hadoop.fs.FileSystem fs =
           org.apache.hadoop.fs.FileSystem.get(uri, getConf());
-      assertTrue(fs instanceof FaultTolerantFileSystem);
+      Assert.assertTrue(fs instanceof FaultTolerantFileSystem);
     }
   }
 
@@ -164,7 +140,7 @@ public class AbstractFileSystemTest {
       org.apache.hadoop.fs.FileSystem.get(URI.create(Constants.HEADER + "host:1/"), getConf());
       org.apache.hadoop.fs.FileSystem fs =
           org.apache.hadoop.fs.FileSystem.get(URI.create(Constants.HEADER_FT + "/"), getConf());
-      assertTrue(fs instanceof FaultTolerantFileSystem);
+      Assert.assertTrue(fs instanceof FaultTolerantFileSystem);
     }
   }
 
@@ -182,7 +158,7 @@ public class AbstractFileSystemTest {
         PropertyKey.MASTER_RPC_PORT, Integer.toString(uri.getPort()),
         PropertyKey.ZOOKEEPER_ENABLED, "false")).toResource()) {
       final org.apache.hadoop.fs.FileSystem fs = org.apache.hadoop.fs.FileSystem.get(uri, conf);
-      assertTrue(fs instanceof FileSystem);
+      Assert.assertTrue(fs instanceof FileSystem);
     }
   }
 
@@ -197,7 +173,7 @@ public class AbstractFileSystemTest {
     org.apache.hadoop.fs.FileSystem fileSystem =
         org.apache.hadoop.fs.FileSystem.get(uri, getConf());
 
-    verify(mMockFileSystemContext).reset();
+    Mockito.verify(mMockFileSystemContext).reset();
   }
 
   /**
@@ -208,7 +184,7 @@ public class AbstractFileSystemTest {
   public void concurrentInitialize() throws Exception {
     List<Thread> threads = new ArrayList<>();
     final org.apache.hadoop.conf.Configuration conf = getConf();
-    when(mMockFileSystemContext.getMasterAddress())
+    Mockito.when(mMockFileSystemContext.getMasterAddress())
         .thenReturn(new InetSocketAddress("randomhost", 410));
     for (int i = 0; i < 100; i++) {
       Thread t = new Thread(new Runnable() {
@@ -218,7 +194,7 @@ public class AbstractFileSystemTest {
           try {
             org.apache.hadoop.fs.FileSystem.get(uri, conf);
           } catch (IOException e) {
-            fail();
+            Assert.fail();
           }
         }
       });
@@ -237,7 +213,7 @@ public class AbstractFileSystemTest {
    */
   @Test
   public void initializeFailToConnect() throws Exception {
-    doThrow(new UnavailableException("test")).when(mMockFileSystemMasterClient).connect();
+    Mockito.doThrow(new UnavailableException("test")).when(mMockFileSystemMasterClient).connect();
 
     URI uri = URI.create(Constants.HEADER + "randomhost:400/");
     mExpectedException.expect(UnavailableException.class);
@@ -254,7 +230,7 @@ public class AbstractFileSystemTest {
     URI uri = URI.create(Constants.HEADER + originalURI);
     org.apache.hadoop.fs.FileSystem.get(uri, conf);
 
-    when(mMockFileSystemContext.getMasterAddress())
+    Mockito.when(mMockFileSystemContext.getMasterAddress())
         .thenReturn(new InetSocketAddress("host1", 1));
 
     String[] newURIs = new String[]{"host2:1", "host1:2", "host2:2"};
@@ -293,8 +269,8 @@ public class AbstractFileSystemTest {
 
     Path path = new Path("/dir");
     alluxio.client.file.FileSystem alluxioFs =
-        mock(alluxio.client.file.FileSystem.class);
-    when(alluxioFs.listStatus(new AlluxioURI(HadoopUtils.getPathWithoutScheme(path))))
+        Mockito.mock(alluxio.client.file.FileSystem.class);
+    Mockito.when(alluxioFs.listStatus(new AlluxioURI(HadoopUtils.getPathWithoutScheme(path))))
         .thenReturn(Lists.newArrayList(new URIStatus(fileInfo1), new URIStatus(fileInfo2)));
     FileSystem alluxioHadoopFs = new FileSystem(alluxioFs);
 
@@ -302,35 +278,6 @@ public class AbstractFileSystemTest {
     assertFileInfoEqualsFileStatus(fileInfo1, fileStatuses[0]);
     assertFileInfoEqualsFileStatus(fileInfo2, fileStatuses[1]);
     alluxioHadoopFs.close();
-  }
-
-  /**
-   * Tests that the {@link AbstractFileSystem#listStatus(Path)} method throws
-   * FileNotFound Exception.
-   */
-  @Test
-  public void throwFileNotFoundExceptionWhenListStatusNonExistingTest() throws Exception {
-    FileSystem alluxioHadoopFs = null;
-    try {
-      Path path = new Path("/ALLUXIO-2036");
-      alluxio.client.file.FileSystem alluxioFs = mock(alluxio.client.file.FileSystem.class);
-      when(alluxioFs.listStatus(new AlluxioURI(HadoopUtils.getPathWithoutScheme(path))))
-        .thenThrow(new FileNotFoundException("ALLUXIO-2036 not Found"));
-      alluxioHadoopFs = new FileSystem(alluxioFs);
-      FileStatus[] fileStatuses = alluxioHadoopFs.listStatus(path);
-      // if we reach here, FileNotFoundException is not thrown hence Fail the test case
-      assertTrue(false);
-    } catch (FileNotFoundException fnf) {
-      assertEquals("ALLUXIO-2036 not Found", fnf.getMessage());
-    } finally {
-      if (null != alluxioHadoopFs) {
-        try {
-          alluxioHadoopFs.close();
-        } catch (Exception ex) {
-          // nothing to catch, ignore it.
-        }
-      }
-    }
   }
 
   @Test
@@ -344,8 +291,8 @@ public class AbstractFileSystemTest {
 
     Path path = new Path("/dir");
     alluxio.client.file.FileSystem alluxioFs =
-        mock(alluxio.client.file.FileSystem.class);
-    when(alluxioFs.getStatus(new AlluxioURI(HadoopUtils.getPathWithoutScheme(path))))
+        Mockito.mock(alluxio.client.file.FileSystem.class);
+    Mockito.when(alluxioFs.getStatus(new AlluxioURI(HadoopUtils.getPathWithoutScheme(path))))
         .thenReturn(new URIStatus(fileInfo));
     FileSystem alluxioHadoopFs = new FileSystem(alluxioFs);
 
@@ -373,128 +320,6 @@ public class AbstractFileSystemTest {
     // FileSystem.get would have thrown an exception if the initialization failed.
   }
 
-  @Test
-  public void getBlockLocationsOnlyInAlluxio() throws Exception {
-    WorkerNetAddress worker1 = new WorkerNetAddress().setHost("worker1").setDataPort(1234);
-    WorkerNetAddress worker2 = new WorkerNetAddress().setHost("worker2").setDataPort(1234);
-    List<WorkerNetAddress> blockWorkers = Arrays.asList(worker1);
-    List<String> ufsLocations = Arrays.asList();
-    List<WorkerNetAddress> allWorkers = Arrays.asList(worker1, worker2);
-
-    List<WorkerNetAddress> expectedWorkers = Arrays.asList(worker1);
-
-    verifyBlockLocations(blockWorkers, ufsLocations, allWorkers, expectedWorkers);
-  }
-
-  @Test
-  public void getBlockLocationsInUfs() throws Exception {
-    WorkerNetAddress worker1 = new WorkerNetAddress().setHost("worker1").setDataPort(1234);
-    WorkerNetAddress worker2 = new WorkerNetAddress().setHost("worker2").setDataPort(1234);
-    List<WorkerNetAddress> blockWorkers = Arrays.asList();
-    List<String> ufsLocations = Arrays.asList(worker2.getHost());
-    List<WorkerNetAddress> allWorkers = Arrays.asList(worker1, worker2);
-
-    List<WorkerNetAddress> expectedWorkers = Arrays.asList(worker2);
-
-    verifyBlockLocations(blockWorkers, ufsLocations, allWorkers, expectedWorkers);
-  }
-
-  @Test
-  public void getBlockLocationsInUfsAndAlluxio() throws Exception {
-    WorkerNetAddress worker1 = new WorkerNetAddress().setHost("worker1").setDataPort(1234);
-    WorkerNetAddress worker2 = new WorkerNetAddress().setHost("worker2").setDataPort(1234);
-    List<WorkerNetAddress> blockWorkers = Arrays.asList(worker1);
-    List<String> ufsLocations = Arrays.asList(worker2.getHost());
-    List<WorkerNetAddress> allWorkers = Arrays.asList(worker1, worker2);
-
-    List<WorkerNetAddress> expectedWorkers = Arrays.asList(worker1);
-
-    verifyBlockLocations(blockWorkers, ufsLocations, allWorkers, expectedWorkers);
-  }
-
-  @Test
-  public void getBlockLocationsOnlyMatchingWorkers() throws Exception {
-    WorkerNetAddress worker1 = new WorkerNetAddress().setHost("worker1").setDataPort(1234);
-    WorkerNetAddress worker2 = new WorkerNetAddress().setHost("worker2").setDataPort(1234);
-    List<WorkerNetAddress> blockWorkers = Arrays.asList();
-    List<String> ufsLocations = Arrays.asList("worker0", worker2.getHost(), "worker3");
-    List<WorkerNetAddress> allWorkers = Arrays.asList(worker1, worker2);
-
-    List<WorkerNetAddress> expectedWorkers = Arrays.asList(worker2);
-
-    verifyBlockLocations(blockWorkers, ufsLocations, allWorkers, expectedWorkers);
-  }
-
-  @Test
-  public void getBlockLocationsNoMatchingWorkers() throws Exception {
-    WorkerNetAddress worker1 = new WorkerNetAddress().setHost("worker1").setDataPort(1234);
-    WorkerNetAddress worker2 = new WorkerNetAddress().setHost("worker2").setDataPort(1234);
-    List<WorkerNetAddress> blockWorkers = Arrays.asList();
-    List<String> ufsLocations = Arrays.asList("worker0", "worker3");
-    List<WorkerNetAddress> allWorkers = Arrays.asList(worker1, worker2);
-
-    List<WorkerNetAddress> expectedWorkers = Arrays.asList(worker1, worker2);
-
-    verifyBlockLocations(blockWorkers, ufsLocations, allWorkers, expectedWorkers);
-  }
-
-  @Test
-  public void getBlockLocationsNoUfsLocations() throws Exception {
-    WorkerNetAddress worker1 = new WorkerNetAddress().setHost("worker1").setDataPort(1234);
-    WorkerNetAddress worker2 = new WorkerNetAddress().setHost("worker2").setDataPort(1234);
-    List<WorkerNetAddress> blockWorkers = Arrays.asList();
-    List<String> ufsLocations = Arrays.asList();
-    List<WorkerNetAddress> allWorkers = Arrays.asList(worker1, worker2);
-
-    List<WorkerNetAddress> expectedWorkers = Arrays.asList(worker1, worker2);
-
-    verifyBlockLocations(blockWorkers, ufsLocations, allWorkers, expectedWorkers);
-  }
-
-  void verifyBlockLocations(List<WorkerNetAddress> blockWorkers, List<String> ufsLocations,
-      List<WorkerNetAddress> allWorkers, List<WorkerNetAddress> expectedWorkers) throws Exception {
-    FileBlockInfo blockInfo = new FileBlockInfo().setBlockInfo(
-        new BlockInfo().setLocations(blockWorkers.stream().map(
-            addr -> new alluxio.wire.BlockLocation().setWorkerAddress(addr)).collect(
-            toList()))).setUfsLocations(ufsLocations);
-    FileInfo fileInfo = new FileInfo()
-        .setLastModificationTimeMs(111L)
-        .setFolder(false)
-        .setOwner("user1")
-        .setGroup("group1")
-        .setMode(00755)
-        .setFileBlockInfos(Arrays.asList(blockInfo));
-    Path path = new Path("/dir/file");
-    alluxio.client.file.FileSystem alluxioFs =
-        mock(alluxio.client.file.FileSystem.class);
-    when(alluxioFs.getStatus(new AlluxioURI(HadoopUtils.getPathWithoutScheme(path))))
-        .thenReturn(new URIStatus(fileInfo));
-    AlluxioBlockStore blockStore = mock(AlluxioBlockStore.class);
-    PowerMockito.mockStatic(AlluxioBlockStore.class);
-    PowerMockito.when(AlluxioBlockStore.create(null)).thenReturn(blockStore);
-    List<BlockWorkerInfo> eligibleWorkerInfos = allWorkers.stream().map(worker ->
-        new BlockWorkerInfo(worker, 0, 0)).collect(toList());
-    PowerMockito.when(blockStore.getEligibleWorkers()).thenReturn(eligibleWorkerInfos);
-    List<HostAndPort> expectedWorkerNames = expectedWorkers.stream()
-        .map(addr -> HostAndPort.fromParts(addr.getHost(), addr.getDataPort())).collect(toList());
-    FileSystem alluxioHadoopFs = new FileSystem(alluxioFs);
-    FileStatus file = new FileStatus(0, false, 0, 0, 0, 0, null, null, null, path);
-    long start = 0;
-    long len = 100;
-    BlockLocation[] locations = alluxioHadoopFs.getFileBlockLocations(file, start, len);
-    assertEquals(1, locations.length);
-    Collections.sort(expectedWorkerNames, (x, y) -> x.toString().compareTo(y.toString()));
-    String[] actualNames = locations[0].getNames();
-    String[] actualHosts = locations[0].getHosts();
-    Arrays.sort(actualNames);
-    Arrays.sort(actualHosts);
-    assertArrayEquals(expectedWorkerNames.stream().map(HostAndPort::toString).toArray(),
-        actualNames);
-    assertArrayEquals(expectedWorkerNames.stream().map(HostAndPort::getHostText).toArray(),
-        actualHosts);
-    alluxioHadoopFs.close();
-  }
-
   private org.apache.hadoop.conf.Configuration getConf() throws Exception {
     org.apache.hadoop.conf.Configuration conf = new org.apache.hadoop.conf.Configuration();
     if (HadoopClientTestUtils.isHadoop1x()) {
@@ -509,32 +334,32 @@ public class AbstractFileSystemTest {
     mMockFileSystemContextCustomized = PowerMockito.mock(FileSystemContext.class);
     PowerMockito.mockStatic(FileSystemContext.class);
     Whitebox.setInternalState(FileSystemContext.class, "INSTANCE", mMockFileSystemContext);
-    PowerMockito.when(FileSystemContext.create(any(Subject.class)))
+    PowerMockito.when(FileSystemContext.create(Mockito.any(Subject.class)))
         .thenReturn(mMockFileSystemContextCustomized);
-    mMockFileSystemMasterClient = mock(FileSystemMasterClient.class);
-    when(mMockFileSystemContext.acquireMasterClient())
+    mMockFileSystemMasterClient = Mockito.mock(FileSystemMasterClient.class);
+    Mockito.when(mMockFileSystemContext.acquireMasterClient())
         .thenReturn(mMockFileSystemMasterClient);
-    when(mMockFileSystemContextCustomized.acquireMasterClient())
+    Mockito.when(mMockFileSystemContextCustomized.acquireMasterClient())
         .thenReturn(mMockFileSystemMasterClient);
-    doNothing().when(mMockFileSystemMasterClient).connect();
-    when(mMockFileSystemContext.getMasterAddress())
+    Mockito.doNothing().when(mMockFileSystemMasterClient).connect();
+    Mockito.when(mMockFileSystemContext.getMasterAddress())
         .thenReturn(new InetSocketAddress("defaultHost", 1));
   }
 
   private void mockUserGroupInformation(String username) throws IOException {
     // need to mock out since FileSystem.get calls UGI, which some times has issues on some systems
     PowerMockito.mockStatic(UserGroupInformation.class);
-    final UserGroupInformation ugi = mock(UserGroupInformation.class);
-    when(UserGroupInformation.getCurrentUser()).thenReturn(ugi);
-    when(ugi.getUserName()).thenReturn(username);
-    when(ugi.getShortUserName()).thenReturn(username.split("@")[0]);
+    final UserGroupInformation ugi = Mockito.mock(UserGroupInformation.class);
+    Mockito.when(UserGroupInformation.getCurrentUser()).thenReturn(ugi);
+    Mockito.when(ugi.getUserName()).thenReturn(username);
+    Mockito.when(ugi.getShortUserName()).thenReturn(username.split("@")[0]);
   }
 
   private void assertFileInfoEqualsFileStatus(FileInfo info, FileStatus status) {
-    assertEquals(info.getOwner(), status.getOwner());
-    assertEquals(info.getGroup(), status.getGroup());
-    assertEquals(info.getMode(), status.getPermission().toShort());
-    assertEquals(info.getLastModificationTimeMs(), status.getModificationTime());
-    assertEquals(info.isFolder(), status.isDir());
+    Assert.assertEquals(info.getOwner(), status.getOwner());
+    Assert.assertEquals(info.getGroup(), status.getGroup());
+    Assert.assertEquals(info.getMode(), status.getPermission().toShort());
+    Assert.assertEquals(info.getLastModificationTimeMs(), status.getModificationTime());
+    Assert.assertEquals(info.isFolder(), status.isDir());
   }
 }

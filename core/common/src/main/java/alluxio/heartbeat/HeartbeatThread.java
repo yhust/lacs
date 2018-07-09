@@ -50,8 +50,15 @@ public final class HeartbeatThread implements Runnable {
     mThreadName = threadName;
     mExecutor = Preconditions.checkNotNull(executor, "executor");
     Class<? extends HeartbeatTimer> timerClass = HeartbeatContext.getTimerClass(threadName);
-    mTimer = CommonUtils.createNewClassInstance(timerClass, new Class[] {String.class, long.class},
-        new Object[] {threadName, intervalMs});
+    try {
+      mTimer =
+          CommonUtils.createNewClassInstance(timerClass, new Class[] {String.class, long.class},
+              new Object[] {threadName, intervalMs});
+    } catch (Exception e) {
+      String msg = "timer class could not be instantiated";
+      LOG.error("{} : {} , {}", msg, threadName, e);
+      mTimer = new SleepingTimer(threadName, intervalMs);
+    }
   }
 
   @Override

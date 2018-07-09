@@ -249,11 +249,10 @@ public final class FileUtils {
    * Also, appropriate directory permissions (777 + StickyBit, namely "drwxrwxrwt") are set.
    *
    * @param path storage directory path to create
-   * @return true if the directory is created and false if the directory already exists
    */
-  public static boolean createStorageDirPath(String path) throws IOException {
+  public static void createStorageDirPath(String path) throws IOException {
     if (Files.exists(Paths.get(path))) {
-      return false;
+      return;
     }
     Path storagePath;
     try {
@@ -264,7 +263,7 @@ public final class FileUtils {
     String absolutePath = storagePath.toAbsolutePath().toString();
     changeLocalFileToFullPermission(absolutePath);
     setLocalDirStickyBit(absolutePath);
-    return true;
+    LOG.info("Folder {} was created!", path);
   }
 
   /**

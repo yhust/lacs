@@ -3,20 +3,13 @@ namespace java alluxio.thrift
 include "common.thrift"
 include "exception.thrift"
 
-struct FileSystemMasterCommonTOptions {
-  1: optional i64 syncIntervalMs
-}
-
-struct CheckConsistencyTOptions {
-  1: optional FileSystemMasterCommonTOptions commonOptions
-}
+struct CheckConsistencyTOptions {}
 struct CheckConsistencyTResponse {
   1: list<string> inconsistentPaths
 }
 
 struct CompleteFileTOptions {
   1: optional i64 ufsLength
-  2: optional FileSystemMasterCommonTOptions commonOptions
 }
 struct CompleteFileTResponse {}
 
@@ -27,7 +20,6 @@ struct CreateDirectoryTOptions {
   4: optional i16 mode
   5: optional i64 ttl
   6: optional common.TTtlAction ttlAction
-  7: optional FileSystemMasterCommonTOptions commonOptions
 }
 struct CreateDirectoryTResponse {}
 
@@ -38,7 +30,6 @@ struct CreateFileTOptions {
   4: optional i64 ttl
   5: optional i16 mode
   6: optional common.TTtlAction ttlAction
-  7: optional FileSystemMasterCommonTOptions commonOptions
 }
 struct CreateFileTResponse {}
 
@@ -46,14 +37,12 @@ struct DeleteTOptions {
   1: optional bool recursive
   2: optional bool alluxioOnly
   3: optional bool unchecked
-  4: optional FileSystemMasterCommonTOptions commonOptions
 }
 struct DeleteTResponse {}
 
 struct FreeTOptions {
   1: optional bool recursive
   2: optional bool forced
-  3: optional FileSystemMasterCommonTOptions commonOptions
 }
 struct FreeTResponse {}
 
@@ -65,15 +54,12 @@ enum LoadMetadataTType {
 
 struct GetStatusTOptions {
   1: optional LoadMetadataTType loadMetadataType
-  2: optional FileSystemMasterCommonTOptions commonOptions
 }
 struct GetStatusTResponse {
   1: FileInfo fileInfo
 }
 
-struct GetNewBlockIdForFileTOptions {
-  1: optional FileSystemMasterCommonTOptions commonOptions
-}
+struct GetNewBlockIdForFileTOptions {}
 struct GetNewBlockIdForFileTResponse {
   1: i64 id
 }
@@ -82,15 +68,12 @@ struct ListStatusTOptions {
   // This is deprecated since 1.1.1 and will be removed in 2.0. Use loadMetadataType.
   1: optional bool loadDirectChildren
   2: optional LoadMetadataTType loadMetadataType
-  3: optional FileSystemMasterCommonTOptions commonOptions
 }
 struct ListStatusTResponse {
   1: list<FileInfo> fileInfoList
 }
 
-struct LoadMetadataTOptions {
-  1: optional FileSystemMasterCommonTOptions commonOptions
-}
+struct LoadMetadataTOptions {}
 struct LoadMetadataTResponse {
   1: i64 id
 }
@@ -132,14 +115,12 @@ struct FileInfo {
   24: common.TTtlAction ttlAction
   25: i64 mountId
   26: i32 inAlluxioPercentage
-  27: string ufsFingerprint
 }
 
 struct MountTOptions {
   1: optional bool readOnly
   2: optional map<string, string> properties
   3: optional bool shared
-  4: optional FileSystemMasterCommonTOptions commonOptions
 }
 struct MountTResponse {}
 
@@ -175,9 +156,7 @@ struct PersistFile {
   2: list<i64> blockIds
 }
 
-struct RenameTOptions {
-  1: optional FileSystemMasterCommonTOptions commonOptions
-}
+struct RenameTOptions {}
 struct RenameTResponse {}
 
 struct SetAttributeTOptions {
@@ -189,30 +168,25 @@ struct SetAttributeTOptions {
   6: optional i16 mode
   7: optional bool recursive
   8: optional common.TTtlAction ttlAction
-  9: optional FileSystemMasterCommonTOptions commonOptions
 }
 struct SetAttributeTResponse {}
 
-struct ScheduleAsyncPersistenceTOptions {
-  1: optional FileSystemMasterCommonTOptions commonOptions
-}
+struct ScheduleAsyncPersistenceTOptions {}
 struct ScheduleAsyncPersistenceTResponse {}
 
-struct SyncMetadataTOptions {
-  1: optional FileSystemMasterCommonTOptions commonOptions
-}
-struct SyncMetadataTResponse {
-  1: bool synced
-}
-
-struct UnmountTOptions {
-  1: optional FileSystemMasterCommonTOptions commonOptions
-}
+struct UnmountTOptions {}
 struct UnmountTResponse {}
 
 struct UfsInfo {
   1: optional string uri
   2: optional MountTOptions properties
+}
+
+struct GetLATokenTOptions{
+  1: i64 userId
+}
+struct GetLATokenTResponse{
+  1: bool token
 }
 
 /**
@@ -375,11 +349,12 @@ service FileSystemMasterClientService extends common.AlluxioService {
     /** the method options */ 2: UnmountTOptions options,
     )
     throws (1: exception.AlluxioTException e)
+
+  GetLATokenTResponse getLAToken(1: string alluxioPath, 2: GetLATokenTOptions option)
+    throws (1: exception.AlluxioTException e)
 }
 
-struct FileSystemHeartbeatTOptions {
-  1: optional list<string> persistedFileFingerprints
-}
+struct FileSystemHeartbeatTOptions {}
 struct FileSystemHeartbeatTResponse {
   1: FileSystemCommand command
 }

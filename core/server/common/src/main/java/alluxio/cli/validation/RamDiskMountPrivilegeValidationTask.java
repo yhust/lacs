@@ -15,15 +15,19 @@ import alluxio.AlluxioURI;
 import alluxio.Configuration;
 import alluxio.PropertyKey;
 import alluxio.util.OSUtils;
+import alluxio.util.ShellUtils;
+import alluxio.util.UnixMountInfo;
+
+import com.google.common.base.Optional;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Map;
+import java.util.List;
 
 /**
  * Task for validating whether worker has enough privilege to mount RAM disk.
  */
-public final class RamDiskMountPrivilegeValidationTask extends AbstractValidationTask {
+public final class RamDiskMountPrivilegeValidationTask implements ValidationTask {
 
   /**
    * Creates a new instance of {@link RamDiskMountPrivilegeValidationTask}
@@ -33,28 +37,27 @@ public final class RamDiskMountPrivilegeValidationTask extends AbstractValidatio
   }
 
   @Override
-  public TaskResult validate(Map<String, String> optionsMap)
-      throws InterruptedException {
+  public boolean validate() throws InterruptedException {
     String path = Configuration.get(PropertyKey.WORKER_TIERED_STORE_LEVEL0_DIRS_PATH);
     String alias = Configuration.get(PropertyKey.WORKER_TIERED_STORE_LEVEL0_ALIAS);
     if (!alias.equals("MEM")) {
       System.out.println("Top tier storage is not memory, skip validation.");
-      return TaskResult.SKIPPED;
+      return true;
     }
 
     if (!OSUtils.isLinux()) {
       System.out.println("OS is not Linux, skip validation.");
-      return TaskResult.SKIPPED;
+      return true;
     }
 
     if (path.isEmpty()) {
       System.err.println("Mount path is empty.");
-      return TaskResult.FAILED;
+      return false;
     }
 
     if (path.split(",").length > 1) {
       System.out.println("Multiple storage paths for memory tier found. Skip validation.");
-      return TaskResult.SKIPPED;
+      return true;
     }
 
     try {
@@ -63,19 +66,19 @@ public final class RamDiskMountPrivilegeValidationTask extends AbstractValidatio
       if (file.exists()) {
         if (!file.isDirectory()) {
           System.err.format("Path %s is not a directory.%n", path);
-          return TaskResult.FAILED;
+          return false;
         }
 
-        if (Utils.isMountingPoint(path, new String[]{"ramfs", "tmpfs"})) {
+        if (isRamDiskMountingPoint(path)) {
           // If the RAM disk is already mounted, it must be writable for Alluxio worker
           // to be able to use it.
           if (!file.canWrite()) {
             System.err.format("RAM disk at %s is not writable.%n", path);
-            return TaskResult.FAILED;
+            return false;
           }
 
           System.out.format("RAM disk is mounted at %s, skip validation.%n", path);
-          return TaskResult.SKIPPED;
+          return true;
         }
       }
 
@@ -86,15 +89,15 @@ public final class RamDiskMountPrivilegeValidationTask extends AbstractValidatio
             + "If you would like to run Alluxio worker without sudo privilege, "
             + "please visit http://www.alluxio.org/docs/master/en/Running-Alluxio-Locally.html#"
             + "can-i-still-try-alluxio-on-linux-without-sudo-privileges");
-        return TaskResult.FAILED;
+        return false;
       }
     } catch (IOException e) {
       System.err.format("Failed to validate ram disk mounting privilege at %s: %s.%n",
           path, e.getMessage());
-      return TaskResult.FAILED;
+      return false;
     }
 
-    return TaskResult.OK;
+    return true;
   }
 
   private boolean checkSudoPrivilege() throws InterruptedException, IOException {
@@ -103,5 +106,25 @@ public final class RamDiskMountPrivilegeValidationTask extends AbstractValidatio
     Process process = Runtime.getRuntime().exec("sudo -v");
     int exitCode = process.waitFor();
     return exitCode == 0;
+  }
+
+  /**
+   * Checks whether a path is the mounting point of a RAM disk volume.
+   * @param path  a string represents the path to be checked
+   * @return true if the path is the mounting point of a ramfs or tmpfs volume, false otherwise
+   * @throws IOException if the function fails to get the mount information of the system
+   */
+  private boolean isRamDiskMountingPoint(String path) throws IOException {
+    List<UnixMountInfo> infoList = ShellUtils.getUnixMountInfo();
+    for (UnixMountInfo info : infoList) {
+      Optional<String> mountPoint = info.getMountPoint();
+      Optional<String> fsType = info.getFsType();
+      if (mountPoint.isPresent() && mountPoint.get().equals(path) && fsType.isPresent()
+          && (fsType.get().equalsIgnoreCase("tmpfs") || fsType.get().equalsIgnoreCase("ramfs"))) {
+        return true;
+      }
+    }
+
+    return false;
   }
 }

@@ -48,8 +48,8 @@ public abstract class AbstractEvictor extends AbstractBlockStoreEventListener im
    * @param allocator an allocation policy
    */
   public AbstractEvictor(BlockMetadataManagerView view, Allocator allocator) {
-    mManagerView = Preconditions.checkNotNull(view, "view");
-    mAllocator = Preconditions.checkNotNull(allocator, "allocator");
+    mManagerView = Preconditions.checkNotNull(view);
+    mAllocator = Preconditions.checkNotNull(allocator);
   }
 
   /**
@@ -68,12 +68,11 @@ public abstract class AbstractEvictor extends AbstractBlockStoreEventListener im
    * @param location target location to evict blocks from
    * @param plan the plan to be recursively updated, is empty when first called in
    *        {@link #freeSpaceWithView(long, BlockStoreLocation, BlockMetadataManagerView)}
-   * @param mode the eviction mode
    * @return the first {@link StorageDirView} in the range of location to evict/move bytes from, or
    *         null if there is no plan
    */
   protected StorageDirView cascadingEvict(long bytesToBeAvailable, BlockStoreLocation location,
-      EvictionPlan plan, Mode mode) {
+      EvictionPlan plan) {
     location = updateBlockStoreLocation(bytesToBeAvailable, location);
 
     // 1. If bytesToBeAvailable can already be satisfied without eviction, return the eligible
@@ -108,7 +107,7 @@ public abstract class AbstractEvictor extends AbstractBlockStoreEventListener im
     }
 
     // 3. If there is no eligible StorageDirView, return null
-    if (mode == Mode.GUARANTEED && dirCandidates.candidateSize() < bytesToBeAvailable) {
+    if (dirCandidates.candidateSize() < bytesToBeAvailable) {
       return null;
     }
 
@@ -116,9 +115,6 @@ public abstract class AbstractEvictor extends AbstractBlockStoreEventListener im
     // there. If allocation fails, the next tier will continue to evict its blocks to free space.
     // Blocks are only evicted from the last tier or it can not be moved to the next tier.
     candidateDirView = dirCandidates.candidateDir();
-    if (candidateDirView == null) {
-      return null;
-    }
     List<Long> candidateBlocks = dirCandidates.candidateBlocks();
     StorageTierView nextTierView = mManagerView.getNextTier(candidateDirView.getParentTierView());
     if (nextTierView == null) {
@@ -146,7 +142,7 @@ public abstract class AbstractEvictor extends AbstractBlockStoreEventListener im
               BlockStoreLocation.anyDirInTier(nextTierView.getTierViewAlias()), mManagerView);
           if (nextDirView == null) {
             nextDirView = cascadingEvict(block.getBlockSize(),
-                BlockStoreLocation.anyDirInTier(nextTierView.getTierViewAlias()), plan, mode);
+                BlockStoreLocation.anyDirInTier(nextTierView.getTierViewAlias()), plan);
           }
           if (nextDirView == null) {
             // If we failed to find a dir in the next tier to move this block, evict it and
@@ -171,18 +167,12 @@ public abstract class AbstractEvictor extends AbstractBlockStoreEventListener im
   @Override
   public EvictionPlan freeSpaceWithView(long bytesToBeAvailable, BlockStoreLocation location,
       BlockMetadataManagerView view) {
-    return freeSpaceWithView(bytesToBeAvailable, location, view, Mode.GUARANTEED);
-  }
-
-  @Override
-  public EvictionPlan freeSpaceWithView(long bytesToBeAvailable, BlockStoreLocation location,
-      BlockMetadataManagerView view, Mode mode) {
     mManagerView = view;
 
     List<BlockTransferInfo> toMove = new ArrayList<>();
     List<Pair<Long, BlockStoreLocation>> toEvict = new ArrayList<>();
     EvictionPlan plan = new EvictionPlan(toMove, toEvict);
-    StorageDirView candidateDir = cascadingEvict(bytesToBeAvailable, location, plan, mode);
+    StorageDirView candidateDir = cascadingEvict(bytesToBeAvailable, location, plan);
 
     mManagerView.clearBlockMarks();
     if (candidateDir == null) {

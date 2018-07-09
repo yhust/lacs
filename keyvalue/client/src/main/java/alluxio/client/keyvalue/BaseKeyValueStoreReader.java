@@ -26,7 +26,6 @@ import java.nio.ByteBuffer;
 import java.util.List;
 
 import javax.annotation.concurrent.NotThreadSafe;
-import javax.annotation.Nullable;
 
 /**
  * Default implementation of {@link KeyValueStoreReader} to access an Alluxio key-value store.
@@ -58,7 +57,6 @@ class BaseKeyValueStoreReader implements KeyValueStoreReader {
   }
 
   @Override
-  @Nullable
   public byte[] get(byte[] key) throws IOException, AlluxioException {
     ByteBuffer value = get(ByteBuffer.wrap(key));
     if (value == null) {
@@ -68,9 +66,8 @@ class BaseKeyValueStoreReader implements KeyValueStoreReader {
   }
 
   @Override
-  @Nullable
   public ByteBuffer get(ByteBuffer key) throws IOException, AlluxioException {
-    Preconditions.checkNotNull(key, "key");
+    Preconditions.checkNotNull(key);
     int left = 0;
     int right = mPartitions.size();
     while (left < right) {

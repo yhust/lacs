@@ -11,11 +11,10 @@
 
 package alluxio.wire;
 
-import static org.junit.Assert.assertEquals;
+import alluxio.CommonTestUtils;
 
-import alluxio.test.util.CommonUtils;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Random;
@@ -35,7 +34,7 @@ public class CapacityTest {
 
   @Test
   public void equals() {
-    CommonUtils.testEquals(AlluxioMasterInfo.class);
+    CommonTestUtils.testEquals(AlluxioMasterInfo.class);
   }
 
   /**
@@ -45,9 +44,9 @@ public class CapacityTest {
    * @param b the second Capacity object to be checked
    */
   private void checkEquality(Capacity a, Capacity b) {
-    assertEquals(a.getTotal(), b.getTotal());
-    assertEquals(a.getUsed(), b.getUsed());
-    assertEquals(a, b);
+    Assert.assertEquals(a.getTotal(), b.getTotal());
+    Assert.assertEquals(a.getUsed(), b.getUsed());
+    Assert.assertEquals(a, b);
   }
 
   /**

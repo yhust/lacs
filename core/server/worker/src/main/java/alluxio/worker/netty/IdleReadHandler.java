@@ -15,15 +15,11 @@ import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Closes the channel if it has been idle for too long.
  */
 public class IdleReadHandler extends ChannelDuplexHandler {
-  private static final Logger LOG = LoggerFactory.getLogger(IdleReadHandler.class);
-
   /**
    * Creates a new idle read handler.
    */
@@ -33,7 +29,6 @@ public class IdleReadHandler extends ChannelDuplexHandler {
   public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
     if (evt instanceof IdleStateEvent) {
       if (((IdleStateEvent) evt).state() == IdleState.READER_IDLE) {
-        LOG.warn("Closing netty channel to {} due to inactivity.", ctx.channel().remoteAddress());
         ctx.close();
       }
     }

@@ -15,7 +15,7 @@
   <parent>
     <groupId>org.alluxio</groupId>
     <artifactId>alluxio-parent</artifactId>
-    <version>1.7.1-SNAPSHOT</version>
+    <version>1.6.2-SNAPSHOT</version>
   </parent>
   <artifactId>alluxio-underfs</artifactId>
   <packaging>pom</packaging>
@@ -29,7 +29,6 @@
     <module>oss</module>
     <module>s3a</module>
     <module>swift</module>
-    <module>wasb</module>
   </modules>
 
   <properties>
@@ -38,98 +37,5 @@
     <checkstyle.path>${project.parent.basedir}/build/checkstyle/</checkstyle.path>
     <findbugs.path>${project.parent.basedir}/build/findbugs/</findbugs.path>
     <license.header.path>${project.parent.basedir}/build/license/</license.header.path>
-    <lib.jar.name>${project.artifactId}-${project.version}.jar</lib.jar.name>
   </properties>
-
-  <dependencies>
-    <!-- External dependencies -->
-    <dependency>
-      <groupId>com.google.guava</groupId>
-      <artifactId>guava</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>log4j</groupId>
-      <artifactId>log4j</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-api</artifactId>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.slf4j</groupId>
-      <artifactId>slf4j-log4j12</artifactId>
-      <scope>provided</scope>
-    </dependency>
-  </dependencies>
-
-  <build>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-shade-plugin</artifactId>
-          <executions>
-            <execution>
-              <id>shade</id>
-              <phase>package</phase>
-              <goals>
-                <goal>shade</goal>
-              </goals>
-              <configuration>
-                <finalName>${project.artifactId}-${project.version}-jar-with-dependencies</finalName>
-                <transformers>
-                  <transformer implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
-                </transformers>
-                <filters>
-                  <filter>
-                    <artifact>*:*</artifact>
-                    <excludes>
-                      <exclude>LICENSE</exclude>
-                      <exclude>META-INF/LICENSE</exclude>
-                      <exclude>META-INF/*.SF</exclude>
-                      <exclude>META-INF/*.DSA</exclude>
-                      <exclude>META-INF/*.RSA</exclude>
-                    </excludes>
-                  </filter>
-                </filters>
-              </configuration>
-            </execution>
-          </executions>
-        </plugin>
-        <plugin>
-          <groupId>com.coderplus.maven.plugins</groupId>
-          <artifactId>copy-rename-maven-plugin</artifactId>
-          <executions>
-            <execution>
-              <id>copy-and-rename-file</id>
-              <phase>install</phase>
-              <goals>
-                <goal>copy</goal>
-              </goals>
-              <configuration>
-                <sourceFile>${basedir}/target/${project.artifactId}-${project.version}-jar-with-dependencies.jar</sourceFile>
-                <destinationFile>${project.parent.parent.basedir}/lib/${lib.jar.name}</destinationFile>
-              </configuration>
-            </execution>
-          </executions>
-        </plugin>
-        <plugin>
-          <artifactId>maven-clean-plugin</artifactId>
-          <configuration>
-            <filesets>
-              <fileset>
-                <directory>${basedir}/../../lib</directory>
-                <includes>
-                  <include>**/${project.artifactId}-*.jar</include>
-                </includes>
-              </fileset>
-            </filesets>
-          </configuration>
-        </plugin>
-      </plugins>
-    </pluginManagement>
-  </build>
 </project>

@@ -12,24 +12,12 @@
 
 set -e
 
-NO_FORMAT='--no-format'
-
-function printUsage {
-  echo "Usage: COMMAND [COMMAND_OPTIONS]"
-  echo
-  echo "COMMAND is one of:"
-  echo -e " master [--no-format]    \t Start Alluxio master. If --no-format is specified, do not format"
-  echo -e " worker [--no-format]    \t Start Alluxio worker. If --no-format is specified, do not format"
-  echo -e " proxy                   \t Start Alluxio proxy"
-}
-
-if [[ $# -lt 1 ]]; then
-  printUsage
+if [[ $# -ne 1 ]]; then
+  echo 'expected one argument: "master", "worker", or "proxy"'
   exit 1
 fi
 
 service=$1
-options=$2
 
 # Only set ALLUXIO_RAM_FOLDER if tiered storage isn't explicitly configured
 if [[ -z "${ALLUXIO_WORKER_TIEREDSTORE_LEVEL0_DIRS_PATH}" ]]; then
@@ -55,46 +43,32 @@ alluxio_env_vars=(
   ALLUXIO_WORKER_JAVA_OPTS
 )
 
-for keyvaluepair in $(env); do
+for keyvaluepair in $(env | grep "ALLUXIO_"); do
   # split around the "="
   key=$(echo ${keyvaluepair} | cut -d= -f1)
-  value=$(echo ${keyvaluepair} | cut -d= -f2-)
-  if [[ "${alluxio_env_vars[*]}" =~ "${key}" ]]; then
-    echo "export ${key}=${value}" >> conf/alluxio-env.sh
+  value=$(echo ${keyvaluepair} | cut -d= -f2)
+  if [[ ! "${alluxio_env_vars[*]}" =~ "${key}" ]]; then
+    confkey=$(echo ${key} | sed "s/_/./g" | tr '[:upper:]' '[:lower:]')
+    echo "${confkey}=${value}" >> conf/alluxio-site.properties
   else
-    # check if property name is valid
-    if confkey=$(bin/alluxio runClass alluxio.cli.GetConfKey ${key} 2> /dev/null); then
-      echo "${confkey}=${value}" >> conf/alluxio-site.properties
-    fi
+    echo "export ${key}=${value}" >> conf/alluxio-env.sh
   fi
 done
 
 case ${service,,} in
   master)
-    if [[ -n ${options} && ${options} != ${NO_FORMAT} ]]; then
-      printUsage
-      exit 1
-    fi
-    if [[ ${options} != ${NO_FORMAT} ]]; then
-      bin/alluxio formatMaster
-    fi
+    bin/alluxio format
     integration/docker/bin/alluxio-master.sh
     ;;
   worker)
-    if [[ -n ${options} && ${options} != ${NO_FORMAT} ]]; then
-      printUsage
-      exit 1
-    fi
-    if [[ ${options} != ${NO_FORMAT} ]]; then
-      bin/alluxio formatWorker
-    fi
+    bin/alluxio formatWorker
     integration/docker/bin/alluxio-worker.sh
     ;;
   proxy)
     integration/docker/bin/alluxio-proxy.sh
     ;;
   *)
-    printUsage
+    echo 'expected "master", "worker", or "proxy"';
     exit 1
     ;;
 esac

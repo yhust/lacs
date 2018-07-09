@@ -40,15 +40,6 @@ struct Command {
   2: list<i64> data
 }
 
-struct LocalityTier {
-  1: string tierName;
-  2: string value;
-}
-
-struct TieredIdentity {
-  1: list<LocalityTier> tiers
-}
-
 /**
  * Address information about workers.
  */
@@ -58,7 +49,6 @@ struct WorkerNetAddress {
   3: i32 dataPort
   4: i32 webPort
   5: string domainSocketPath
-  6: TieredIdentity tieredIdentity
 }
 
 struct GetServiceVersionTResponse {

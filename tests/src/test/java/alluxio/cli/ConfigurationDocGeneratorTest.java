@@ -12,7 +12,6 @@
 package alluxio.cli;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 import alluxio.Configuration;
 import alluxio.PropertyKey;
@@ -21,6 +20,7 @@ import alluxio.util.io.PathUtils;
 
 import com.google.common.base.Joiner;
 import org.apache.commons.lang.StringUtils;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -102,7 +102,7 @@ public class ConfigurationDocGeneratorTest {
 
   private void checkFileContents(String source, List<String> target, TYPE fType)
       throws Exception {
-    assertTrue(fType.equals(TYPE.CSV) || fType.equals(TYPE.YML));
+    Assert.assertTrue(fType.equals(TYPE.CSV) || fType.equals(TYPE.YML));
     //assert file contents
     if (fType == TYPE.CSV) {
       assertEquals(2, target.size());
@@ -126,7 +126,7 @@ public class ConfigurationDocGeneratorTest {
     ConfigurationDocGenerator.writeCSVFile(defaultKeys, mLocation);
     String filePath = PathUtils.concatPath(mLocation, mTestConf.getSecond());
     Path p = Paths.get(filePath);
-    assertTrue(Files.exists(p));
+    Assert.assertTrue(Files.exists(p));
 
     //assert file contents
     List<String> userFile = Files.readAllLines(p, StandardCharsets.UTF_8);
@@ -147,7 +147,7 @@ public class ConfigurationDocGeneratorTest {
     ConfigurationDocGenerator.writeYMLFile(defaultKeys, mLocation);
     String filePath = PathUtils.concatPath(mLocation, mTestConf.getSecond());
     Path p = Paths.get(filePath);
-    assertTrue(Files.exists(p));
+    Assert.assertTrue(Files.exists(p));
 
     //assert file contents
     List<String> keyDescription = Files.readAllLines(p, StandardCharsets.UTF_8);

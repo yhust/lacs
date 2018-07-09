@@ -60,7 +60,9 @@ public final class LogUtils {
           field.setAccessible(true);
           org.apache.log4j.Logger log4jLogger = (org.apache.log4j.Logger) field.get(logger);
           process(log4jLogger, level, result);
-        } catch (NoSuchFieldException | IllegalAccessException e) {
+        } catch (NoSuchFieldException e) {
+          result.setMessage(e.getMessage());
+        } catch (IllegalAccessException e) {
           result.setMessage(e.getMessage());
         }
       } else {

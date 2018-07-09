@@ -15,8 +15,8 @@ import alluxio.Configuration;
 import alluxio.PropertyKey;
 import alluxio.client.file.FileSystemContext;
 import alluxio.client.file.options.OutStreamOptions;
-import alluxio.network.netty.NettyRPC;
-import alluxio.network.netty.NettyRPCContext;
+import alluxio.client.netty.NettyRPC;
+import alluxio.client.netty.NettyRPCContext;
 import alluxio.proto.dataserver.Protocol;
 import alluxio.util.CommonUtils;
 import alluxio.util.proto.ProtoMessage;
@@ -120,7 +120,7 @@ public final class LocalFilePacketWriter implements PacketWriter {
       int sz = buf.readableBytes();
       ensureReserved(mPos + sz);
       mPos += sz;
-      Preconditions.checkState(mWriter.append(buf) == sz);
+      Preconditions.checkState(buf.readBytes(mWriter.getChannel(), sz) == sz);
     } finally {
       buf.release();
     }

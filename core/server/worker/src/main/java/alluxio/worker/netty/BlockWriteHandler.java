@@ -27,6 +27,7 @@ import io.netty.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.channels.GatheringByteChannel;
 import java.util.concurrent.ExecutorService;
 
 import javax.annotation.concurrent.NotThreadSafe;
@@ -164,8 +165,9 @@ public final class BlockWriteHandler extends AbstractWriteHandler<BlockWriteRequ
         context.setCounter(MetricsSystem.workerCounter(metricName));
       }
       Preconditions.checkState(context.getBlockWriter() != null);
+      GatheringByteChannel outputChannel = context.getBlockWriter().getChannel();
       int sz = buf.readableBytes();
-      Preconditions.checkState(context.getBlockWriter().append(buf) == sz);
+      Preconditions.checkState(buf.readBytes(outputChannel, sz) == sz);
     }
   }
 }

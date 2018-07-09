@@ -15,7 +15,7 @@
   <parent>
     <groupId>org.alluxio</groupId>
     <artifactId>alluxio-parent</artifactId>
-    <version>1.7.1-SNAPSHOT</version>
+    <version>1.6.2-SNAPSHOT</version>
   </parent>
   <artifactId>alluxio-integration</artifactId>
   <packaging>pom</packaging>
@@ -29,8 +29,4 @@
     <checkstyle.path>${project.parent.basedir}/build/checkstyle/</checkstyle.path>
     <findbugs.path>${project.parent.basedir}/build/findbugs/</findbugs.path>
   </properties>
-
-  <modules>
-    <module>fuse</module>
-  </modules>
 </project>

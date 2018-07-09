@@ -28,6 +28,7 @@ import alluxio.client.file.options.OutStreamOptions;
 import alluxio.client.file.options.RenameOptions;
 import alluxio.client.file.options.SetAttributeOptions;
 import alluxio.client.file.options.UnmountOptions;
+import alluxio.client.file.options.GetLATokenOptions;
 import alluxio.exception.AlluxioException;
 import alluxio.exception.DirectoryNotEmptyException;
 import alluxio.exception.ExceptionMessage;
@@ -40,7 +41,6 @@ import alluxio.exception.status.FailedPreconditionException;
 import alluxio.exception.status.InvalidArgumentException;
 import alluxio.exception.status.NotFoundException;
 import alluxio.exception.status.UnavailableException;
-import alluxio.wire.CommonOptions;
 import alluxio.wire.LoadMetadataType;
 import alluxio.wire.MountPointInfo;
 
@@ -121,10 +121,8 @@ public class BaseFileSystem implements FileSystem {
     URIStatus status;
     try {
       masterClient.createFile(path, options);
-      // Do not sync before this getStatus, since the UFS file is expected to not exist.
-      status = masterClient.getStatus(path,
-          GetStatusOptions.defaults().setLoadMetadataType(LoadMetadataType.Never)
-              .setCommonOptions(CommonOptions.defaults().setSyncIntervalMs(-1)));
+      status = masterClient.getStatus(path, GetStatusOptions.defaults().setLoadMetadataType(
+          LoadMetadataType.Never));
       LOG.debug("Created file {}, options: {}", path.getPath(), options);
     } catch (AlreadyExistsException e) {
       throw new FileAlreadyExistsException(e.getMessage());
@@ -357,8 +355,8 @@ public class BaseFileSystem implements FileSystem {
       throw new FileDoesNotExistException(
           ExceptionMessage.CANNOT_READ_DIRECTORY.getMessage(status.getName()));
     }
-    InStreamOptions inStreamOptions = options.toInStreamOptions(status);
-    return new FileInStream(status, inStreamOptions, mFileSystemContext);
+    InStreamOptions inStreamOptions = options.toInStreamOptions();
+    return FileInStream.create(status, inStreamOptions, mFileSystemContext);
   }
 
   @Override
@@ -373,7 +371,7 @@ public class BaseFileSystem implements FileSystem {
     FileSystemMasterClient masterClient = mFileSystemContext.acquireMasterClient();
     try {
       // TODO(calvin): Update this code on the master side.
-      masterClient.rename(src, dst, options);
+      masterClient.rename(src, dst);
       LOG.debug("Renamed {} to {}, options: {}", src.getPath(), dst.getPath(), options);
     } catch (NotFoundException e) {
       throw new FileDoesNotExistException(e.getMessage());
@@ -430,4 +428,22 @@ public class BaseFileSystem implements FileSystem {
       mFileSystemContext.releaseMasterClient(masterClient);
     }
   }
+
+  @Override
+  public boolean getLAToken(AlluxioURI path, GetLATokenOptions options)
+          throws FileDoesNotExistException, IOException, AlluxioException {
+    FileSystemMasterClient masterClient = mFileSystemContext.acquireMasterClient();
+    try {
+      return masterClient.getLAToken(path, options);
+    } catch (NotFoundException e) {
+      throw new FileDoesNotExistException(ExceptionMessage.PATH_DOES_NOT_EXIST.getMessage(path));
+    } catch (UnavailableException e) {
+      throw e;
+    } catch (AlluxioStatusException e) {
+      throw e.toAlluxioException();
+    } finally {
+      mFileSystemContext.releaseMasterClient(masterClient);
+    }
+  }
+
 }

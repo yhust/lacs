@@ -16,7 +16,7 @@ import io.netty.buffer.ByteBuf;
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.channels.WritableByteChannel;
+import java.nio.channels.GatheringByteChannel;
 
 /**
  * A writer interface to write or update a block stored in managed storage.
@@ -33,21 +33,22 @@ public interface BlockWriter extends Closeable {
   long append(ByteBuffer inputBuf) throws IOException;
 
   /**
-   * Appends buf.readableBytes() bytes to the end of this block writer from the given buf.
+   * Returns writable byte channel to write to this block.
+   *
+   * @return channel
+   */
+  GatheringByteChannel getChannel();
+
+  /**
+   * Transfers buf.readableBytes() bytes to the this block writer from the given buf.
    * This is only called in the netty data server.
    *
    * @param buf the byte buffer to hold the data
-   * @return the size of data that was appended in bytes
    */
-  long append(ByteBuf buf) throws IOException;
+  void transferFrom(ByteBuf buf) throws IOException;
 
   /**
    * @return the current write position (same as the number of bytes written)
    */
   long getPosition();
-
-  /**
-   * @return a writeable byte channel of the block
-   */
-  WritableByteChannel getChannel();
 }

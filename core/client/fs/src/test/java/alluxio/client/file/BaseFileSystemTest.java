@@ -362,9 +362,9 @@ public final class BaseFileSystemTest {
     AlluxioURI src = new AlluxioURI("/file");
     AlluxioURI dst = new AlluxioURI("/file2");
     RenameOptions renameOptions = RenameOptions.defaults();
-    Mockito.doNothing().when(mFileSystemMasterClient).rename(src, dst, renameOptions);
+    Mockito.doNothing().when(mFileSystemMasterClient).rename(src, dst);
     mFileSystem.rename(src, dst, renameOptions);
-    Mockito.verify(mFileSystemMasterClient).rename(src, dst, renameOptions);
+    Mockito.verify(mFileSystemMasterClient).rename(src, dst);
   }
 
   /**
@@ -375,7 +375,7 @@ public final class BaseFileSystemTest {
     AlluxioURI src = new AlluxioURI("/file");
     AlluxioURI dst = new AlluxioURI("/file2");
     RenameOptions renameOptions = RenameOptions.defaults();
-    Mockito.doThrow(EXCEPTION).when(mFileSystemMasterClient).rename(src, dst, renameOptions);
+    Mockito.doThrow(EXCEPTION).when(mFileSystemMasterClient).rename(src, dst);
     try {
       mFileSystem.rename(src, dst, renameOptions);
       Assert.fail(SHOULD_HAVE_PROPAGATED_MESSAGE);

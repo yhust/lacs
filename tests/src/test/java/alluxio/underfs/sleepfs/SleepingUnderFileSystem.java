@@ -130,12 +130,6 @@ public class SleepingUnderFileSystem extends LocalUnderFileSystem {
   }
 
   @Override
-  public String getFingerprint(String path) {
-    sleepIfNecessary(mOptions.getGetFingerprintMs());
-    return super.getFingerprint(cleanPath(path));
-  }
-
-  @Override
   public long getSpace(String path, SpaceType type) throws IOException {
     sleepIfNecessary(mOptions.getGetSpaceMs());
     return super.getSpace(cleanPath(path), type);

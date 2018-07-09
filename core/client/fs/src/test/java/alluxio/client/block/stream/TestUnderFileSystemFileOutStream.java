@@ -11,8 +11,6 @@
 
 package alluxio.client.block.stream;
 
-import alluxio.wire.WorkerNetAddress;
-
 import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -31,7 +29,7 @@ public class TestUnderFileSystemFileOutStream extends UnderFileSystemFileOutStre
    * @param data the data to test
    */
   public TestUnderFileSystemFileOutStream(ByteBuffer data) {
-    super(new TestPacketWriter(data), new WorkerNetAddress());
+    super(new TestPacketWriter(data));
     mData = data;
     mClosed = false;
     mCanceled = false;

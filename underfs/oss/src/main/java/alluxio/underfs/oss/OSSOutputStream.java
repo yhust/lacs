@@ -11,7 +11,6 @@
 
 package alluxio.underfs.oss;
 
-import alluxio.util.CommonUtils;
 import alluxio.util.io.PathUtils;
 
 import com.aliyun.oss.OSSClient;
@@ -79,7 +78,7 @@ public final class OSSOutputStream extends OutputStream {
     mKey = key;
     mOssClient = client;
 
-    mFile = new File(PathUtils.concatPath(CommonUtils.getTmpDir(), UUID.randomUUID()));
+    mFile = new File(PathUtils.concatPath("/tmp", UUID.randomUUID()));
 
     try {
       mHash = MessageDigest.getInstance("MD5");

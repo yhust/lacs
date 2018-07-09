@@ -12,9 +12,7 @@
 package alluxio.master;
 
 import alluxio.AlluxioURI;
-import alluxio.Configuration;
 import alluxio.Constants;
-import alluxio.PropertyKey;
 
 import org.apache.curator.framework.CuratorFramework;
 import org.apache.curator.framework.CuratorFrameworkFactory;
@@ -190,6 +188,9 @@ public final class PrimarySelectorClient
       } finally {
         mStateLock.unlock();
       }
+    } catch (InterruptedException e) {
+      LOG.error(mName + " was interrupted.", e);
+      Thread.currentThread().interrupt();
     } finally {
       LOG.warn("{} relinquishing leadership.", mName);
       LOG.info("The current leader is {}", mLeaderSelector.getLeader().getId());
@@ -206,18 +207,14 @@ public final class PrimarySelectorClient
    */
   private CuratorFramework getNewCuratorClient() {
     CuratorFramework client = CuratorFrameworkFactory.newClient(mZookeeperAddress,
-        (int) Configuration.getMs(PropertyKey.ZOOKEEPER_SESSION_TIMEOUT),
-        (int) Configuration.getMs(PropertyKey.ZOOKEEPER_CONNECTION_TIMEOUT),
         new ExponentialBackoffRetry(Constants.SECOND_MS, 3));
     client.start();
 
     // Sometimes, if the master crashes and restarts too quickly (faster than the zookeeper
     // timeout), zookeeper thinks the new client is still an old one. In order to ensure a clean
-    // state, explicitly close the "old" client and recreate a new one.
+    // state, explicitly close the "old" client recreate a new one.
     client.close();
     client = CuratorFrameworkFactory.newClient(mZookeeperAddress,
-        (int) Configuration.getMs(PropertyKey.ZOOKEEPER_SESSION_TIMEOUT),
-        (int) Configuration.getMs(PropertyKey.ZOOKEEPER_CONNECTION_TIMEOUT),
         new ExponentialBackoffRetry(Constants.SECOND_MS, 3));
     client.start();
     return client;

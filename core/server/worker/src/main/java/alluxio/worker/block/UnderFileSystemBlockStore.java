@@ -74,9 +74,6 @@ public final class UnderFileSystemBlockStore implements SessionCleanable {
   /** The manager for all ufs. */
   private final UfsManager mUfsManager;
 
-  /** The manager for all ufs instream. */
-  private final UfsInputStreamManager mUfsInstreamManager;
-
   /**
    * Creates an instance of {@link UnderFileSystemBlockStore}.
    *
@@ -86,7 +83,6 @@ public final class UnderFileSystemBlockStore implements SessionCleanable {
   public UnderFileSystemBlockStore(BlockStore localBlockStore, UfsManager ufsManager) {
     mLocalBlockStore = localBlockStore;
     mUfsManager = ufsManager;
-    mUfsInstreamManager = new UfsInputStreamManager();
   }
 
   /**
@@ -172,16 +168,10 @@ public final class UnderFileSystemBlockStore implements SessionCleanable {
       Set<Long> blockIds = mSessionIdToBlockIds.get(sessionId);
       if (blockIds != null) {
         blockIds.remove(blockId);
-        if (blockIds.isEmpty()) {
-          mSessionIdToBlockIds.remove(sessionId);
-        }
       }
       Set<Long> sessionIds = mBlockIdToSessionIds.get(blockId);
       if (sessionIds != null) {
         sessionIds.remove(sessionId);
-        if (sessionIds.isEmpty()) {
-          mBlockIdToSessionIds.remove(blockId);
-        }
       }
     }
   }
@@ -191,7 +181,6 @@ public final class UnderFileSystemBlockStore implements SessionCleanable {
    *
    * @param sessionId the session ID
    */
-  @Override
   public void cleanupSession(long sessionId) {
     Set<Long> blockIds;
     try (LockResource lr = new LockResource(mLock)) {
@@ -200,9 +189,7 @@ public final class UnderFileSystemBlockStore implements SessionCleanable {
         return;
       }
     }
-    // Note that, there can be a race condition that blockIds can be stale when we release the
-    // access. The race condition only has a minimal negative consequence (printing extra logging
-    // message), and is expected very rare to trigger.
+
     for (Long blockId : blockIds) {
       try {
         // Note that we don't need to explicitly call abortBlock to cleanup the temp block
@@ -239,7 +226,7 @@ public final class UnderFileSystemBlockStore implements SessionCleanable {
     }
     BlockReader reader =
         UnderFileSystemBlockReader.create(blockInfo.getMeta(), offset, mLocalBlockStore,
-            mUfsManager, mUfsInstreamManager);
+            mUfsManager);
     blockInfo.setBlockReader(reader);
     return reader;
   }

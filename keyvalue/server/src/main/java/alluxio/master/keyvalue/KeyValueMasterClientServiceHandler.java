@@ -14,6 +14,7 @@ package alluxio.master.keyvalue;
 import alluxio.AlluxioURI;
 import alluxio.Constants;
 import alluxio.RpcUtils;
+import alluxio.RpcUtils.RpcCallable;
 import alluxio.RpcUtils.RpcCallableThrowsIOException;
 import alluxio.exception.AlluxioException;
 import alluxio.thrift.AlluxioTException;
@@ -70,9 +71,9 @@ public final class KeyValueMasterClientServiceHandler implements KeyValueMasterC
   @Override
   public CompletePartitionTResponse completePartition(final String path, final PartitionInfo info,
       CompletePartitionTOptions options) throws AlluxioTException {
-    return RpcUtils.call(LOG, new RpcCallableThrowsIOException<CompletePartitionTResponse>() {
+    return RpcUtils.call(LOG, new RpcCallable<CompletePartitionTResponse>() {
       @Override
-      public CompletePartitionTResponse call() throws AlluxioException, IOException {
+      public CompletePartitionTResponse call() throws AlluxioException {
         mKeyValueMaster.completePartition(new AlluxioURI(path), info);
         return new CompletePartitionTResponse();
       }
@@ -82,9 +83,9 @@ public final class KeyValueMasterClientServiceHandler implements KeyValueMasterC
   @Override
   public CreateStoreTResponse createStore(final String path, CreateStoreTOptions options)
       throws AlluxioTException {
-    return RpcUtils.call(LOG, new RpcCallableThrowsIOException<CreateStoreTResponse>() {
+    return RpcUtils.call(LOG, new RpcCallable<CreateStoreTResponse>() {
       @Override
-      public CreateStoreTResponse call() throws AlluxioException, IOException {
+      public CreateStoreTResponse call() throws AlluxioException {
         mKeyValueMaster.createStore(new AlluxioURI(path));
         return new CreateStoreTResponse();
       }
@@ -94,9 +95,9 @@ public final class KeyValueMasterClientServiceHandler implements KeyValueMasterC
   @Override
   public CompleteStoreTResponse completeStore(final String path, CompleteStoreTOptions options)
       throws AlluxioTException {
-    return RpcUtils.call(LOG, new RpcCallableThrowsIOException<CompleteStoreTResponse>() {
+    return RpcUtils.call(LOG, new RpcCallable<CompleteStoreTResponse>() {
       @Override
-      public CompleteStoreTResponse call() throws AlluxioException, IOException {
+      public CompleteStoreTResponse call() throws AlluxioException {
         mKeyValueMaster.completeStore(new AlluxioURI(path));
         return new CompleteStoreTResponse();
       }
@@ -118,9 +119,9 @@ public final class KeyValueMasterClientServiceHandler implements KeyValueMasterC
   @Override
   public GetPartitionInfoTResponse getPartitionInfo(final String path,
       GetPartitionInfoTOptions options) throws AlluxioTException {
-    return RpcUtils.call(LOG, new RpcCallableThrowsIOException<GetPartitionInfoTResponse>() {
+    return RpcUtils.call(LOG, new RpcCallable<GetPartitionInfoTResponse>() {
       @Override
-      public GetPartitionInfoTResponse call() throws AlluxioException, IOException {
+      public GetPartitionInfoTResponse call() throws AlluxioException {
         return new GetPartitionInfoTResponse(
             mKeyValueMaster.getPartitionInfo(new AlluxioURI(path)));
       }

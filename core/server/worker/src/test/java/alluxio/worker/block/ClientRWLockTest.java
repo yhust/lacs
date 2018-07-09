@@ -11,11 +11,7 @@
 
 package alluxio.worker.block;
 
-import static junit.framework.TestCase.assertNotSame;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -45,7 +41,7 @@ public final class ClientRWLockTest {
    */
   @Test
   public void notSameLock() {
-    assertNotSame(mReadLock, mWriteLock);
+    Assert.assertNotSame(mReadLock, mWriteLock);
   }
 
   /**
@@ -54,7 +50,7 @@ public final class ClientRWLockTest {
   @Test
   public void unlock() throws Exception {
     mReadLock.unlock();
-    assertTrue(true);
+    Assert.assertTrue(true);
   }
 
   /**
@@ -63,7 +59,7 @@ public final class ClientRWLockTest {
   @Test
   public void tryLockTestFail() throws Exception {
     mWriteLock.lock();
-    assertFalse(mWriteLock.tryLock());
+    Assert.assertFalse(mWriteLock.tryLock());
   }
 
   /**
@@ -72,7 +68,7 @@ public final class ClientRWLockTest {
   @Test
   public void lockInterruptibly() throws Exception {
     mReadLock.lockInterruptibly();
-    assertTrue(true);
+    Assert.assertTrue(true);
   }
 
   /**
@@ -80,16 +76,16 @@ public final class ClientRWLockTest {
    */
   @Test
   public void referenceCounting() throws Exception {
-    assertEquals(0, mClientRWLock.getReferenceCount());
+    Assert.assertEquals(0, mClientRWLock.getReferenceCount());
     mClientRWLock.addReference();
     mClientRWLock.addReference();
-    assertEquals(2, mClientRWLock.getReferenceCount());
-    assertEquals(1, mClientRWLock.dropReference());
+    Assert.assertEquals(2, mClientRWLock.getReferenceCount());
+    Assert.assertEquals(1, mClientRWLock.dropReference());
     for (int i = 0; i < 10; i++) {
       mClientRWLock.addReference();
     }
-    assertEquals(11, mClientRWLock.getReferenceCount());
-    assertEquals(10, mClientRWLock.dropReference());
-    assertEquals(10, mClientRWLock.getReferenceCount());
+    Assert.assertEquals(11, mClientRWLock.getReferenceCount());
+    Assert.assertEquals(10, mClientRWLock.dropReference());
+    Assert.assertEquals(10, mClientRWLock.getReferenceCount());
   }
 }

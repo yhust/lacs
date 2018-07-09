@@ -41,7 +41,7 @@ public final class UIFileBlockInfo {
    * @param fileBlockInfo underlying {@link FileBlockInfo}
    */
   public UIFileBlockInfo(FileBlockInfo fileBlockInfo) {
-    Preconditions.checkNotNull(fileBlockInfo, "fileBlockInfo");
+    Preconditions.checkNotNull(fileBlockInfo);
     mId = fileBlockInfo.getBlockInfo().getBlockId();
     mBlockLength = fileBlockInfo.getBlockInfo().getLength();
     mLastAccessTimeMs = -1;

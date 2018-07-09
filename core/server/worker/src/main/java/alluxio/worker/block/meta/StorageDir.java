@@ -58,7 +58,7 @@ public final class StorageDir {
   private StorageTier mTier;
 
   private StorageDir(StorageTier tier, int dirIndex, long capacityBytes, String dirPath) {
-    mTier = Preconditions.checkNotNull(tier, "tier");
+    mTier = Preconditions.checkNotNull(tier);
     mDirIndex = dirIndex;
     mCapacityBytes = capacityBytes;
     mAvailableBytes = new AtomicLong(capacityBytes);
@@ -105,11 +105,7 @@ public final class StorageDir {
   private void initializeMeta() throws BlockAlreadyExistsException, IOException,
       WorkerOutOfSpaceException {
     // Create the storage directory path
-    boolean isDirectoryNewlyCreated = FileUtils.createStorageDirPath(mDirPath);
-
-    if (isDirectoryNewlyCreated) {
-      LOG.info("Folder {} was created!", mDirPath);
-    }
+    FileUtils.createStorageDirPath(mDirPath);
 
     File dir = new File(mDirPath);
     File[] paths = dir.listFiles();
@@ -269,7 +265,7 @@ public final class StorageDir {
    */
   public void addBlockMeta(BlockMeta blockMeta) throws WorkerOutOfSpaceException,
       BlockAlreadyExistsException {
-    Preconditions.checkNotNull(blockMeta, "blockMeta");
+    Preconditions.checkNotNull(blockMeta);
     long blockId = blockMeta.getBlockId();
     long blockSize = blockMeta.getBlockSize();
 
@@ -294,7 +290,7 @@ public final class StorageDir {
    */
   public void addTempBlockMeta(TempBlockMeta tempBlockMeta) throws WorkerOutOfSpaceException,
       BlockAlreadyExistsException {
-    Preconditions.checkNotNull(tempBlockMeta, "tempBlockMeta");
+    Preconditions.checkNotNull(tempBlockMeta);
     long sessionId = tempBlockMeta.getSessionId();
     long blockId = tempBlockMeta.getBlockId();
     long blockSize = tempBlockMeta.getBlockSize();
@@ -325,7 +321,7 @@ public final class StorageDir {
    * @throws BlockDoesNotExistException if no block is found
    */
   public void removeBlockMeta(BlockMeta blockMeta) throws BlockDoesNotExistException {
-    Preconditions.checkNotNull(blockMeta, "blockMeta");
+    Preconditions.checkNotNull(blockMeta);
     long blockId = blockMeta.getBlockId();
     BlockMeta deletedBlockMeta = mBlockIdToBlockMap.remove(blockId);
     if (deletedBlockMeta == null) {
@@ -341,7 +337,7 @@ public final class StorageDir {
    * @throws BlockDoesNotExistException if no temp block is found
    */
   public void removeTempBlockMeta(TempBlockMeta tempBlockMeta) throws BlockDoesNotExistException {
-    Preconditions.checkNotNull(tempBlockMeta, "tempBlockMeta");
+    Preconditions.checkNotNull(tempBlockMeta);
     final long blockId = tempBlockMeta.getBlockId();
     final long sessionId = tempBlockMeta.getSessionId();
     TempBlockMeta deletedTempBlockMeta = mBlockIdToTempBlockMap.remove(blockId);

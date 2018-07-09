@@ -26,16 +26,14 @@ import alluxio.exception.FileDoesNotExistException;
 import alluxio.exception.InvalidPathException;
 import alluxio.exception.LineageDeletionException;
 import alluxio.exception.LineageDoesNotExistException;
-import alluxio.exception.status.UnavailableException;
 import alluxio.heartbeat.HeartbeatContext;
 import alluxio.heartbeat.HeartbeatThread;
 import alluxio.job.CommandLineJob;
 import alluxio.job.Job;
 import alluxio.master.AbstractMaster;
-import alluxio.master.MasterContext;
 import alluxio.master.file.FileSystemMaster;
 import alluxio.master.file.options.CreateFileOptions;
-import alluxio.master.journal.JournalContext;
+import alluxio.master.journal.JournalSystem;
 import alluxio.master.lineage.checkpoint.CheckpointPlan;
 import alluxio.master.lineage.checkpoint.CheckpointSchedulingExecutor;
 import alluxio.master.lineage.meta.Lineage;
@@ -89,10 +87,10 @@ public final class DefaultLineageMaster extends AbstractMaster implements Lineag
    * Creates a new instance of {@link LineageMaster}.
    *
    * @param fileSystemMaster the file system master handle
-   * @param masterContext the context for Alluxio master
+   * @param journalSystem the journal system to use for tracking master operations
    */
-  DefaultLineageMaster(FileSystemMaster fileSystemMaster, MasterContext masterContext) {
-    this(fileSystemMaster, masterContext, ExecutorServiceFactories
+  DefaultLineageMaster(FileSystemMaster fileSystemMaster, JournalSystem journalSystem) {
+    this(fileSystemMaster, journalSystem, ExecutorServiceFactories
         .fixedThreadPoolExecutorServiceFactory(Constants.LINEAGE_MASTER_NAME, 2));
   }
 
@@ -100,13 +98,13 @@ public final class DefaultLineageMaster extends AbstractMaster implements Lineag
    * Creates a new instance of {@link LineageMaster}.
    *
    * @param fileSystemMaster the file system master handle
-   * @param masterContext the context for Alluxio master
+   * @param journalSystem the journal system to use for tracking master operations
    * @param executorServiceFactory a factory for creating the executor service to use for running
    *        maintenance threads
    */
-  DefaultLineageMaster(FileSystemMaster fileSystemMaster, MasterContext masterContext,
+  DefaultLineageMaster(FileSystemMaster fileSystemMaster, JournalSystem journalSystem,
                        ExecutorServiceFactory executorServiceFactory) {
-    super(masterContext, new SystemClock(), executorServiceFactory);
+    super(journalSystem, new SystemClock(), executorServiceFactory);
     mLineageIdGenerator = new LineageIdGenerator();
     mLineageStore = new LineageStore(mLineageIdGenerator);
     mFileSystemMaster = fileSystemMaster;
@@ -205,24 +203,22 @@ public final class DefaultLineageMaster extends AbstractMaster implements Lineag
 
     LOG.info("Create lineage of input:{}, output:{}, job:{}", inputAlluxioFiles, outputAlluxioFiles,
         job);
-    long lineageId;
-    try (JournalContext journalContext = createJournalContext()) {
-      lineageId = mLineageStore.createLineage(inputAlluxioFiles, outputAlluxioFiles, job);
-      journalContext.append(mLineageIdGenerator.toJournalEntry());
-      journalContext.append(mLineageStore.getLineage(lineageId).toJournalEntry());
-    }
+    long lineageId = mLineageStore.createLineage(inputAlluxioFiles, outputAlluxioFiles, job);
+
+    writeJournalEntry(mLineageIdGenerator.toJournalEntry());
+    writeJournalEntry(mLineageStore.getLineage(lineageId).toJournalEntry());
+    flushJournal();
     return lineageId;
   }
 
   @Override
   public synchronized boolean deleteLineage(long lineageId, boolean cascade)
-      throws LineageDoesNotExistException, LineageDeletionException, UnavailableException {
-    try (JournalContext journalContext = createJournalContext()) {
-      deleteLineageInternal(lineageId, cascade);
-      DeleteLineageEntry deleteLineage =
-          DeleteLineageEntry.newBuilder().setLineageId(lineageId).setCascade(cascade).build();
-      journalContext.append(JournalEntry.newBuilder().setDeleteLineage(deleteLineage).build());
-    }
+      throws LineageDoesNotExistException, LineageDeletionException {
+    deleteLineageInternal(lineageId, cascade);
+    DeleteLineageEntry deleteLineage =
+        DeleteLineageEntry.newBuilder().setLineageId(lineageId).setCascade(cascade).build();
+    writeJournalEntry(JournalEntry.newBuilder().setDeleteLineage(deleteLineage).build());
+    flushJournal();
     return true;
   }
 
@@ -254,7 +250,7 @@ public final class DefaultLineageMaster extends AbstractMaster implements Lineag
   @Override
   public synchronized long reinitializeFile(String path, long blockSizeBytes, long ttl,
       TtlAction ttlAction) throws InvalidPathException, LineageDoesNotExistException,
-      AccessControlException, FileDoesNotExistException, UnavailableException {
+      AccessControlException, FileDoesNotExistException {
     long fileId = mFileSystemMaster.getFileId(new AlluxioURI(path));
     FileInfo fileInfo;
     try {
@@ -315,7 +311,7 @@ public final class DefaultLineageMaster extends AbstractMaster implements Lineag
       for (long file : lineage.getOutputFiles()) {
         try {
           mFileSystemMaster.scheduleAsyncPersistence(mFileSystemMaster.getPath(file));
-        } catch (AlluxioException | UnavailableException e) {
+        } catch (AlluxioException e) {
           LOG.error("Failed to persist the file {}.", file, e);
         }
       }
@@ -324,8 +320,7 @@ public final class DefaultLineageMaster extends AbstractMaster implements Lineag
 
   @Override
   public synchronized void reportLostFile(String path)
-      throws FileDoesNotExistException, AccessControlException, InvalidPathException,
-      UnavailableException {
+      throws FileDoesNotExistException, AccessControlException, InvalidPathException {
     long fileId = mFileSystemMaster.getFileId(new AlluxioURI(path));
     mFileSystemMaster.reportLostFile(fileId);
   }

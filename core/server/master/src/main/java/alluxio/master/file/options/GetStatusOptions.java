@@ -12,7 +12,6 @@
 package alluxio.master.file.options;
 
 import alluxio.thrift.GetStatusTOptions;
-import alluxio.wire.CommonOptions;
 import alluxio.wire.LoadMetadataType;
 
 import com.google.common.base.Objects;
@@ -24,7 +23,6 @@ import javax.annotation.concurrent.NotThreadSafe;
  */
 @NotThreadSafe
 public final class GetStatusOptions {
-  private CommonOptions mCommonOptions;
   private LoadMetadataType mLoadMetadataType;
 
   /**
@@ -35,8 +33,6 @@ public final class GetStatusOptions {
   }
 
   private GetStatusOptions() {
-    super();
-    mCommonOptions = CommonOptions.defaults();
     mLoadMetadataType = LoadMetadataType.Once;
   }
 
@@ -46,22 +42,10 @@ public final class GetStatusOptions {
    * @param options the thrift representation of getFileInfo options
    */
   public GetStatusOptions(GetStatusTOptions options) {
-    this();
-    if (options != null) {
-      if (options.isSetCommonOptions()) {
-        mCommonOptions = new CommonOptions(options.getCommonOptions());
-      }
-      if (options.isSetLoadMetadataType()) {
-        mLoadMetadataType = LoadMetadataType.fromThrift(options.getLoadMetadataType());
-      }
+    mLoadMetadataType = LoadMetadataType.Once;
+    if (options.isSetLoadMetadataType()) {
+      mLoadMetadataType = LoadMetadataType.fromThrift(options.getLoadMetadataType());
     }
-  }
-
-  /**
-   * @return the common options
-   */
-  public CommonOptions getCommonOptions() {
-    return mCommonOptions;
   }
 
   /**
@@ -69,15 +53,6 @@ public final class GetStatusOptions {
    */
   public LoadMetadataType getLoadMetadataType() {
     return mLoadMetadataType;
-  }
-
-  /**
-   * @param options the common options
-   * @return the updated options object
-   */
-  public GetStatusOptions setCommonOptions(CommonOptions options) {
-    mCommonOptions = options;
-    return this;
   }
 
   /**
@@ -100,19 +75,17 @@ public final class GetStatusOptions {
       return false;
     }
     GetStatusOptions that = (GetStatusOptions) o;
-    return Objects.equal(mLoadMetadataType, that.mLoadMetadataType)
-        && Objects.equal(mCommonOptions, that.mCommonOptions);
+    return Objects.equal(mLoadMetadataType, that.mLoadMetadataType);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(mLoadMetadataType, mCommonOptions);
+    return Objects.hashCode(mLoadMetadataType);
   }
 
   @Override
   public String toString() {
     return Objects.toStringHelper(this)
-        .add("commonOptions", mCommonOptions)
         .add("loadMetadataType", mLoadMetadataType.toString())
         .toString();
   }

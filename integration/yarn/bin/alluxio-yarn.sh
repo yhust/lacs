@@ -54,15 +54,13 @@ MASTER_ADDRESS=${3:-${ALLUXIO_MASTER_HOSTNAME}}
 ALLUXIO_TARFILE="alluxio.tar.gz"
 rm -rf $ALLUXIO_TARFILE
 tar -C $ALLUXIO_HOME -zcf $ALLUXIO_TARFILE \
-  assembly/alluxio-server-${VERSION}.jar \
-  assembly/webapp.war \
-  integration/yarn/bin/alluxio-application-master.sh \
-  integration/yarn/bin/alluxio-master-yarn.sh \
+  assembly/server/target/alluxio-assembly-server-${VERSION}-jar-with-dependencies.jar libexec \
+  core/server/common/src/main/webapp \
+  bin conf integration/yarn/bin/common.sh integration/yarn/bin/alluxio-master-yarn.sh \
   integration/yarn/bin/alluxio-worker-yarn.sh \
-  integration/yarn/bin/common.sh \
-  bin conf lib libexec
+  integration/yarn/bin/alluxio-application-master.sh \
 
-JAR_LOCAL=${ALLUXIO_HOME}/integration/yarn/alluxio-yarn-${VERSION}.jar
+JAR_LOCAL=${ALLUXIO_HOME}/integration/yarn/target/alluxio-integration-yarn-${VERSION}-jar-with-dependencies.jar
 
 echo "Uploading files to HDFS to distribute alluxio runtime"
 

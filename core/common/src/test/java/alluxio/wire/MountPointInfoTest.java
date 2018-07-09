@@ -13,7 +13,7 @@ package alluxio.wire;
 
 import alluxio.util.CommonUtils;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Assert;
 import org.junit.Test;
 

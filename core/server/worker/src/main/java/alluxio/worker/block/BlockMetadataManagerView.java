@@ -31,7 +31,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.NotThreadSafe;
-
+import javax.annotation.Nullable;
 /**
  * This class exposes a narrower view of {@link BlockMetadataManager} to Evictors and Allocators,
  * filtering out un-evictable blocks and un-allocatable space internally, so that evictors and
@@ -50,7 +50,7 @@ public class BlockMetadataManagerView {
    * A list of {@link StorageTierView}, derived from {@link StorageTier}s from the
    * {@link BlockMetadataManager}.
    */
-  private final List<StorageTierView> mTierViews = new ArrayList<>();
+  private List<StorageTierView> mTierViews = new ArrayList<>();
 
   /** A list of pinned inodes. */
   private final Set<Long> mPinnedInodes = new HashSet<>();

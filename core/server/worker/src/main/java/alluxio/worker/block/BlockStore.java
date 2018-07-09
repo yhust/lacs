@@ -291,7 +291,7 @@ public interface BlockStore extends SessionCleanable {
   BlockStoreMeta getBlockStoreMeta();
 
   /**
-   * Similar as {@link #getBlockStoreMeta} except that this includes
+   * Similar as {@link BlockStoreMeta.Factory#getBlockStoreMeta} except that this includes
    * more information about the block store (e.g. blockId list). This is an expensive operation.
    *
    * @return full store metadata
@@ -313,11 +313,10 @@ public interface BlockStore extends SessionCleanable {
    *
    * @param sessionId the session id
    */
-  @Override
   void cleanupSession(long sessionId);
 
   /**
-   * Frees space to make a specific amount of bytes available in a best-effort way in the location.
+   * Frees space to make a specific amount of bytes available in the location.
    *
    * @param sessionId the session id
    * @param availableBytes the amount of free space in bytes

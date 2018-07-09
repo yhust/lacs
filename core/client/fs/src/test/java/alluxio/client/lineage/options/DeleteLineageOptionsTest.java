@@ -11,7 +11,7 @@
 
 package alluxio.client.lineage.options;
 
-import alluxio.test.util.CommonUtils;
+import alluxio.CommonTestUtils;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -41,6 +41,6 @@ public final class DeleteLineageOptionsTest {
 
   @Test
   public void equalsTest() throws Exception {
-    CommonUtils.testEquals(DeleteLineageOptions.class);
+    CommonTestUtils.testEquals(DeleteLineageOptions.class);
   }
 }

@@ -9,9 +9,9 @@
 # See the NOTICE file distributed with this work for information regarding copyright ownership.
 #
 
-FROM openjdk:8-jdk-alpine
+FROM openjdk:7-jdk-alpine
 
-ARG ALLUXIO_TARBALL=http://downloads.alluxio.org/downloads/files/1.7.1/alluxio-1.7.1-bin.tar.gz
+ARG ALLUXIO_TARBALL=http://downloads.alluxio.org/downloads/files/1.6.1/alluxio-1.6.1-bin.tar.gz
 
 RUN apk add --update bash && \
     rm -rf /var/cache/apk/*

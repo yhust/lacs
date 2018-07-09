@@ -84,28 +84,20 @@ public interface UnderFileSystem extends Closeable {
      */
     public static UnderFileSystem create(String path, UnderFileSystemConfiguration ufsConf) {
       // Try to obtain the appropriate factory
-      List<UnderFileSystemFactory> factories =
-          UnderFileSystemFactoryRegistry.findAll(path, ufsConf);
+      List<UnderFileSystemFactory> factories = UnderFileSystemFactoryRegistry.findAll(path);
       if (factories.isEmpty()) {
         throw new IllegalArgumentException("No Under File System Factory found for: " + path);
       }
 
       List<Throwable> errors = new ArrayList<>();
       for (UnderFileSystemFactory factory : factories) {
-        ClassLoader previousClassLoader = Thread.currentThread().getContextClassLoader();
         try {
-          // Reflection may be invoked during UFS creation on service loading which uses context
-          // classloader by default. Stashing the context classloader on creation and switch it back
-          // when creation is done.
-          Thread.currentThread().setContextClassLoader(factory.getClass().getClassLoader());
           // Use the factory to create the actual client for the Under File System
           return new UnderFileSystemWithLogging(factory.create(path, ufsConf));
         } catch (Throwable e) {
           // Catching Throwable rather than Exception to catch service loading errors
           errors.add(e);
           LOG.warn("Failed to create UnderFileSystem by factory {}: {}", factory, e.getMessage());
-        } finally {
-          Thread.currentThread().setContextClassLoader(previousClassLoader);
         }
       }
 
@@ -170,6 +162,11 @@ public interface UnderFileSystem extends Closeable {
       return mValue;
     }
   }
+
+  /**
+   * Closes this under file system.
+   */
+  void close() throws IOException;
 
   /**
    * Takes any necessary actions required to establish a connection to the under file system from
@@ -256,10 +253,9 @@ public interface UnderFileSystem extends Closeable {
   long getBlockSizeByte(String path) throws IOException;
 
   /**
-   * Gets the directory status. The caller must already know the path is a directory. This method
-   * will throw an exception if the path exists, but is a file.
+   * Gets the directory status.
    *
-   * @param path the path to the directory
+   * @param path the file name
    * @return the directory status
    */
   UfsDirectoryStatus getDirectoryStatus(String path) throws IOException;
@@ -282,24 +278,12 @@ public interface UnderFileSystem extends Closeable {
   List<String> getFileLocations(String path, FileLocationOptions options) throws IOException;
 
   /**
-   * Gets the file status. The caller must already know the path is a file. This method will
-   * throw an exception if the path exists, but is a directory.
+   * Gets the file status.
    *
-   * @param path the path to the file
+   * @param path the file name
    * @return the file status
    */
   UfsFileStatus getFileStatus(String path) throws IOException;
-
-  /**
-   * Computes and returns a fingerprint for the path. The fingerprint is used to determine if two
-   * UFS files are identical. The fingerprint must be deterministic, and must not change if a
-   * file is only renamed (identical content and permissions). Returns
-   * {@link alluxio.Constants#INVALID_UFS_FINGERPRINT} if there is any error.
-   *
-   * @param path the path to compute the fingerprint for
-   * @return the string representing the fingerprint
-   */
-  String getFingerprint(String path);
 
   /**
    * Queries the under file system about the space of the indicated path (e.g., space left, space
@@ -310,15 +294,6 @@ public interface UnderFileSystem extends Closeable {
    * @return The space in bytes
    */
   long getSpace(String path, SpaceType type) throws IOException;
-
-  /**
-   * Gets the file or directory status. The caller does not need to know if the path is a file or
-   * directory. This method will determine the path type, and will return the appropriate status.
-   *
-   * @param path the path to get the status
-   * @return the file or directory status
-   */
-  UfsStatus getStatus(String path) throws IOException;
 
   /**
    * Returns the name of the under filesystem implementation.
@@ -349,15 +324,6 @@ public interface UnderFileSystem extends Closeable {
    * @return true if under storage is an object store, false otherwise
    */
   boolean isObjectStorage();
-
-  /**
-   * Denotes if the under storage supports seeking. Note, the under file system subclass that
-   * returns true for this method should return the input stream extending
-   * {@link SeekableUnderFileInputStream} in the {@link #open(String, OpenOptions)} method.
-   *
-   * @return true if under storage is seekable, false otherwise
-   */
-  boolean isSeekable();
 
   /**
    * Returns an array of statuses of the files and directories in the directory denoted by this

@@ -12,11 +12,10 @@
 package alluxio.client;
 
 import alluxio.AlluxioURI;
-import alluxio.BaseIntegrationTest;
 import alluxio.Constants;
-import alluxio.IntegrationTestUtils;
 import alluxio.LocalAlluxioClusterResource;
 import alluxio.PropertyKey;
+import alluxio.BaseIntegrationTest;
 import alluxio.client.file.FileInStream;
 import alluxio.client.file.FileOutStream;
 import alluxio.client.file.FileSystem;
@@ -225,7 +224,7 @@ public class UnderStorageReadIntegrationTest extends BaseIntegrationTest {
       Assert.assertEquals(k / 2, is.skip(k / 2));
       Assert.assertEquals(k / 2, is.read());
       is.close();
-      IntegrationTestUtils.waitForFileCached(mFileSystem, uri, 1000);
+      Assert.assertEquals(100, mFileSystem.getStatus(uri).getInAlluxioPercentage());
 
       if (k >= 3) {
         is = mFileSystem.openFile(uri, mReadCache);
@@ -235,7 +234,7 @@ public class UnderStorageReadIntegrationTest extends BaseIntegrationTest {
         Assert.assertEquals(t, is.skip(t));
         Assert.assertEquals(2 * t + 1, is.read());
         is.close();
-        IntegrationTestUtils.waitForFileCached(mFileSystem, uri, 1000);
+        Assert.assertTrue(mFileSystem.getStatus(uri).getInAlluxioPercentage() == 100);
       }
     }
   }

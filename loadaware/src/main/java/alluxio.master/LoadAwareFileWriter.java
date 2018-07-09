@@ -30,17 +30,19 @@ public class LoadAwareFileWriter {
   //protected int mFileSize;
   private CreateFileOptions mWriteOptions;
   private FileSystem mFileSystem;
-  private AlluxioURI mFilePath;
+  private AlluxioURI mDiskURI; // store the cached part and on-disk part as two different files
+  private AlluxioURI mCacheURI;
   private String mLocalFile;
-  private static final Logger LOG = LoggerFactory.getLogger(BasicOperations.class);
+  private static final Logger LOG = LoggerFactory.getLogger(LoadAwareFileWriter.class);
 
-  public LoadAwareFileWriter(String localFile, AlluxioURI alluxioPath, int workerId,
+  public LoadAwareFileWriter(String localFile, String alluxioPath, int workerId,
                              float cacheRatio, FileSystem fileSystem) {
     mWorkerId = workerId;
     mCacheRatio = cacheRatio;
     mFileSystem = fileSystem;
     mLocalFile = localFile;
-    mFilePath = alluxioPath;
+    mCacheURI = new AlluxioURI(String.format("%s-1", alluxioPath));
+    mDiskURI = new AlluxioURI(String.format("%s-2", alluxioPath));
     //long tBlockSize;
     //if (fileSize % k == 0) {
       //tBlockSize = fileSize / mK;
@@ -78,18 +80,24 @@ public class LoadAwareFileWriter {
       // Then write the file into Alluxio.
       long tStartTimeMs = CommonUtils.getCurrentMs();
       mWriteOptions.setWriteTier(0); // the cache tier
-      FileOutStream os = mFileSystem.createFile(mFilePath, mWriteOptions);
+      FileOutStream os = mFileSystem.createFile(mCacheURI, mWriteOptions);
       os.write(tCacheBuf);
-      LOG.info("Write into memory with bytes:" + tCacheBuf);
+      os.close();
+      //System.out.println("Write into memory with bytes:" + tCacheBytes);
+      LOG.info("Write into memory with bytes:" + tCacheBytes);
 
       mWriteOptions.setWriteTier(1); // the second tier: disk
-      os.write(tDiskBuf);
-      LOG.info("Write into disk with bytes:" + tDiskBytes);
+      os = mFileSystem.createFile(mDiskURI, mWriteOptions);
+      os.write(tCacheBuf);
+      os.close();
+      //os = mFileSystem.createFile(mFilePath, mWriteOptions);
+      //os.write(tDiskBuf);
+      //LOG.info("Write into disk with bytes:" + tDiskBytes);
+      //System.out.println("Write into disk with bytes:" + tDiskBytes);
 
       LOG.info(FormatUtils.formatTimeTakenMs(tStartTimeMs,
-              "writing " +  mLocalFile + " into Alluxio path " + mFilePath));
+              "writing " +  mLocalFile + " into Alluxio."));
       is.close();
-      os.close();
     } catch (IOException e) {
       e.printStackTrace();
     } catch (AlluxioException e) {

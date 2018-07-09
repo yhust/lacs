@@ -11,11 +11,10 @@
 
 package alluxio.wire;
 
-import static org.junit.Assert.assertEquals;
-
 import alluxio.util.CommonUtils;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Random;
@@ -39,9 +38,9 @@ public final class CommandLineJobInfoTest {
   }
 
   public void checkEquality(CommandLineJobInfo a, CommandLineJobInfo b) {
-    assertEquals(a.getCommand(), b.getCommand());
-    assertEquals(a.getConf(), b.getConf());
-    assertEquals(a, b);
+    Assert.assertEquals(a.getCommand(), b.getCommand());
+    Assert.assertEquals(a.getConf(), b.getConf());
+    Assert.assertEquals(a, b);
   }
 
   public static CommandLineJobInfo createRandom() {

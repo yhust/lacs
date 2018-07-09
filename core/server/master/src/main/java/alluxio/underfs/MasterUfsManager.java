@@ -14,7 +14,7 @@ package alluxio.underfs;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
- * A class that manages the UFS for master servers.
+ * A class manages the UFS used by different services.
  */
 @ThreadSafe
 public final class MasterUfsManager extends AbstractUfsManager {

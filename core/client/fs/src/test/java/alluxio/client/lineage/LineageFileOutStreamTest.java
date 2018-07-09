@@ -18,7 +18,6 @@ import alluxio.client.file.FileSystemMasterClient;
 import alluxio.client.file.options.OutStreamOptions;
 import alluxio.resource.DummyCloseableResource;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
@@ -29,7 +28,6 @@ import org.powermock.modules.junit4.PowerMockRunner;
 /**
  * Tests {@link LineageFileOutStream}.
  */
-@Ignore
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({FileSystemContext.class, FileSystemMasterClient.class})
 public final class LineageFileOutStreamTest {

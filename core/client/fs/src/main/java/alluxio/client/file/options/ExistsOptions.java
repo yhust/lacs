@@ -14,7 +14,6 @@ package alluxio.client.file.options;
 import alluxio.Configuration;
 import alluxio.PropertyKey;
 import alluxio.annotation.PublicApi;
-import alluxio.wire.CommonOptions;
 import alluxio.wire.LoadMetadataType;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
@@ -30,7 +29,6 @@ import javax.annotation.concurrent.NotThreadSafe;
 @NotThreadSafe
 @JsonInclude(Include.NON_EMPTY)
 public final class ExistsOptions {
-  private CommonOptions mCommonOptions;
   private LoadMetadataType mLoadMetadataType;
 
   /**
@@ -41,16 +39,8 @@ public final class ExistsOptions {
   }
 
   private ExistsOptions() {
-    mCommonOptions = CommonOptions.defaults();
     mLoadMetadataType =
         Configuration.getEnum(PropertyKey.USER_FILE_METADATA_LOAD_TYPE, LoadMetadataType.class);
-  }
-
-  /**
-   * @return the common options
-   */
-  public CommonOptions getCommonOptions() {
-    return mCommonOptions;
   }
 
   /**
@@ -58,15 +48,6 @@ public final class ExistsOptions {
    */
   public LoadMetadataType getLoadMetadataType() {
     return mLoadMetadataType;
-  }
-
-  /**
-   * @param options the common options
-   * @return the updated options object
-   */
-  public ExistsOptions setCommonOptions(CommonOptions options) {
-    mCommonOptions = options;
-    return this;
   }
 
   /**
@@ -87,19 +68,17 @@ public final class ExistsOptions {
       return false;
     }
     ExistsOptions that = (ExistsOptions) o;
-    return Objects.equal(mCommonOptions, that.mCommonOptions)
-        && Objects.equal(mLoadMetadataType, that.mLoadMetadataType);
+    return Objects.equal(mLoadMetadataType, that.mLoadMetadataType);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(mCommonOptions, mLoadMetadataType);
+    return Objects.hashCode(mLoadMetadataType);
   }
 
   @Override
   public String toString() {
     return Objects.toStringHelper(this)
-        .add("commonOptions", mCommonOptions)
         .add("loadMetadataType", mLoadMetadataType.toString())
         .toString();
   }
@@ -108,7 +87,6 @@ public final class ExistsOptions {
    * @return the {@link GetStatusOptions} representation of these options
    */
   public GetStatusOptions toGetStatusOptions() {
-    return GetStatusOptions.defaults().setLoadMetadataType(mLoadMetadataType)
-        .setCommonOptions(mCommonOptions);
+    return GetStatusOptions.defaults().setLoadMetadataType(mLoadMetadataType);
   }
 }

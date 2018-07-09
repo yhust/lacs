@@ -14,22 +14,16 @@ package alluxio.client.file.policy;
 import alluxio.client.block.BlockWorkerInfo;
 import alluxio.client.block.policy.BlockLocationPolicy;
 import alluxio.client.block.policy.options.GetWorkerOptions;
-import alluxio.network.TieredIdentityFactory;
-import alluxio.wire.TieredIdentity;
+import alluxio.util.network.NetworkAddressUtils;
 import alluxio.wire.WorkerNetAddress;
 
-import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Objects;
 import com.google.common.collect.Lists;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
-
 /**
  * A policy that returns local host first, and if the local worker doesn't have enough availability,
  * it randomly picks a worker from the active workers list for each block write.
@@ -37,52 +31,35 @@ import javax.annotation.concurrent.ThreadSafe;
 // TODO(peis): Move the BlockLocationPolicy implementation to alluxio.client.block.policy.
 @ThreadSafe
 public final class LocalFirstPolicy implements FileWriteLocationPolicy, BlockLocationPolicy {
-  private final TieredIdentity mTieredIdentity;
+  private String mLocalHostName;
 
   /**
    * Constructs a {@link LocalFirstPolicy}.
    */
   public LocalFirstPolicy() {
-    this(TieredIdentityFactory.localIdentity());
-  }
-
-  /**
-   * @param localTieredIdentity the local tiered identity
-   */
-  private LocalFirstPolicy(TieredIdentity localTieredIdentity) {
-    mTieredIdentity = localTieredIdentity;
-  }
-
-  @VisibleForTesting
-  static LocalFirstPolicy create(TieredIdentity localTieredIdentity) {
-    return new LocalFirstPolicy(localTieredIdentity);
+    mLocalHostName = NetworkAddressUtils.getClientHostName();
   }
 
   @Override
-  @Nullable
   public WorkerNetAddress getWorkerForNextBlock(Iterable<BlockWorkerInfo> workerInfoList,
       long blockSizeBytes) {
+    // first try the local host
+    for (BlockWorkerInfo workerInfo : workerInfoList) {
+      if (workerInfo.getNetAddress().getHost().equals(mLocalHostName)
+          && workerInfo.getCapacityBytes() >= blockSizeBytes) {
+        return workerInfo.getNetAddress();
+      }
+    }
+
+    // otherwise randomly pick a worker that has enough availability
     List<BlockWorkerInfo> shuffledWorkers = Lists.newArrayList(workerInfoList);
     Collections.shuffle(shuffledWorkers);
-    // Workers must have enough capacity to hold the block.
-    List<BlockWorkerInfo> candidateWorkers = shuffledWorkers.stream()
-        .filter(worker -> worker.getCapacityBytes() >= blockSizeBytes)
-        .collect(Collectors.toList());
-
-    // Try finding a worker based on nearest tiered identity.
-    List<TieredIdentity> identities = candidateWorkers.stream()
-        .map(worker -> worker.getNetAddress().getTieredIdentity())
-        .filter(Objects::nonNull)
-        .collect(Collectors.toList());
-    Optional<TieredIdentity> nearest = mTieredIdentity.nearest(identities);
-    if (!nearest.isPresent()) {
-      return null;
+    for (BlockWorkerInfo workerInfo : shuffledWorkers) {
+      if (workerInfo.getCapacityBytes() >= blockSizeBytes) {
+        return workerInfo.getNetAddress();
+      }
     }
-    // Map back to the worker with the nearest tiered identity.
-    return candidateWorkers.stream()
-        .filter(worker -> worker.getNetAddress().getTieredIdentity().equals(nearest.get()))
-        .map(worker -> worker.getNetAddress())
-        .findFirst().orElse(null);
+    return null;
   }
 
   @Override
@@ -99,18 +76,18 @@ public final class LocalFirstPolicy implements FileWriteLocationPolicy, BlockLoc
       return false;
     }
     LocalFirstPolicy that = (LocalFirstPolicy) o;
-    return Objects.equals(mTieredIdentity, that.mTieredIdentity);
+    return Objects.equal(mLocalHostName, that.mLocalHostName);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(mTieredIdentity);
+    return Objects.hashCode(mLocalHostName);
   }
 
   @Override
   public String toString() {
-    return com.google.common.base.Objects.toStringHelper(this)
-        .add("tieredIdentity", mTieredIdentity)
+    return Objects.toStringHelper(this)
+        .add("localHostName", mLocalHostName)
         .toString();
   }
 }

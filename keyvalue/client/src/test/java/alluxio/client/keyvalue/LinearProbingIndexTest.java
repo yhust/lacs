@@ -11,15 +11,10 @@
 
 package alluxio.client.keyvalue;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertNull;
-
 import alluxio.client.ByteArrayOutStream;
 import alluxio.util.io.BufferUtils;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -50,11 +45,11 @@ public class LinearProbingIndexTest {
   @Test
   public void putBasic() throws Exception {
     LinearProbingIndex index = LinearProbingIndex.createEmptyIndex();
-    assertEquals(0, index.keyCount());
-    assertTrue(index.put(KEY1, VALUE1, mPayloadWriter));
-    assertEquals(1, index.keyCount());
-    assertTrue(index.put(KEY2, VALUE2, mPayloadWriter));
-    assertEquals(2, index.keyCount());
+    Assert.assertEquals(0, index.keyCount());
+    Assert.assertTrue(index.put(KEY1, VALUE1, mPayloadWriter));
+    Assert.assertEquals(1, index.keyCount());
+    Assert.assertTrue(index.put(KEY2, VALUE2, mPayloadWriter));
+    Assert.assertEquals(2, index.keyCount());
   }
 
   /**
@@ -75,8 +70,8 @@ public class LinearProbingIndexTest {
 
     // Insert this batch of key-value pairs
     for (int i = 0; i < testKeys; i++) {
-      assertTrue(index.put(keys[i], values[i], mPayloadWriter));
-      assertEquals(i + 1, index.keyCount());
+      Assert.assertTrue(index.put(keys[i], values[i], mPayloadWriter));
+      Assert.assertEquals(i + 1, index.keyCount());
     }
     mPayloadWriter.close();
 
@@ -85,7 +80,7 @@ public class LinearProbingIndexTest {
         new BasePayloadReader(ByteBuffer.wrap(mOutStream.toByteArray()));
     for (int i = 0; i < testKeys; i++) {
       ByteBuffer value = index.get(ByteBuffer.wrap(keys[i]), payloadReader);
-      assertEquals(ByteBuffer.wrap(values[i]), value);
+      Assert.assertEquals(ByteBuffer.wrap(values[i]), value);
     }
   }
 
@@ -99,7 +94,7 @@ public class LinearProbingIndexTest {
         new BasePayloadReader(ByteBuffer.allocate(1));
     ByteBuffer nonExistentKey = ByteBuffer.allocate(10);
     nonExistentKey.put("NoSuchKey".getBytes());
-    assertNull(index.get(nonExistentKey, payloadReaderNotUsed));
+    Assert.assertNull(index.get(nonExistentKey, payloadReaderNotUsed));
   }
 
   /**
@@ -110,18 +105,18 @@ public class LinearProbingIndexTest {
   public void keyCount() throws Exception {
     // keyCount should increase while inserting key-value pairs.
     LinearProbingIndex index = LinearProbingIndex.createEmptyIndex();
-    assertEquals(0, index.keyCount());
+    Assert.assertEquals(0, index.keyCount());
 
     index.put(KEY1, VALUE1, mPayloadWriter);
-    assertEquals(1, index.keyCount());
+    Assert.assertEquals(1, index.keyCount());
     index.put(KEY2, VALUE2, mPayloadWriter);
-    assertEquals(2, index.keyCount());
+    Assert.assertEquals(2, index.keyCount());
     mPayloadWriter.close();
 
     // keyCount should be correctly recovered after recovering Index from byte array.
     byte[] indexRawBytes = index.getBytes();
     index = LinearProbingIndex.loadFromByteArray(ByteBuffer.wrap(indexRawBytes));
-    assertEquals(2, index.keyCount());
+    Assert.assertEquals(2, index.keyCount());
   }
 
   /**
@@ -134,7 +129,7 @@ public class LinearProbingIndexTest {
     LinearProbingIndex index = LinearProbingIndex.createEmptyIndex();
     int count = index.byteCount();
     index = LinearProbingIndex.loadFromByteArray(ByteBuffer.wrap(index.getBytes()));
-    assertEquals(count, index.byteCount());
+    Assert.assertEquals(count, index.byteCount());
 
     // Non-empty Index.
     index.put(KEY1, VALUE1, mPayloadWriter);
@@ -142,7 +137,7 @@ public class LinearProbingIndexTest {
     mPayloadWriter.close();
     count = index.byteCount();
     index = LinearProbingIndex.loadFromByteArray(ByteBuffer.wrap(index.getBytes()));
-    assertEquals(count, index.byteCount());
+    Assert.assertEquals(count, index.byteCount());
   }
 
   private PayloadReader createPayloadReader() throws IOException {
@@ -162,10 +157,10 @@ public class LinearProbingIndexTest {
   @Test
   public void nextKey() throws Exception {
     LinearProbingIndex index = LinearProbingIndex.createEmptyIndex();
-    assertNull(nextKey(index, null));
+    Assert.assertNull(nextKey(index, null));
 
     index.put(KEY1, VALUE1, mPayloadWriter);
-    assertArrayEquals(KEY1, nextKey(index, null));
+    Assert.assertArrayEquals(KEY1, nextKey(index, null));
 
     index.put(KEY2, VALUE2, mPayloadWriter);
     byte[] firstKey = KEY1;
@@ -175,10 +170,10 @@ public class LinearProbingIndexTest {
       firstKey = KEY2;
       secondKey = KEY1;
     }
-    assertArrayEquals(firstKey, nextKey(index, null));
-    assertArrayEquals(firstKey, nextKey(index, null));
-    assertArrayEquals(secondKey, nextKey(index, firstKey));
-    assertNull(nextKey(index, secondKey));
+    Assert.assertArrayEquals(firstKey, nextKey(index, null));
+    Assert.assertArrayEquals(firstKey, nextKey(index, null));
+    Assert.assertArrayEquals(secondKey, nextKey(index, firstKey));
+    Assert.assertNull(nextKey(index, secondKey));
   }
 
   /**
@@ -188,10 +183,10 @@ public class LinearProbingIndexTest {
   @Test
   public void keyIterator() throws Exception {
     LinearProbingIndex index = LinearProbingIndex.createEmptyIndex();
-    assertNull(nextKey(index, null));
+    Assert.assertNull(nextKey(index, null));
 
     Iterator<ByteBuffer> keyIterator = index.keyIterator(createPayloadReader());
-    assertFalse(keyIterator.hasNext());
+    Assert.assertFalse(keyIterator.hasNext());
 
     index.put(KEY1, VALUE1, mPayloadWriter);
     index.put(KEY2, VALUE2, mPayloadWriter);
@@ -205,8 +200,8 @@ public class LinearProbingIndexTest {
       secondKey = KEY1;
     }
     keyIterator = index.keyIterator(createPayloadReader());
-    assertArrayEquals(firstKey, BufferUtils.newByteArrayFromByteBuffer(keyIterator.next()));
-    assertArrayEquals(secondKey, BufferUtils.newByteArrayFromByteBuffer(keyIterator.next()));
-    assertFalse(keyIterator.hasNext());
+    Assert.assertArrayEquals(firstKey, BufferUtils.newByteArrayFromByteBuffer(keyIterator.next()));
+    Assert.assertArrayEquals(secondKey, BufferUtils.newByteArrayFromByteBuffer(keyIterator.next()));
+    Assert.assertFalse(keyIterator.hasNext());
   }
 }

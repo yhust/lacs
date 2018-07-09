@@ -163,7 +163,6 @@ public interface JournalSystem {
       mLocation = location;
       return this;
     }
-
     /**
      * @param quietTimeMs before upgrading from SECONDARY to PRIMARY mode, the journal will wait
      *        until this duration has passed without any journal entries being written.

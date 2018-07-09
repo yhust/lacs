@@ -12,10 +12,9 @@
 package alluxio;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
-import alluxio.PropertyKey.Template;
 import alluxio.exception.ExceptionMessage;
 
 import org.junit.Assert;
@@ -28,7 +27,7 @@ public final class PropertyKeyTest {
 
   private PropertyKey mTestProperty = PropertyKey.create("alluxio.test.property", false,
        new String[] {"alluxio.test.property.alias1", "alluxio.test.property.alias2"}, "test",
-       false, false);
+       false);
 
   /**
    * Tests parsing string to PropertyKey by {@link PropertyKey#fromString}.
@@ -215,25 +214,5 @@ public final class PropertyKeyTest {
     assertTrue(PropertyKey.CONF_DIR.compareTo(PropertyKey.DEBUG) < 0);
     assertTrue(PropertyKey.DEBUG.compareTo(PropertyKey.CONF_DIR) > 0);
     assertTrue(PropertyKey.DEBUG.compareTo(PropertyKey.DEBUG) == 0);
-  }
-
-  @Test
-  public void templateMatches() throws Exception {
-    assertTrue(PropertyKey.Template.MASTER_MOUNT_TABLE_ALLUXIO.matches(
-        "alluxio.master.mount.table.root.alluxio"));
-    assertTrue(PropertyKey.Template.MASTER_MOUNT_TABLE_ALLUXIO.matches(
-        "alluxio.master.mount.table.ufs123.alluxio"));
-    assertFalse(PropertyKey.Template.MASTER_MOUNT_TABLE_ALLUXIO.matches(
-        "alluxio.master.mount.table..alluxio"));
-    assertFalse(PropertyKey.Template.MASTER_MOUNT_TABLE_ALLUXIO.matches(
-        "alluxio.master.mount.table.alluxio"));
-  }
-
-  @Test
-  public void localityTemplates() throws Exception {
-    assertTrue(PropertyKey.isValid("alluxio.locality.node"));
-    assertTrue(PropertyKey.isValid("alluxio.locality.custom"));
-
-    assertEquals("alluxio.locality.custom", Template.LOCALITY_TIER.format("custom").toString());
   }
 }

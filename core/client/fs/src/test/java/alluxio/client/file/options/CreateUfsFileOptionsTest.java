@@ -11,6 +11,7 @@
 
 package alluxio.client.file.options;
 
+import alluxio.CommonTestUtils;
 import alluxio.ConfigurationRule;
 import alluxio.LoginUserRule;
 import alluxio.PropertyKey;
@@ -94,7 +95,7 @@ public final class CreateUfsFileOptionsTest {
 
   @Test
   public void equalsTest() throws Exception {
-    alluxio.test.util.CommonUtils.testEquals(CreateUfsFileOptions.class);
+    CommonTestUtils.testEquals(CreateUfsFileOptions.class);
   }
 }
 

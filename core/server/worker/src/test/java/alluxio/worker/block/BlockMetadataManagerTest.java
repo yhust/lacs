@@ -11,10 +11,6 @@
 
 package alluxio.worker.block;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
-
 import alluxio.exception.BlockDoesNotExistException;
 import alluxio.exception.ExceptionMessage;
 import alluxio.exception.WorkerOutOfSpaceException;
@@ -81,11 +77,11 @@ public final class BlockMetadataManagerTest {
   public void getTier() {
     StorageTier tier;
     tier = mMetaManager.getTier("MEM"); // MEM
-    assertEquals("MEM", tier.getTierAlias());
-    assertEquals(0, tier.getTierOrdinal());
+    Assert.assertEquals("MEM", tier.getTierAlias());
+    Assert.assertEquals(0, tier.getTierOrdinal());
     tier = mMetaManager.getTier("HDD"); // HDD
-    assertEquals("HDD", tier.getTierAlias());
-    assertEquals(1, tier.getTierOrdinal());
+    Assert.assertEquals("HDD", tier.getTierAlias());
+    Assert.assertEquals(1, tier.getTierOrdinal());
   }
 
   /**
@@ -98,13 +94,13 @@ public final class BlockMetadataManagerTest {
 
     loc = new BlockStoreLocation("MEM", 0);
     dir = mMetaManager.getDir(loc);
-    assertEquals(loc.tierAlias(), dir.getParentTier().getTierAlias());
-    assertEquals(loc.dir(), dir.getDirIndex());
+    Assert.assertEquals(loc.tierAlias(), dir.getParentTier().getTierAlias());
+    Assert.assertEquals(loc.dir(), dir.getDirIndex());
 
     loc = new BlockStoreLocation("HDD", 1);
     dir = mMetaManager.getDir(loc);
-    assertEquals(loc.tierAlias(), dir.getParentTier().getTierAlias());
-    assertEquals(loc.dir(), dir.getDirIndex());
+    Assert.assertEquals(loc.tierAlias(), dir.getParentTier().getTierAlias());
+    Assert.assertEquals(loc.dir(), dir.getDirIndex());
   }
 
   /**
@@ -125,11 +121,11 @@ public final class BlockMetadataManagerTest {
   @Test
   public void getTiers() {
     List<StorageTier> tiers = mMetaManager.getTiers();
-    assertEquals(2, tiers.size());
-    assertEquals("MEM", tiers.get(0).getTierAlias());
-    assertEquals(0, tiers.get(0).getTierOrdinal());
-    assertEquals("HDD", tiers.get(1).getTierAlias());
-    assertEquals(1, tiers.get(1).getTierOrdinal());
+    Assert.assertEquals(2, tiers.size());
+    Assert.assertEquals("MEM", tiers.get(0).getTierAlias());
+    Assert.assertEquals(0, tiers.get(0).getTierOrdinal());
+    Assert.assertEquals("HDD", tiers.get(1).getTierAlias());
+    Assert.assertEquals(1, tiers.get(1).getTierOrdinal());
   }
 
   /**
@@ -138,12 +134,12 @@ public final class BlockMetadataManagerTest {
   @Test
   public void getTiersBelow() {
     List<StorageTier> tiersBelow = mMetaManager.getTiersBelow("MEM");
-    assertEquals(1, tiersBelow.size());
-    assertEquals("HDD", tiersBelow.get(0).getTierAlias());
-    assertEquals(1, tiersBelow.get(0).getTierOrdinal());
+    Assert.assertEquals(1, tiersBelow.size());
+    Assert.assertEquals("HDD", tiersBelow.get(0).getTierAlias());
+    Assert.assertEquals(1, tiersBelow.get(0).getTierOrdinal());
 
     tiersBelow = mMetaManager.getTiersBelow("HDD");
-    assertEquals(0, tiersBelow.size());
+    Assert.assertEquals(0, tiersBelow.size());
   }
 
   /**
@@ -151,14 +147,14 @@ public final class BlockMetadataManagerTest {
    */
   @Test
   public void getAvailableBytes() {
-    assertEquals(9000, mMetaManager.getAvailableBytes(BlockStoreLocation.anyTier()));
-    assertEquals(1000,
+    Assert.assertEquals(9000, mMetaManager.getAvailableBytes(BlockStoreLocation.anyTier()));
+    Assert.assertEquals(1000,
         mMetaManager.getAvailableBytes(BlockStoreLocation.anyDirInTier("MEM")));
-    assertEquals(8000,
+    Assert.assertEquals(8000,
         mMetaManager.getAvailableBytes(BlockStoreLocation.anyDirInTier("HDD")));
-    assertEquals(1000, mMetaManager.getAvailableBytes(new BlockStoreLocation("MEM", 0)));
-    assertEquals(3000, mMetaManager.getAvailableBytes(new BlockStoreLocation("HDD", 0)));
-    assertEquals(5000, mMetaManager.getAvailableBytes(new BlockStoreLocation("HDD", 1)));
+    Assert.assertEquals(1000, mMetaManager.getAvailableBytes(new BlockStoreLocation("MEM", 0)));
+    Assert.assertEquals(3000, mMetaManager.getAvailableBytes(new BlockStoreLocation("HDD", 0)));
+    Assert.assertEquals(5000, mMetaManager.getAvailableBytes(new BlockStoreLocation("HDD", 1)));
   }
 
   /**
@@ -172,33 +168,33 @@ public final class BlockMetadataManagerTest {
         new TempBlockMeta(TEST_SESSION_ID, TEST_TEMP_BLOCK_ID, TEST_BLOCK_SIZE, dir);
 
     // Empty storage
-    assertFalse(mMetaManager.hasTempBlockMeta(TEST_TEMP_BLOCK_ID));
-    assertFalse(mMetaManager.hasBlockMeta(TEST_TEMP_BLOCK_ID));
+    Assert.assertFalse(mMetaManager.hasTempBlockMeta(TEST_TEMP_BLOCK_ID));
+    Assert.assertFalse(mMetaManager.hasBlockMeta(TEST_TEMP_BLOCK_ID));
     // Add temp block
     mMetaManager.addTempBlockMeta(tempBlockMeta);
-    assertTrue(mMetaManager.hasTempBlockMeta(TEST_TEMP_BLOCK_ID));
-    assertFalse(mMetaManager.hasBlockMeta(TEST_TEMP_BLOCK_ID));
+    Assert.assertTrue(mMetaManager.hasTempBlockMeta(TEST_TEMP_BLOCK_ID));
+    Assert.assertFalse(mMetaManager.hasBlockMeta(TEST_TEMP_BLOCK_ID));
     // Get temp block
-    assertEquals(tempBlockMeta, mMetaManager.getTempBlockMeta(TEST_TEMP_BLOCK_ID));
+    Assert.assertEquals(tempBlockMeta, mMetaManager.getTempBlockMeta(TEST_TEMP_BLOCK_ID));
     // Abort temp block
     mMetaManager.abortTempBlockMeta(tempBlockMeta);
-    assertFalse(mMetaManager.hasTempBlockMeta(TEST_TEMP_BLOCK_ID));
-    assertFalse(mMetaManager.hasBlockMeta(TEST_TEMP_BLOCK_ID));
+    Assert.assertFalse(mMetaManager.hasTempBlockMeta(TEST_TEMP_BLOCK_ID));
+    Assert.assertFalse(mMetaManager.hasBlockMeta(TEST_TEMP_BLOCK_ID));
     // Add temp block with previous block id
     mMetaManager.addTempBlockMeta(tempBlockMeta);
-    assertTrue(mMetaManager.hasTempBlockMeta(TEST_TEMP_BLOCK_ID));
-    assertFalse(mMetaManager.hasBlockMeta(TEST_TEMP_BLOCK_ID));
+    Assert.assertTrue(mMetaManager.hasTempBlockMeta(TEST_TEMP_BLOCK_ID));
+    Assert.assertFalse(mMetaManager.hasBlockMeta(TEST_TEMP_BLOCK_ID));
     // Commit temp block
     mMetaManager.commitTempBlockMeta(tempBlockMeta);
-    assertFalse(mMetaManager.hasTempBlockMeta(TEST_TEMP_BLOCK_ID));
-    assertTrue(mMetaManager.hasBlockMeta(TEST_TEMP_BLOCK_ID));
+    Assert.assertFalse(mMetaManager.hasTempBlockMeta(TEST_TEMP_BLOCK_ID));
+    Assert.assertTrue(mMetaManager.hasBlockMeta(TEST_TEMP_BLOCK_ID));
     // Get block
     BlockMeta blockMeta = mMetaManager.getBlockMeta(TEST_TEMP_BLOCK_ID);
-    assertEquals(TEST_TEMP_BLOCK_ID, blockMeta.getBlockId());
+    Assert.assertEquals(TEST_TEMP_BLOCK_ID, blockMeta.getBlockId());
     // Remove block
     mMetaManager.removeBlockMeta(blockMeta);
-    assertFalse(mMetaManager.hasTempBlockMeta(TEST_TEMP_BLOCK_ID));
-    assertFalse(mMetaManager.hasBlockMeta(TEST_TEMP_BLOCK_ID));
+    Assert.assertFalse(mMetaManager.hasTempBlockMeta(TEST_TEMP_BLOCK_ID));
+    Assert.assertFalse(mMetaManager.hasBlockMeta(TEST_TEMP_BLOCK_ID));
   }
 
   /**
@@ -324,12 +320,12 @@ public final class BlockMetadataManagerTest {
 
     // Move to tier HDD tier
     blockMeta = mMetaManager.moveBlockMeta(blockMeta, BlockStoreLocation.anyDirInTier("HDD"));
-    assertEquals("HDD", blockMeta.getBlockLocation().tierAlias());
+    Assert.assertEquals("HDD", blockMeta.getBlockLocation().tierAlias());
 
     // Move to tier MEM and dir 0
     blockMeta = mMetaManager.moveBlockMeta(blockMeta, new BlockStoreLocation("MEM", 0));
-    assertEquals("MEM", blockMeta.getBlockLocation().tierAlias());
-    assertEquals(0, blockMeta.getBlockLocation().dir());
+    Assert.assertEquals("MEM", blockMeta.getBlockLocation().tierAlias());
+    Assert.assertEquals(0, blockMeta.getBlockLocation().dir());
   }
 
   /**
@@ -357,7 +353,7 @@ public final class BlockMetadataManagerTest {
     TempBlockMeta tempBlockMeta =
         new TempBlockMeta(TEST_SESSION_ID, TEST_TEMP_BLOCK_ID, TEST_BLOCK_SIZE, dir);
     mMetaManager.resizeTempBlockMeta(tempBlockMeta, TEST_BLOCK_SIZE + 1);
-    assertEquals(TEST_BLOCK_SIZE + 1, tempBlockMeta.getBlockSize());
+    Assert.assertEquals(TEST_BLOCK_SIZE + 1, tempBlockMeta.getBlockSize());
   }
 
   /**
@@ -389,17 +385,17 @@ public final class BlockMetadataManagerTest {
     for (TempBlockMeta tempBlockMeta : toRemove) {
       toRemoveBlockIds.add(tempBlockMeta.getBlockId());
     }
-    assertEquals(Sets.newHashSet(tempBlockMeta1, tempBlockMeta2),
+    Assert.assertEquals(Sets.newHashSet(tempBlockMeta1, tempBlockMeta2),
         new HashSet<>(toRemove));
-    assertTrue(dir.hasTempBlockMeta(tempBlockId1));
-    assertTrue(dir.hasTempBlockMeta(tempBlockId2));
+    Assert.assertTrue(dir.hasTempBlockMeta(tempBlockId1));
+    Assert.assertTrue(dir.hasTempBlockMeta(tempBlockId2));
 
     // Clean up sessionId1, expect tempBlock1 and tempBlock2 to be removed.
     mMetaManager.cleanupSessionTempBlocks(sessionId1, toRemoveBlockIds);
-    assertFalse(dir.hasTempBlockMeta(tempBlockId1));
-    assertFalse(dir.hasTempBlockMeta(tempBlockId2));
-    assertTrue(dir.hasTempBlockMeta(tempBlockId3));
-    assertTrue(dir.hasBlockMeta(TEST_BLOCK_ID));
+    Assert.assertFalse(dir.hasTempBlockMeta(tempBlockId1));
+    Assert.assertFalse(dir.hasTempBlockMeta(tempBlockId2));
+    Assert.assertTrue(dir.hasTempBlockMeta(tempBlockId3));
+    Assert.assertTrue(dir.hasBlockMeta(TEST_BLOCK_ID));
 
     // Get temp blocks for sessionId1 again, expect to get nothing
     toRemove = mMetaManager.getSessionTempBlocks(sessionId1);
@@ -407,14 +403,14 @@ public final class BlockMetadataManagerTest {
     for (TempBlockMeta tempBlockMeta : toRemove) {
       toRemoveBlockIds.add(tempBlockMeta.getBlockId());
     }
-    assertTrue(toRemove.isEmpty());
+    Assert.assertTrue(toRemove.isEmpty());
 
     // Clean up sessionId1 again, expect nothing to happen
     mMetaManager.cleanupSessionTempBlocks(sessionId1, toRemoveBlockIds);
-    assertFalse(dir.hasTempBlockMeta(tempBlockId1));
-    assertFalse(dir.hasTempBlockMeta(tempBlockId2));
-    assertTrue(dir.hasTempBlockMeta(tempBlockId3));
-    assertTrue(dir.hasBlockMeta(TEST_BLOCK_ID));
+    Assert.assertFalse(dir.hasTempBlockMeta(tempBlockId1));
+    Assert.assertFalse(dir.hasTempBlockMeta(tempBlockId2));
+    Assert.assertTrue(dir.hasTempBlockMeta(tempBlockId3));
+    Assert.assertTrue(dir.hasBlockMeta(TEST_BLOCK_ID));
 
     // Get temp blocks for sessionId2, expect to get tempBlock3
     toRemove = mMetaManager.getSessionTempBlocks(sessionId2);
@@ -422,15 +418,15 @@ public final class BlockMetadataManagerTest {
     for (TempBlockMeta tempBlockMeta : toRemove) {
       toRemoveBlockIds.add(tempBlockMeta.getBlockId());
     }
-    assertEquals(Sets.newHashSet(tempBlockMeta3), new HashSet<>(toRemove));
-    assertTrue(dir.hasTempBlockMeta(tempBlockId3));
+    Assert.assertEquals(Sets.newHashSet(tempBlockMeta3), new HashSet<>(toRemove));
+    Assert.assertTrue(dir.hasTempBlockMeta(tempBlockId3));
 
     // Clean up sessionId2, expect tempBlock3 to be removed
     mMetaManager.cleanupSessionTempBlocks(sessionId2, toRemoveBlockIds);
-    assertFalse(dir.hasTempBlockMeta(tempBlockId1));
-    assertFalse(dir.hasTempBlockMeta(tempBlockId2));
-    assertFalse(dir.hasTempBlockMeta(tempBlockId3));
-    assertTrue(dir.hasBlockMeta(TEST_BLOCK_ID));
+    Assert.assertFalse(dir.hasTempBlockMeta(tempBlockId1));
+    Assert.assertFalse(dir.hasTempBlockMeta(tempBlockId2));
+    Assert.assertFalse(dir.hasTempBlockMeta(tempBlockId3));
+    Assert.assertTrue(dir.hasBlockMeta(TEST_BLOCK_ID));
   }
 
   /**
@@ -444,7 +440,7 @@ public final class BlockMetadataManagerTest {
     // Assert the capacities are at alias level [MEM: 1000][SSD: 0][HDD: 8000]
     Map<String, Long> exceptedCapacityBytesOnTiers = ImmutableMap.of("MEM", 1000L, "HDD", 8000L);
     Map<String, Long> exceptedUsedBytesOnTiers = ImmutableMap.of("MEM", 0L, "HDD", 0L);
-    assertEquals(exceptedCapacityBytesOnTiers, meta.getCapacityBytesOnTiers());
-    assertEquals(exceptedUsedBytesOnTiers, meta.getUsedBytesOnTiers());
+    Assert.assertEquals(exceptedCapacityBytesOnTiers, meta.getCapacityBytesOnTiers());
+    Assert.assertEquals(exceptedUsedBytesOnTiers, meta.getUsedBytesOnTiers());
   }
 }

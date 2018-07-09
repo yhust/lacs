@@ -11,6 +11,7 @@
 
 package alluxio.client.file.options;
 
+import alluxio.CommonTestUtils;
 import alluxio.Configuration;
 import alluxio.Constants;
 import alluxio.PropertyKey;
@@ -18,7 +19,6 @@ import alluxio.client.WriteType;
 import alluxio.client.file.policy.FileWriteLocationPolicy;
 import alluxio.client.file.policy.RoundRobinPolicy;
 import alluxio.security.authorization.Mode;
-import alluxio.test.util.CommonUtils;
 import alluxio.thrift.CreateFileTOptions;
 import alluxio.wire.TtlAction;
 
@@ -120,6 +120,6 @@ public final class CreateFileOptionsTest {
 
   @Test
   public void equalsTest() throws Exception {
-    CommonUtils.testEquals(CreateFileOptions.class);
+    CommonTestUtils.testEquals(CreateFileOptions.class);
   }
 }

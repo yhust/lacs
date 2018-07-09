@@ -23,7 +23,6 @@ import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -35,7 +34,7 @@ public abstract class LockedInodePath implements AutoCloseable {
   protected final String[] mPathComponents;
   protected final ArrayList<Inode<?>> mInodes;
   protected final InodeLockList mLockList;
-  protected InodeTree.LockMode mLockMode;
+  protected final InodeTree.LockMode mLockMode;
 
   LockedInodePath(AlluxioURI uri, List<Inode<?>> inodes, InodeLockList lockList,
       InodeTree.LockMode lockMode)
@@ -79,7 +78,6 @@ public abstract class LockedInodePath implements AutoCloseable {
   /**
    * @return the target inode, or null if it does not exist
    */
-  @Nullable
   public synchronized Inode<?> getInodeOrNull() {
     if (!fullPathExists()) {
       return null;
@@ -121,7 +119,6 @@ public abstract class LockedInodePath implements AutoCloseable {
   /**
    * @return the parent of the target inode, or null if the parent does not exist
    */
-  @Nullable
   public synchronized Inode getParentInodeOrNull() {
     if (mPathComponents.length < 2 || mInodes.size() < (mPathComponents.length - 1)) {
       // The path is only the root, or the list of inodes is not long enough to contain the parent
@@ -169,31 +166,5 @@ public abstract class LockedInodePath implements AutoCloseable {
    */
   public synchronized void downgradeLast() {
     mLockList.downgradeLast();
-  }
-
-  /**
-   * Downgrades the last inode that was locked, according to the specified {@link LockingScheme}.
-   * If the locking scheme initially desired the READ lock, the downgrade will occur. Otherwise,
-   * downgrade will not be performed.
-   *
-   * @param lockingScheme the locking scheme to inspect
-   */
-  public synchronized void downgradeLastWithScheme(LockingScheme lockingScheme) {
-    // Need to downgrade if the locking scheme initially desired the READ lock.
-    if (lockingScheme.getDesiredMode() == InodeTree.LockMode.READ) {
-      downgradeLast();
-      mLockMode = InodeTree.LockMode.READ;
-    }
-  }
-
-  /**
-   * Unlocks the last inode that was locked.
-   */
-  public synchronized void unlockLast() {
-    if (mInodes.isEmpty()) {
-      return;
-    }
-    mInodes.remove(mInodes.size() - 1);
-    mLockList.unlockLast();
   }
 }

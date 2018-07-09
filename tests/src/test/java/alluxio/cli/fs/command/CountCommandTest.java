@@ -11,13 +11,12 @@
 
 package alluxio.cli.fs.command;
 
-import static org.junit.Assert.assertEquals;
-
 import alluxio.client.WriteType;
 import alluxio.client.file.FileSystemTestUtils;
 import alluxio.exception.ExceptionMessage;
 import alluxio.cli.fs.AbstractAlluxioShellTest;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -27,9 +26,9 @@ public final class CountCommandTest extends AbstractAlluxioShellTest {
   @Test
   public void countNotExist() throws Exception {
     int ret = mFsShell.run("count", "/NotExistFile");
-    assertEquals(ExceptionMessage.PATH_DOES_NOT_EXIST.getMessage("/NotExistFile") + "\n",
+    Assert.assertEquals(ExceptionMessage.PATH_DOES_NOT_EXIST.getMessage("/NotExistFile") + "\n",
         mOutput.toString());
-    assertEquals(-1, ret);
+    Assert.assertEquals(-1, ret);
   }
 
   @Test
@@ -45,6 +44,6 @@ public final class CountCommandTest extends AbstractAlluxioShellTest {
     String format = "%-25s%-25s%-15s\n";
     expected += String.format(format, "File Count", "Folder Count", "Total Bytes");
     expected += String.format(format, 3, 2, 60);
-    assertEquals(expected, mOutput.toString());
+    Assert.assertEquals(expected, mOutput.toString());
   }
 }

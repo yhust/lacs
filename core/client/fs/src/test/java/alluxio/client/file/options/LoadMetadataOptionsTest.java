@@ -11,11 +11,9 @@
 
 package alluxio.client.file.options;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import alluxio.CommonTestUtils;
 
-import alluxio.test.util.CommonUtils;
-
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Random;
@@ -31,7 +29,7 @@ public final class LoadMetadataOptionsTest {
   public void defaults() {
     LoadMetadataOptions options = LoadMetadataOptions.defaults();
 
-    assertFalse(options.isRecursive());
+    Assert.assertFalse(options.isRecursive());
   }
 
   /**
@@ -45,11 +43,11 @@ public final class LoadMetadataOptionsTest {
     LoadMetadataOptions options = LoadMetadataOptions.defaults();
     options.setRecursive(recursive);
 
-    assertEquals(recursive, options.isRecursive());
+    Assert.assertEquals(recursive, options.isRecursive());
   }
 
   @Test
   public void equalsTest() throws Exception {
-    CommonUtils.testEquals(LoadMetadataOptions.class);
+    CommonTestUtils.testEquals(LoadMetadataOptions.class);
   }
 }

@@ -48,9 +48,8 @@ public final class CreateOptions {
   private CreateOptions() {
     mCreateParent = false;
     mEnsureAtomic = false;
-    // default owner and group are null (unset)
-    mOwner = null;
-    mGroup = null;
+    mOwner = "";
+    mGroup = "";
     mMode = Mode.defaults().applyFileUMask();
   }
 

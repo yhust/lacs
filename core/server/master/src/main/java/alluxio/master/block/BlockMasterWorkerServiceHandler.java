@@ -33,7 +33,6 @@ import com.google.common.base.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -54,7 +53,7 @@ public final class BlockMasterWorkerServiceHandler implements BlockMasterWorkerS
    * @param blockMaster the {@link BlockMaster} the handler uses internally
    */
   BlockMasterWorkerServiceHandler(BlockMaster blockMaster) {
-    Preconditions.checkNotNull(blockMaster, "blockMaster");
+    Preconditions.checkNotNull(blockMaster);
     mBlockMaster = blockMaster;
   }
 
@@ -74,14 +73,6 @@ public final class BlockMasterWorkerServiceHandler implements BlockMasterWorkerS
         return new BlockHeartbeatTResponse(mBlockMaster
             .workerHeartbeat(workerId, usedBytesOnTiers, removedBlockIds, addedBlocksOnTiers));
       }
-
-      @Override
-      public String toString() {
-        return String.format("blockHeartbeat: workerId=%s, usedBytesOnTiers=%s, "
-                + "removedBlockIds=%s, addedBlocksOnTiers=%s, options=%s", workerId,
-            usedBytesOnTiers,
-            removedBlockIds, addedBlocksOnTiers, options);
-      }
     });
   }
 
@@ -89,19 +80,11 @@ public final class BlockMasterWorkerServiceHandler implements BlockMasterWorkerS
   public CommitBlockTResponse commitBlock(final long workerId, final long usedBytesOnTier,
       final String tierAlias, final long blockId, final long length, CommitBlockTOptions options)
       throws AlluxioTException {
-    return RpcUtils.call(LOG, new RpcUtils.RpcCallableThrowsIOException<CommitBlockTResponse>() {
+    return RpcUtils.call(LOG, new RpcUtils.RpcCallable<CommitBlockTResponse>() {
       @Override
-      public CommitBlockTResponse call() throws AlluxioException, IOException {
+      public CommitBlockTResponse call() throws AlluxioException {
         mBlockMaster.commitBlock(workerId, usedBytesOnTier, tierAlias, blockId, length);
         return new CommitBlockTResponse();
-      }
-
-      @Override
-      public String toString() {
-        return String.format("commitBlock: workerId=%s, usedBytesOnTiers=%s, tierAlias=%s, "
-                + "blockId=%s, length=%s, options=%s", workerId, usedBytesOnTier, tierAlias,
-            blockId,
-            length, options);
       }
     });
   }
@@ -114,12 +97,6 @@ public final class BlockMasterWorkerServiceHandler implements BlockMasterWorkerS
       public GetWorkerIdTResponse call() throws AlluxioException {
         return new GetWorkerIdTResponse(
             mBlockMaster.getWorkerId(ThriftUtils.fromThrift((workerNetAddress))));
-      }
-
-      @Override
-      public String toString() {
-        return String
-            .format("getWorkerId: workerNetAddress=%s, options=%s", workerNetAddress, options);
       }
     });
   }
@@ -135,14 +112,6 @@ public final class BlockMasterWorkerServiceHandler implements BlockMasterWorkerS
         mBlockMaster.workerRegister(workerId, storageTiers, totalBytesOnTiers, usedBytesOnTiers,
             currentBlocksOnTiers);
         return new RegisterWorkerTResponse();
-      }
-
-      @Override
-      public String toString() {
-        return String
-            .format("registerWorker: workerId=%s, storageTiers=%s, totalBytesOnTiers=%s,"
-                + "usedBytesOnTiers=%s, currentBlocksOnTiers=%s, options=%s", workerId,
-            storageTiers, totalBytesOnTiers, usedBytesOnTiers, currentBlocksOnTiers, options);
       }
     });
   }

@@ -14,8 +14,6 @@ package alluxio.master.file;
 import alluxio.Constants;
 import alluxio.RpcUtils;
 import alluxio.exception.AlluxioException;
-import alluxio.exception.status.AlluxioStatusException;
-import alluxio.master.file.options.WorkerHeartbeatOptions;
 import alluxio.thrift.AlluxioTException;
 import alluxio.thrift.FileSystemHeartbeatTOptions;
 import alluxio.thrift.FileSystemHeartbeatTResponse;
@@ -73,14 +71,8 @@ public final class FileSystemMasterWorkerServiceHandler
         new RpcUtils.RpcCallableThrowsIOException<FileSystemHeartbeatTResponse>() {
           @Override
           public FileSystemHeartbeatTResponse call() throws AlluxioException, IOException {
-            return new FileSystemHeartbeatTResponse(mFileSystemMaster
-                .workerHeartbeat(workerId, persistedFiles, new WorkerHeartbeatOptions(options)));
-          }
-
-          @Override
-          public String toString() {
-            return String.format("fileSystemHeartbeat: workerId=%s, persistedFiles=%s, options=%s",
-                workerId, persistedFiles, options);
+            return new FileSystemHeartbeatTResponse(
+                mFileSystemMaster.workerHeartbeat(workerId, persistedFiles));
           }
         }
     );
@@ -89,16 +81,11 @@ public final class FileSystemMasterWorkerServiceHandler
   @Override
   public GetFileInfoTResponse getFileInfo(final long fileId, GetFileInfoTOptions options)
       throws AlluxioTException {
-    return RpcUtils.call(LOG, new RpcUtils.RpcCallableThrowsIOException<GetFileInfoTResponse>() {
+    return RpcUtils.call(LOG, new RpcUtils.RpcCallable<GetFileInfoTResponse>() {
       @Override
-      public GetFileInfoTResponse call() throws AlluxioException, AlluxioStatusException {
+      public GetFileInfoTResponse call() throws AlluxioException {
         return new GetFileInfoTResponse(
             ThriftUtils.toThrift(mFileSystemMaster.getFileInfo(fileId)));
-      }
-
-      @Override
-      public String toString() {
-        return String.format("getFileInfo: fileId=%s, options=%s", fileId, options);
       }
     });
   }
@@ -111,11 +98,6 @@ public final class FileSystemMasterWorkerServiceHandler
       public GetPinnedFileIdsTResponse call() throws AlluxioException {
         return new GetPinnedFileIdsTResponse(mFileSystemMaster.getPinIdList());
       }
-
-      @Override
-      public String toString() {
-        return String.format("getPinnedFileIds: options=%s", options);
-      }
     });
   }
 
@@ -126,11 +108,6 @@ public final class FileSystemMasterWorkerServiceHandler
       @Override
       public GetUfsInfoTResponse call() throws AlluxioException {
         return new GetUfsInfoTResponse(mFileSystemMaster.getUfsInfo(mountId));
-      }
-
-      @Override
-      public String toString() {
-        return String.format("getUfsInfo: mountId=%s, options=%s", mountId, options);
       }
     });
   }

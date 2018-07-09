@@ -11,8 +11,7 @@
 
 package alluxio.security.authentication;
 
-import static org.junit.Assert.assertEquals;
-
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -137,10 +136,10 @@ public final class PlainSaslClientCallbackHandlerTest {
       throws IOException, UnsupportedCallbackException {
     for (Callback cb : callbacks) {
       if (cb instanceof NameCallback) {
-        assertEquals(user, ((NameCallback) cb).getName());
+        Assert.assertEquals(user, ((NameCallback) cb).getName());
       } else if (cb instanceof PasswordCallback) {
         char[] passwordChar = ((PasswordCallback) cb).getPassword();
-        assertEquals(passwd, passwordChar == null ? null : String.copyValueOf(passwordChar));
+        Assert.assertEquals(passwd, passwordChar == null ? null : String.copyValueOf(passwordChar));
       }
     }
   }

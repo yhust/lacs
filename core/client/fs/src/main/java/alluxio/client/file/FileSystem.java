@@ -28,6 +28,7 @@ import alluxio.client.file.options.OpenFileOptions;
 import alluxio.client.file.options.RenameOptions;
 import alluxio.client.file.options.SetAttributeOptions;
 import alluxio.client.file.options.UnmountOptions;
+import alluxio.client.file.options.GetLATokenOptions;
 import alluxio.client.lineage.LineageContext;
 import alluxio.client.lineage.LineageFileSystem;
 import alluxio.exception.AlluxioException;
@@ -37,14 +38,9 @@ import alluxio.exception.FileDoesNotExistException;
 import alluxio.exception.InvalidPathException;
 import alluxio.wire.MountPointInfo;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Basic file system interface supporting metadata operations and data operations. Developers
@@ -59,31 +55,17 @@ public interface FileSystem {
    * Factory for {@link FileSystem}.
    */
   class Factory {
-    private static final Logger LOG = LoggerFactory.getLogger(Factory.class);
-    private static final AtomicBoolean CONF_LOGGED = new AtomicBoolean(false);
 
     private Factory() {} // prevent instantiation
 
     public static FileSystem get() {
-      return get(FileSystemContext.INSTANCE);
+      if (Configuration.getBoolean(PropertyKey.USER_LINEAGE_ENABLED)) {
+        return LineageFileSystem.get(FileSystemContext.INSTANCE, LineageContext.INSTANCE);
+      }
+      return BaseFileSystem.get(FileSystemContext.INSTANCE);
     }
 
     public static FileSystem get(FileSystemContext context) {
-      if (LOG.isDebugEnabled() && !CONF_LOGGED.getAndSet(true)) {
-        // Store properties in tree map to keep output ordered
-        Map<String, String> keyValueSet = new TreeMap<>(Configuration.toMap());
-        for (Map.Entry<String, String> entry : keyValueSet.entrySet()) {
-          String key = entry.getKey();
-          String value = entry.getValue();
-          Configuration.Source source = Configuration.getSource(PropertyKey.fromString(key));
-          if (source == Configuration.Source.SITE_PROPERTY) {
-            LOG.debug("{}={} ({}: {})",
-                key, value, source.name(), Configuration.getSitePropertiesFile());
-          } else {
-            LOG.debug("{}={} ({})", key, value, source.name());
-          }
-        }
-      }
       if (Configuration.getBoolean(PropertyKey.USER_LINEAGE_ENABLED)) {
         return LineageFileSystem.get(context, LineageContext.INSTANCE);
       }
@@ -373,4 +355,8 @@ public interface FileSystem {
    * @param options options to associate with this operation
    */
   void unmount(AlluxioURI path, UnmountOptions options) throws IOException, AlluxioException;
+
+ // get the token from the client to read a file
+  boolean getLAToken(AlluxioURI path, GetLATokenOptions options) throws IOException, AlluxioException;
+
 }

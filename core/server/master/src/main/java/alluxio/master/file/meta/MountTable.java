@@ -42,7 +42,6 @@ import java.util.NoSuchElementException;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -149,7 +148,7 @@ public final class MountTable implements JournalEntryIterable {
    */
   public void add(AlluxioURI alluxioUri, AlluxioURI ufsUri, long mountId, MountOptions options)
       throws FileAlreadyExistsException, InvalidPathException {
-    String alluxioPath = alluxioUri.getPath().isEmpty() ? "/" : alluxioUri.getPath();
+    String alluxioPath = alluxioUri.getPath();
     LOG.info("Mounting {} at {}", ufsUri, alluxioPath);
 
     try (LockResource r = new LockResource(mWriteLock)) {
@@ -171,8 +170,8 @@ public final class MountTable implements JournalEntryIterable {
         if ((ufsUri.getScheme() == null || ufsUri.getScheme().equals(mountedUfsUri.getScheme()))
             && (ufsUri.getAuthority() == null || ufsUri.getAuthority()
             .equals(mountedUfsUri.getAuthority()))) {
-          String ufsPath = ufsUri.getPath().isEmpty() ? "/" : ufsUri.getPath();
-          String mountedUfsPath = mountedUfsUri.getPath().isEmpty() ? "/" : mountedUfsUri.getPath();
+          String ufsPath = ufsUri.getPath();
+          String mountedUfsPath = mountedUfsUri.getPath();
           if (PathUtils.hasPrefix(ufsPath, mountedUfsPath)) {
             throw new InvalidPathException(ExceptionMessage.MOUNT_POINT_PREFIX_OF_ANOTHER
                 .getMessage(mountedUfsUri.toString(), ufsUri.toString()));
@@ -236,15 +235,17 @@ public final class MountTable implements JournalEntryIterable {
    */
   public String getMountPoint(AlluxioURI uri) throws InvalidPathException {
     String path = uri.getPath();
+    String mountPoint = null;
 
     try (LockResource r = new LockResource(mReadLock)) {
       for (Map.Entry<String, MountInfo> entry : mMountTable.entrySet()) {
         String alluxioPath = entry.getKey();
-        if (!alluxioPath.equals(ROOT) && PathUtils.hasPrefix(path, alluxioPath)) {
-          return alluxioPath;
+        if (PathUtils.hasPrefix(path, alluxioPath)
+            && (mountPoint == null || PathUtils.hasPrefix(alluxioPath, mountPoint))) {
+          mountPoint = alluxioPath;
         }
       }
-      return mMountTable.containsKey(ROOT) ? ROOT : null;
+      return mountPoint;
     }
   }
 
@@ -258,24 +259,6 @@ public final class MountTable implements JournalEntryIterable {
     try (LockResource r = new LockResource(mReadLock)) {
       return new HashMap<>(mMountTable);
     }
-  }
-
-  /**
-   * @param uri the Alluxio uri to check
-   * @return true if the specified uri is mount point, or has a descendant which is a mount point
-   */
-  public boolean containsMountPoint(AlluxioURI uri) throws InvalidPathException {
-    String path = uri.getPath();
-
-    try (LockResource r = new LockResource(mReadLock)) {
-      for (Map.Entry<String, MountInfo> entry : mMountTable.entrySet()) {
-        String mountPath = entry.getKey();
-        if (PathUtils.hasPrefix(mountPath, path)) {
-          return true;
-        }
-      }
-    }
-    return false;
   }
 
   /**
@@ -346,7 +329,6 @@ public final class MountTable implements JournalEntryIterable {
    * @param mountId the given ufs id
    * @return the mount information with this id or null if this mount id is not found
    */
-  @Nullable
   public MountInfo getMountInfo(long mountId) {
     try (LockResource r = new LockResource(mReadLock)) {
       for (Map.Entry<String, MountInfo> entry : mMountTable.entrySet()) {

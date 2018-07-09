@@ -12,8 +12,6 @@
 package alluxio.worker.file;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.fail;
 
 import alluxio.AlluxioURI;
 import alluxio.Configuration;
@@ -40,6 +38,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.MockRateLimiter;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -103,8 +102,7 @@ public final class FileDataManagerTest {
     writeFileWithBlocks(fileId, blockIds);
 
     // verify file persisted
-    FileDataManager.PersistedFilesInfo info = mManager.getPersistedFileInfos();
-    assertEquals(Arrays.asList(fileId), info.idList());
+    assertEquals(Arrays.asList(fileId), mManager.getPersistedFiles());
 
     // verify fastCopy called twice, once per block
     PowerMockito.verifyStatic(Mockito.times(2));
@@ -112,7 +110,7 @@ public final class FileDataManagerTest {
         Mockito.any(WritableByteChannel.class));
 
     // verify the file is not needed for another persistence
-    assertFalse(mManager.needPersistence(fileId));
+    Assert.assertFalse(mManager.needPersistence(fileId));
   }
 
   /**
@@ -122,8 +120,7 @@ public final class FileDataManagerTest {
   public void clearPersistedFiles() throws Exception {
     writeFileWithBlocks(1L, ImmutableList.of(2L, 3L));
     mManager.clearPersistedFiles(ImmutableList.of(1L));
-    FileDataManager.PersistedFilesInfo info = mManager.getPersistedFileInfos();
-    assertEquals(Collections.emptyList(), info.idList());
+    assertEquals(Collections.emptyList(), mManager.getPersistedFiles());
   }
 
   /**
@@ -211,7 +208,7 @@ public final class FileDataManagerTest {
         .thenThrow(new BlockDoesNotExistException("block 3 does not exist"));
     try {
       mManager.lockBlocks(fileId, blockIds);
-      fail("the lock should fail");
+      Assert.fail("the lock should fail");
     } catch (IOException e) {
       assertEquals(
           "failed to lock all blocks of file 1\n"
@@ -258,7 +255,7 @@ public final class FileDataManagerTest {
     mManager.lockBlocks(fileId, blockIds);
     try {
       mManager.persistFile(fileId, blockIds);
-      fail("the persist should fail");
+      Assert.fail("the persist should fail");
     } catch (IOException e) {
       assertEquals("the blocks of file1 are failed to persist\n"
           + "alluxio.exception.InvalidWorkerStateException: invalid worker\n", e.getMessage());

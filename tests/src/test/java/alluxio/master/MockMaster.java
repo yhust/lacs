@@ -13,7 +13,6 @@ package alluxio.master;
 
 import alluxio.Server;
 import alluxio.proto.journal.Journal;
-import alluxio.proto.journal.Journal.JournalEntry;
 
 import org.apache.thrift.TProcessor;
 
@@ -23,14 +22,13 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-
 import javax.annotation.Nullable;
 
 /**
  * A fake master implementation.
  */
 public final class MockMaster implements Master {
-  private Queue<JournalEntry> mEntries;
+  private Queue<Journal.JournalEntry> mEntries;
 
   public MockMaster() {
     mEntries = new ArrayDeque<>();

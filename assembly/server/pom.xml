@@ -15,7 +15,7 @@
   <parent>
     <artifactId>alluxio-assembly</artifactId>
     <groupId>org.alluxio</groupId>
-    <version>1.7.1-SNAPSHOT</version>
+    <version>1.6.2-SNAPSHOT</version>
   </parent>
   <artifactId>alluxio-assembly-server</artifactId>
   <packaging>jar</packaging>
@@ -56,6 +56,36 @@
     <dependency>
       <groupId>org.alluxio</groupId>
       <artifactId>alluxio-logserver</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.alluxio</groupId>
+      <artifactId>alluxio-underfs-gcs</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.alluxio</groupId>
+      <artifactId>alluxio-underfs-hdfs</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.alluxio</groupId>
+      <artifactId>alluxio-underfs-local</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.alluxio</groupId>
+      <artifactId>alluxio-underfs-oss</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.alluxio</groupId>
+      <artifactId>alluxio-underfs-s3a</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.alluxio</groupId>
+      <artifactId>alluxio-underfs-swift</artifactId>
       <version>${project.version}</version>
     </dependency>
   </dependencies>

@@ -73,8 +73,6 @@ public final class Constants {
 
   public static final int MAX_PORT = 65535;
 
-  public static final int MAX_TEST_PROCESS_LIFETIME_MS = 20 * Constants.MINUTE_MS;
-
   // Service versions should be incremented every time a backwards incompatible change occurs.
   public static final long BLOCK_MASTER_CLIENT_SERVICE_VERSION = 2;
   public static final long BLOCK_MASTER_WORKER_SERVICE_VERSION = 2;
@@ -106,15 +104,8 @@ public final class Constants {
   public static final String FILE_SYSTEM_WORKER_CLIENT_SERVICE_NAME = "FileSystemWorkerClient";
   public static final String KEY_VALUE_MASTER_CLIENT_SERVICE_NAME = "KeyValueMasterClient";
   public static final String KEY_VALUE_WORKER_CLIENT_SERVICE_NAME = "KeyValueWorkerClient";
-  public static final String UFS_INPUT_STREAM_CACHE_EXPIRATION = "UfsInputStreamCacheExpiration";
 
   public static final int DEFAULT_REGISTRY_GET_TIMEOUT_MS = 60 * SECOND_MS;
-
-  // Test-related constants
-  public static final int MAX_TEST_DURATION_MS = 10 * MINUTE_MS;
-  public static final String TEST_ARTIFACTS_DIR = "./target/artifacts";
-  public static final String TEST_LOG_DIR = "./target/logs";
-  public static final String TESTS_LOG = "./target/logs/tests.log";
 
   public static final String REST_API_PREFIX = "/api/v1";
 
@@ -126,8 +117,6 @@ public final class Constants {
   public static final String SWIFT_AUTH_KEYSTONE_V3 = "keystonev3";
   public static final String SWIFT_AUTH_SWIFTAUTH = "swiftauth";
 
-  public static final String LOCALITY_NODE = "node";
-  public static final String LOCALITY_RACK = "rack";
   public static final String MESOS_LOCAL_INSTALL = "LOCAL";
 
   /**
@@ -154,9 +143,6 @@ public final class Constants {
   public static final String S3_DELETE_IN_ALLUXIO_ONLY = "ALLUXIO_ONLY";
   public static final String S3_DELETE_IN_ALLUXIO_AND_UFS = "ALLUXIO_AND_UFS";
   public static final String S3_MULTIPART_TEMPORARY_DIR_SUFFIX = "_s3_multipart_tmp";
-
-  // Ufs fingerprint
-  public static final String INVALID_UFS_FINGERPRINT = "";
 
   private Constants() {} // prevent instantiation
 }

@@ -11,10 +11,6 @@
 
 package alluxio.master;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertNotEquals;
-
 import alluxio.AlluxioURI;
 import alluxio.Configuration;
 import alluxio.Constants;
@@ -38,6 +34,7 @@ import alluxio.util.io.PathUtils;
 
 import com.google.common.base.Function;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -116,11 +113,11 @@ public class MasterFaultToleranceIntegrationTest extends BaseIntegrationTest {
       AlluxioException {
     List<String> files = FileSystemTestUtils.listFiles(mFileSystem, AlluxioURI.SEPARATOR);
     Collections.sort(files);
-    assertEquals(answers.size(), files.size());
+    Assert.assertEquals(answers.size(), files.size());
     for (Pair<Long, AlluxioURI> answer : answers) {
-      assertEquals(answer.getSecond().toString(),
+      Assert.assertEquals(answer.getSecond().toString(),
           mFileSystem.getStatus(answer.getSecond()).getPath());
-      assertEquals(answer.getFirst().longValue(),
+      Assert.assertEquals(answer.getFirst().longValue(),
           mFileSystem.getStatus(answer.getSecond()).getFileId());
     }
   }
@@ -139,7 +136,7 @@ public class MasterFaultToleranceIntegrationTest extends BaseIntegrationTest {
       @Override
       public Boolean apply(Void aVoid) {
         try {
-          return store.getEligibleWorkers().size() >= numWorkers;
+          return store.getWorkerInfoList().size() >= numWorkers;
         } catch (Exception e) {
           return false;
         }
@@ -157,7 +154,7 @@ public class MasterFaultToleranceIntegrationTest extends BaseIntegrationTest {
     faultTestDataCheck(answer);
 
     for (int kills = 0; kills < MASTERS - 1; kills++) {
-      assertTrue(mMultiMasterLocalAlluxioCluster.stopLeader());
+      Assert.assertTrue(mMultiMasterLocalAlluxioCluster.stopLeader());
       mMultiMasterLocalAlluxioCluster.waitForNewMaster(CLUSTER_WAIT_TIMEOUT_MS);
       waitForWorkerRegistration(AlluxioBlockStore.create(), 1, CLUSTER_WAIT_TIMEOUT_MS);
       faultTestDataCheck(answer);
@@ -170,7 +167,7 @@ public class MasterFaultToleranceIntegrationTest extends BaseIntegrationTest {
     // Kill leader -> create files -> kill leader -> delete files, repeat.
     List<Pair<Long, AlluxioURI>> answer = new ArrayList<>();
     for (int kills = 0; kills < MASTERS - 1; kills++) {
-      assertTrue(mMultiMasterLocalAlluxioCluster.stopLeader());
+      Assert.assertTrue(mMultiMasterLocalAlluxioCluster.stopLeader());
       mMultiMasterLocalAlluxioCluster.waitForNewMaster(CLUSTER_WAIT_TIMEOUT_MS);
       waitForWorkerRegistration(AlluxioBlockStore.create(), 1, CLUSTER_WAIT_TIMEOUT_MS);
 
@@ -190,7 +187,7 @@ public class MasterFaultToleranceIntegrationTest extends BaseIntegrationTest {
       } else {
         // Create files.
 
-        assertEquals(0, answer.size());
+        Assert.assertEquals(0, answer.size());
         faultTestDataCheck(answer);
 
         faultTestDataCreation(new AlluxioURI(PathUtils.concatPath(
@@ -209,10 +206,10 @@ public class MasterFaultToleranceIntegrationTest extends BaseIntegrationTest {
       mFileSystem.createFile(new AlluxioURI(AlluxioURI.SEPARATOR + k), option).close();
     }
     List<String> files = FileSystemTestUtils.listFiles(mFileSystem, AlluxioURI.SEPARATOR);
-    assertEquals(clients, files.size());
+    Assert.assertEquals(clients, files.size());
     Collections.sort(files);
     for (int k = 0; k < clients; k++) {
-      assertEquals(AlluxioURI.SEPARATOR + k, files.get(k));
+      Assert.assertEquals(AlluxioURI.SEPARATOR + k, files.get(k));
     }
   }
 
@@ -222,7 +219,7 @@ public class MasterFaultToleranceIntegrationTest extends BaseIntegrationTest {
     // cluster should run properly.
 
     int leaderIndex = mMultiMasterLocalAlluxioCluster.getLeaderIndex();
-    assertNotEquals(-1, leaderIndex);
+    Assert.assertNotEquals(-1, leaderIndex);
 
     List<Pair<Long, AlluxioURI>> answer = new ArrayList<>();
     for (int k = 0; k < 5; k++) {
@@ -231,11 +228,11 @@ public class MasterFaultToleranceIntegrationTest extends BaseIntegrationTest {
     faultTestDataCheck(answer);
 
     for (int kills = 0; kills < MASTERS - 1; kills++) {
-      assertTrue(mMultiMasterLocalAlluxioCluster.stopStandby());
+      Assert.assertTrue(mMultiMasterLocalAlluxioCluster.stopStandby());
       CommonUtils.sleepMs(Constants.SECOND_MS * 2);
 
       // Leader should not change.
-      assertEquals(leaderIndex, mMultiMasterLocalAlluxioCluster.getLeaderIndex());
+      Assert.assertEquals(leaderIndex, mMultiMasterLocalAlluxioCluster.getLeaderIndex());
       // Cluster should still work.
       faultTestDataCheck(answer);
       faultTestDataCreation(new AlluxioURI("/data_kills_" + kills), answer);
@@ -245,15 +242,15 @@ public class MasterFaultToleranceIntegrationTest extends BaseIntegrationTest {
   @Test
   public void workerReRegister() throws Exception {
     AlluxioBlockStore store = AlluxioBlockStore.create();
-    assertEquals(WORKER_CAPACITY_BYTES, store.getCapacityBytes());
+    Assert.assertEquals(WORKER_CAPACITY_BYTES, store.getCapacityBytes());
 
     for (int kills = 0; kills < MASTERS - 1; kills++) {
-      assertTrue(mMultiMasterLocalAlluxioCluster.stopLeader());
+      Assert.assertTrue(mMultiMasterLocalAlluxioCluster.stopLeader());
       mMultiMasterLocalAlluxioCluster.waitForNewMaster(CLUSTER_WAIT_TIMEOUT_MS);
       waitForWorkerRegistration(store, 1, 1 * Constants.MINUTE_MS);
       // If worker is successfully re-registered, the capacity bytes should not change.
       long capacityFound = store.getCapacityBytes();
-      assertEquals(WORKER_CAPACITY_BYTES, capacityFound);
+      Assert.assertEquals(WORKER_CAPACITY_BYTES, capacityFound);
     }
   }
 
@@ -282,16 +279,16 @@ public class MasterFaultToleranceIntegrationTest extends BaseIntegrationTest {
       blockMaster1.workerRegister(workerId2a, Collections.EMPTY_LIST, Collections.EMPTY_MAP,
           Collections.EMPTY_MAP, Collections.EMPTY_MAP);
 
-      assertEquals(2, blockMaster1.getWorkerCount());
+      Assert.assertEquals(2, blockMaster1.getWorkerCount());
       // Worker heartbeats should return "Nothing"
-      assertEquals(CommandType.Nothing, blockMaster1
+      Assert.assertEquals(CommandType.Nothing, blockMaster1
           .workerHeartbeat(workerId1a, Collections.EMPTY_MAP, Collections.EMPTY_LIST,
               Collections.EMPTY_MAP).getCommandType());
-      assertEquals(CommandType.Nothing, blockMaster1
+      Assert.assertEquals(CommandType.Nothing, blockMaster1
           .workerHeartbeat(workerId2a, Collections.EMPTY_MAP, Collections.EMPTY_LIST,
               Collections.EMPTY_MAP).getCommandType());
 
-      assertTrue(cluster.stopLeader());
+      Assert.assertTrue(cluster.stopLeader());
       cluster.waitForNewMaster(CLUSTER_WAIT_TIMEOUT_MS);
 
       // Get the new block master, after the failover
@@ -299,7 +296,7 @@ public class MasterFaultToleranceIntegrationTest extends BaseIntegrationTest {
           .getMaster(BlockMaster.class);
 
       // Worker 2 tries to heartbeat (with original id), and should get "Register" in response.
-      assertEquals(CommandType.Register, blockMaster2
+      Assert.assertEquals(CommandType.Register, blockMaster2
           .workerHeartbeat(workerId2a, Collections.EMPTY_MAP, Collections.EMPTY_LIST,
               Collections.EMPTY_MAP).getCommandType());
 
@@ -310,7 +307,7 @@ public class MasterFaultToleranceIntegrationTest extends BaseIntegrationTest {
           Collections.EMPTY_MAP, Collections.EMPTY_MAP);
 
       // Worker 1 tries to heartbeat (with original id), and should get "Register" in response.
-      assertEquals(CommandType.Register, blockMaster2
+      Assert.assertEquals(CommandType.Register, blockMaster2
           .workerHeartbeat(workerId1a, Collections.EMPTY_MAP, Collections.EMPTY_LIST,
               Collections.EMPTY_MAP).getCommandType());
 

@@ -11,18 +11,16 @@
 
 package alluxio.client.file.options;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-
+import alluxio.CommonTestUtils;
 import alluxio.Configuration;
 import alluxio.Constants;
 import alluxio.PropertyKey;
 import alluxio.client.WriteType;
 import alluxio.security.authorization.Mode;
-import alluxio.test.util.CommonUtils;
 import alluxio.thrift.CreateDirectoryTOptions;
 import alluxio.wire.TtlAction;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Random;
@@ -37,12 +35,12 @@ public final class CreateDirectoryOptionsTest {
   @Test
   public void defaults() {
     CreateDirectoryOptions options = CreateDirectoryOptions.defaults();
-    assertFalse(options.isAllowExists());
-    assertFalse(options.isRecursive());
-    assertEquals(Constants.NO_TTL, options.getTtl());
-    assertEquals(TtlAction.DELETE, options.getTtlAction());
-    assertEquals(mDefaultWriteType, options.getWriteType());
-    assertEquals(Mode.defaults().applyDirectoryUMask(), options.getMode());
+    Assert.assertFalse(options.isAllowExists());
+    Assert.assertFalse(options.isRecursive());
+    Assert.assertEquals(Constants.NO_TTL, options.getTtl());
+    Assert.assertEquals(TtlAction.DELETE, options.getTtlAction());
+    Assert.assertEquals(mDefaultWriteType, options.getWriteType());
+    Assert.assertEquals(Mode.defaults().applyDirectoryUMask(), options.getMode());
   }
 
   /**
@@ -65,12 +63,12 @@ public final class CreateDirectoryOptionsTest {
     options.setRecursive(recursive);
     options.setWriteType(writeType);
 
-    assertEquals(allowExists, options.isAllowExists());
-    assertEquals(mode, options.getMode());
-    assertEquals(recursive, options.isRecursive());
-    assertEquals(ttl, options.getTtl());
-    assertEquals(TtlAction.FREE, options.getTtlAction());
-    assertEquals(writeType, options.getWriteType());
+    Assert.assertEquals(allowExists, options.isAllowExists());
+    Assert.assertEquals(mode, options.getMode());
+    Assert.assertEquals(recursive, options.isRecursive());
+    Assert.assertEquals(ttl, options.getTtl());
+    Assert.assertEquals(TtlAction.FREE, options.getTtlAction());
+    Assert.assertEquals(writeType, options.getWriteType());
   }
 
   /**
@@ -94,16 +92,16 @@ public final class CreateDirectoryOptionsTest {
     options.setWriteType(writeType);
 
     CreateDirectoryTOptions thriftOptions = options.toThrift();
-    assertEquals(allowExists, thriftOptions.isAllowExists());
-    assertEquals(recursive, thriftOptions.isRecursive());
-    assertEquals(writeType.isThrough(), thriftOptions.isPersisted());
-    assertEquals(ttl, thriftOptions.getTtl());
-    assertEquals(alluxio.thrift.TTtlAction.Free, thriftOptions.getTtlAction());
-    assertEquals(mode.toShort(), thriftOptions.getMode());
+    Assert.assertEquals(allowExists, thriftOptions.isAllowExists());
+    Assert.assertEquals(recursive, thriftOptions.isRecursive());
+    Assert.assertEquals(writeType.isThrough(), thriftOptions.isPersisted());
+    Assert.assertEquals(ttl, thriftOptions.getTtl());
+    Assert.assertEquals(alluxio.thrift.TTtlAction.Free, thriftOptions.getTtlAction());
+    Assert.assertEquals(mode.toShort(), thriftOptions.getMode());
   }
 
   @Test
   public void equalsTest() throws Exception {
-    CommonUtils.testEquals(CreateDirectoryOptions.class);
+    CommonTestUtils.testEquals(CreateDirectoryOptions.class);
   }
 }

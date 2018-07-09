@@ -113,6 +113,7 @@ public final class LocalAlluxioMaster {
     mMasterThread.setName("MasterThread-" + System.identityHashCode(mMasterThread));
     mMasterThread.start();
     mMasterProcess.waitForReady();
+
     mSecondaryMaster = new AlluxioSecondaryMaster();
     Runnable runSecondaryMaster = new Runnable() {
       @Override
@@ -147,8 +148,8 @@ public final class LocalAlluxioMaster {
    * Stops the master processes and cleans up client connections.
    */
   public void stop() throws Exception {
+    mSecondaryMaster.stop();
     if (mSecondaryMasterThread != null) {
-      mSecondaryMaster.stop();
       while (mSecondaryMasterThread.isAlive()) {
         LOG.info("Stopping thread {}.", mSecondaryMasterThread.getName());
         mSecondaryMasterThread.interrupt();
@@ -156,8 +157,8 @@ public final class LocalAlluxioMaster {
       }
       mSecondaryMasterThread = null;
     }
+    mMasterProcess.stop();
     if (mMasterThread != null) {
-      mMasterProcess.stop();
       while (mMasterThread.isAlive()) {
         LOG.info("Stopping thread {}.", mMasterThread.getName());
         mMasterThread.interrupt();

@@ -12,9 +12,8 @@
 package alluxio.master.file.options;
 
 import alluxio.thrift.CheckConsistencyTOptions;
-import alluxio.wire.CommonOptions;
 
-import com.google.common.base.Objects;
+import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 
 import javax.annotation.concurrent.NotThreadSafe;
 
@@ -23,17 +22,12 @@ import javax.annotation.concurrent.NotThreadSafe;
  */
 @NotThreadSafe
 public final class CheckConsistencyOptions {
-  private CommonOptions mCommonOptions;
-
   /**
-   * @return the default {@link CheckConsistencyOptions}
+   * @return the default {@link CompleteFileOptions}
    */
+  @SuppressFBWarnings("ISC_INSTANTIATE_STATIC_CLASS")
   public static CheckConsistencyOptions defaults() {
     return new CheckConsistencyOptions();
-  }
-
-  private CheckConsistencyOptions() {
-    mCommonOptions = CommonOptions.defaults();
   }
 
   /**
@@ -42,52 +36,7 @@ public final class CheckConsistencyOptions {
    *
    * @param options the {@link alluxio.thrift.CheckConsistencyTOptions} to use
    */
-  public CheckConsistencyOptions(CheckConsistencyTOptions options) {
-    this();
-    if (options != null) {
-      if (options.isSetCommonOptions()) {
-        mCommonOptions = new CommonOptions(options.getCommonOptions());
-      }
-    }
-  }
+  public CheckConsistencyOptions(CheckConsistencyTOptions options) {}
 
-  /**
-   * @return the common options
-   */
-  public CommonOptions getCommonOptions() {
-    return mCommonOptions;
-  }
-
-  /**
-   * @param options the common options
-   * @return the updated options object
-   */
-  public CheckConsistencyOptions setCommonOptions(CommonOptions options) {
-    mCommonOptions = options;
-    return this;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (!(o instanceof CheckConsistencyOptions)) {
-      return false;
-    }
-    CheckConsistencyOptions that = (CheckConsistencyOptions) o;
-    return Objects.equal(mCommonOptions, that.mCommonOptions);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hashCode(mCommonOptions);
-  }
-
-  @Override
-  public String toString() {
-    return Objects.toStringHelper(this)
-        .add("commonOptions", mCommonOptions)
-        .toString();
-  }
+  private CheckConsistencyOptions() {} // prevent instantiation
 }

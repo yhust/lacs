@@ -11,7 +11,7 @@
 
 package alluxio.underfs.options;
 
-import alluxio.test.util.CommonUtils;
+import alluxio.CommonTestUtils;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -53,6 +53,6 @@ public final class DeleteOptionsTest {
 
   @Test
   public void equalsTest() throws Exception {
-    CommonUtils.testEquals(DeleteOptions.class);
+    CommonTestUtils.testEquals(DeleteOptions.class);
   }
 }

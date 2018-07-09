@@ -12,8 +12,7 @@
 package alluxio.master.journal.noop;
 
 import alluxio.master.journal.Journal;
-import alluxio.master.journal.JournalContext;
-import alluxio.master.journal.NoopJournalContext;
+import alluxio.proto.journal.Journal.JournalEntry;
 
 import java.io.IOException;
 import java.net.URI;
@@ -39,9 +38,10 @@ public class NoopJournal implements Journal {
   }
 
   @Override
-  public JournalContext createJournalContext() {
-    return new NoopJournalContext();
-  }
+  public void write(JournalEntry entry) throws IOException {}
+
+  @Override
+  public void flush() throws IOException {}
 
   @Override
   public void close() throws IOException {}

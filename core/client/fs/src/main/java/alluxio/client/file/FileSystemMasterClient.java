@@ -13,24 +13,13 @@ package alluxio.client.file;
 
 import alluxio.AlluxioURI;
 import alluxio.Client;
-import alluxio.client.file.options.CheckConsistencyOptions;
-import alluxio.client.file.options.CompleteFileOptions;
-import alluxio.client.file.options.CreateDirectoryOptions;
-import alluxio.client.file.options.CreateFileOptions;
-import alluxio.client.file.options.DeleteOptions;
-import alluxio.client.file.options.FreeOptions;
-import alluxio.client.file.options.GetStatusOptions;
-import alluxio.client.file.options.ListStatusOptions;
-import alluxio.client.file.options.LoadMetadataOptions;
-import alluxio.client.file.options.MountOptions;
-import alluxio.client.file.options.RenameOptions;
-import alluxio.client.file.options.SetAttributeOptions;
-import alluxio.exception.status.AlluxioStatusException;
+import alluxio.client.file.options.*;
 import alluxio.exception.status.AlreadyExistsException;
 import alluxio.exception.status.NotFoundException;
 import alluxio.master.MasterClientConfig;
 import alluxio.wire.MountPointInfo;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -66,7 +55,7 @@ public interface FileSystemMasterClient extends Client {
    * @return a list of inconsistent files and directories
    */
   List<AlluxioURI> checkConsistency(AlluxioURI path, CheckConsistencyOptions options)
-      throws AlluxioStatusException;
+      throws IOException;
 
   /**
    * Creates a new directory.
@@ -75,8 +64,7 @@ public interface FileSystemMasterClient extends Client {
    * @param options method options
    * @throws AlreadyExistsException if the directory already exists
    */
-  void createDirectory(AlluxioURI path, CreateDirectoryOptions options)
-      throws AlluxioStatusException;
+  void createDirectory(AlluxioURI path, CreateDirectoryOptions options) throws IOException;
 
   /**
    * Creates a new file.
@@ -85,7 +73,7 @@ public interface FileSystemMasterClient extends Client {
    * @param options method options
    * @throws AlreadyExistsException if the file already exists
    */
-  void createFile(AlluxioURI path, CreateFileOptions options) throws AlluxioStatusException;
+  void createFile(AlluxioURI path, CreateFileOptions options) throws IOException;
 
   /**
    * Marks a file as completed.
@@ -93,7 +81,7 @@ public interface FileSystemMasterClient extends Client {
    * @param path the file path
    * @param options the method options
    */
-  void completeFile(AlluxioURI path, CompleteFileOptions options) throws AlluxioStatusException;
+  void completeFile(AlluxioURI path, CompleteFileOptions options) throws IOException;
 
   /**
    * Deletes a file or a directory.
@@ -101,7 +89,7 @@ public interface FileSystemMasterClient extends Client {
    * @param path the path to delete
    * @param options method options
    */
-  void delete(AlluxioURI path, DeleteOptions options) throws AlluxioStatusException;
+  void delete(AlluxioURI path, DeleteOptions options) throws IOException;
 
   /**
    * Frees a file.
@@ -110,7 +98,7 @@ public interface FileSystemMasterClient extends Client {
    * @param options method options
    * @throws NotFoundException if the path does not exist
    */
-  void free(AlluxioURI path, FreeOptions options) throws AlluxioStatusException;
+  void free(AlluxioURI path, FreeOptions options) throws IOException;
 
   /**
    * @param path the file path
@@ -118,13 +106,13 @@ public interface FileSystemMasterClient extends Client {
    * @return the file info for the given file id
    * @throws NotFoundException if the path does not exist
    */
-  URIStatus getStatus(AlluxioURI path, GetStatusOptions options) throws AlluxioStatusException;
+  URIStatus getStatus(AlluxioURI path, GetStatusOptions options) throws IOException;
 
   /**
    * @param path the file path
    * @return the next blockId for the file
    */
-  long getNewBlockIdForFile(AlluxioURI path) throws AlluxioStatusException;
+  long getNewBlockIdForFile(AlluxioURI path) throws IOException;
 
   /**
    * @param path the path to list
@@ -132,8 +120,7 @@ public interface FileSystemMasterClient extends Client {
    * @return the list of file information for the given path
    * @throws NotFoundException if the path does not exist
    */
-  List<URIStatus> listStatus(AlluxioURI path, ListStatusOptions options)
-      throws AlluxioStatusException;
+  List<URIStatus> listStatus(AlluxioURI path, ListStatusOptions options) throws IOException;
 
   /**
    * Loads the metadata of a file from the under file system.
@@ -144,7 +131,7 @@ public interface FileSystemMasterClient extends Client {
    * @throws NotFoundException if the path does not exist
    */
   @Deprecated
-  void loadMetadata(AlluxioURI path, LoadMetadataOptions options) throws AlluxioStatusException;
+  void loadMetadata(AlluxioURI path, LoadMetadataOptions options) throws IOException;
 
   /**
    * Mounts the given UFS path under the given Alluxio path.
@@ -153,15 +140,14 @@ public interface FileSystemMasterClient extends Client {
    * @param ufsPath the UFS path
    * @param options mount options
    */
-  void mount(AlluxioURI alluxioPath, AlluxioURI ufsPath, MountOptions options)
-      throws AlluxioStatusException;
+  void mount(AlluxioURI alluxioPath, AlluxioURI ufsPath, MountOptions options) throws IOException;
 
   /**
    * Lists all mount points and their corresponding under storage addresses.
    *
    * @return a map from String to {@link MountPointInfo}
    */
-  Map<String, MountPointInfo> getMountTable() throws AlluxioStatusException;
+  Map<String, MountPointInfo> getMountTable() throws IOException;
 
   /**
    * Renames a file or a directory.
@@ -170,17 +156,7 @@ public interface FileSystemMasterClient extends Client {
    * @param dst new file path
    * @throws NotFoundException if the path does not exist
    */
-  void rename(AlluxioURI src, AlluxioURI dst) throws AlluxioStatusException;
-
-  /**
-   * Renames a file or a directory.
-   *
-   * @param src the path to rename
-   * @param dst new file path
-   * @param options rename options
-   * @throws NotFoundException if the path does not exist
-   */
-  void rename(AlluxioURI src, AlluxioURI dst, RenameOptions options) throws AlluxioStatusException;
+  void rename(AlluxioURI src, AlluxioURI dst) throws IOException;
 
   /**
    * Sets the file or directory attributes.
@@ -189,19 +165,21 @@ public interface FileSystemMasterClient extends Client {
    * @param options the file or directory attribute options to be set
    * @throws NotFoundException if the path does not exist
    */
-  void setAttribute(AlluxioURI path, SetAttributeOptions options) throws AlluxioStatusException;
+  void setAttribute(AlluxioURI path, SetAttributeOptions options) throws IOException;
 
   /**
    * Schedules the async persistence of the given file.
    *
    * @param path the file path
    */
-  void scheduleAsyncPersist(AlluxioURI path) throws AlluxioStatusException;
+  void scheduleAsyncPersist(AlluxioURI path) throws IOException;
 
   /**
    * Unmounts the given Alluxio path.
    *
    * @param alluxioPath the Alluxio path
    */
-  void unmount(AlluxioURI alluxioPath) throws AlluxioStatusException;
+  void unmount(AlluxioURI alluxioPath) throws IOException;
+
+  boolean getLAToken(AlluxioURI path, GetLATokenOptions options) throws IOException;
 }

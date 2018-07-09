@@ -12,9 +12,7 @@
 package alluxio.worker;
 
 import alluxio.Process;
-import alluxio.network.TieredIdentityFactory;
 import alluxio.underfs.UfsManager;
-import alluxio.wire.TieredIdentity;
 import alluxio.wire.WorkerNetAddress;
 
 import java.net.InetSocketAddress;
@@ -34,15 +32,7 @@ public interface WorkerProcess extends Process {
      * @return a new instance of {@link WorkerProcess}
      */
     public static WorkerProcess create() {
-      return create(TieredIdentityFactory.localIdentity());
-    }
-
-    /**
-     * @param tieredIdentity tiered identity for the worker process
-     * @return a new instance of {@link WorkerProcess}
-     */
-    public static WorkerProcess create(TieredIdentity tieredIdentity) {
-      return new AlluxioWorkerProcess(tieredIdentity);
+      return new AlluxioWorkerProcess();
     }
 
     private Factory() {} // prevent instantiation

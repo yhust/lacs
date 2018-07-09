@@ -200,6 +200,8 @@ public class FileSystemMasterClientService {
      */
     public UnmountTResponse unmount(String alluxioPath, UnmountTOptions options) throws alluxio.thrift.AlluxioTException, org.apache.thrift.TException;
 
+    public GetLATokenTResponse getLAToken(String alluxioPath, GetLATokenTOptions option) throws alluxio.thrift.AlluxioTException, org.apache.thrift.TException;
+
   }
 
   public interface AsyncIface extends alluxio.thrift.AlluxioService .AsyncIface {
@@ -235,6 +237,8 @@ public class FileSystemMasterClientService {
     public void scheduleAsyncPersistence(String path, ScheduleAsyncPersistenceTOptions options, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
     public void unmount(String alluxioPath, UnmountTOptions options, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
+
+    public void getLAToken(String alluxioPath, GetLATokenTOptions option, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException;
 
   }
 
@@ -691,6 +695,33 @@ public class FileSystemMasterClientService {
         throw result.e;
       }
       throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "unmount failed: unknown result");
+    }
+
+    public GetLATokenTResponse getLAToken(String alluxioPath, GetLATokenTOptions option) throws alluxio.thrift.AlluxioTException, org.apache.thrift.TException
+    {
+      send_getLAToken(alluxioPath, option);
+      return recv_getLAToken();
+    }
+
+    public void send_getLAToken(String alluxioPath, GetLATokenTOptions option) throws org.apache.thrift.TException
+    {
+      getLAToken_args args = new getLAToken_args();
+      args.setAlluxioPath(alluxioPath);
+      args.setOption(option);
+      sendBase("getLAToken", args);
+    }
+
+    public GetLATokenTResponse recv_getLAToken() throws alluxio.thrift.AlluxioTException, org.apache.thrift.TException
+    {
+      getLAToken_result result = new getLAToken_result();
+      receiveBase(result, "getLAToken");
+      if (result.isSetSuccess()) {
+        return result.success;
+      }
+      if (result.e != null) {
+        throw result.e;
+      }
+      throw new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.MISSING_RESULT, "getLAToken failed: unknown result");
     }
 
   }
@@ -1280,6 +1311,41 @@ public class FileSystemMasterClientService {
       }
     }
 
+    public void getLAToken(String alluxioPath, GetLATokenTOptions option, org.apache.thrift.async.AsyncMethodCallback resultHandler) throws org.apache.thrift.TException {
+      checkReady();
+      getLAToken_call method_call = new getLAToken_call(alluxioPath, option, resultHandler, this, ___protocolFactory, ___transport);
+      this.___currentMethod = method_call;
+      ___manager.call(method_call);
+    }
+
+    public static class getLAToken_call extends org.apache.thrift.async.TAsyncMethodCall {
+      private String alluxioPath;
+      private GetLATokenTOptions option;
+      public getLAToken_call(String alluxioPath, GetLATokenTOptions option, org.apache.thrift.async.AsyncMethodCallback resultHandler, org.apache.thrift.async.TAsyncClient client, org.apache.thrift.protocol.TProtocolFactory protocolFactory, org.apache.thrift.transport.TNonblockingTransport transport) throws org.apache.thrift.TException {
+        super(client, protocolFactory, transport, resultHandler, false);
+        this.alluxioPath = alluxioPath;
+        this.option = option;
+      }
+
+      public void write_args(org.apache.thrift.protocol.TProtocol prot) throws org.apache.thrift.TException {
+        prot.writeMessageBegin(new org.apache.thrift.protocol.TMessage("getLAToken", org.apache.thrift.protocol.TMessageType.CALL, 0));
+        getLAToken_args args = new getLAToken_args();
+        args.setAlluxioPath(alluxioPath);
+        args.setOption(option);
+        args.write(prot);
+        prot.writeMessageEnd();
+      }
+
+      public GetLATokenTResponse getResult() throws alluxio.thrift.AlluxioTException, org.apache.thrift.TException {
+        if (getState() != org.apache.thrift.async.TAsyncMethodCall.State.RESPONSE_READ) {
+          throw new IllegalStateException("Method call not finished!");
+        }
+        org.apache.thrift.transport.TMemoryInputTransport memoryTransport = new org.apache.thrift.transport.TMemoryInputTransport(getFrameBuffer().array());
+        org.apache.thrift.protocol.TProtocol prot = client.getProtocolFactory().getProtocol(memoryTransport);
+        return (new Client(prot)).recv_getLAToken();
+      }
+    }
+
   }
 
   public static class Processor<I extends Iface> extends alluxio.thrift.AlluxioService.Processor<I> implements org.apache.thrift.TProcessor {
@@ -1309,6 +1375,7 @@ public class FileSystemMasterClientService {
       processMap.put("setAttribute", new setAttribute());
       processMap.put("scheduleAsyncPersistence", new scheduleAsyncPersistence());
       processMap.put("unmount", new unmount());
+      processMap.put("getLAToken", new getLAToken());
       return processMap;
     }
 
@@ -1696,6 +1763,30 @@ public class FileSystemMasterClientService {
       }
     }
 
+    public static class getLAToken<I extends Iface> extends org.apache.thrift.ProcessFunction<I, getLAToken_args> {
+      public getLAToken() {
+        super("getLAToken");
+      }
+
+      public getLAToken_args getEmptyArgsInstance() {
+        return new getLAToken_args();
+      }
+
+      protected boolean isOneway() {
+        return false;
+      }
+
+      public getLAToken_result getResult(I iface, getLAToken_args args) throws org.apache.thrift.TException {
+        getLAToken_result result = new getLAToken_result();
+        try {
+          result.success = iface.getLAToken(args.alluxioPath, args.option);
+        } catch (alluxio.thrift.AlluxioTException e) {
+          result.e = e;
+        }
+        return result;
+      }
+    }
+
   }
 
   public static class AsyncProcessor<I extends AsyncIface> extends alluxio.thrift.AlluxioService.AsyncProcessor<I> {
@@ -1725,6 +1816,7 @@ public class FileSystemMasterClientService {
       processMap.put("setAttribute", new setAttribute());
       processMap.put("scheduleAsyncPersistence", new scheduleAsyncPersistence());
       processMap.put("unmount", new unmount());
+      processMap.put("getLAToken", new getLAToken());
       return processMap;
     }
 
@@ -2637,6 +2729,63 @@ public class FileSystemMasterClientService {
 
       public void start(I iface, unmount_args args, org.apache.thrift.async.AsyncMethodCallback<UnmountTResponse> resultHandler) throws TException {
         iface.unmount(args.alluxioPath, args.options,resultHandler);
+      }
+    }
+
+    public static class getLAToken<I extends AsyncIface> extends org.apache.thrift.AsyncProcessFunction<I, getLAToken_args, GetLATokenTResponse> {
+      public getLAToken() {
+        super("getLAToken");
+      }
+
+      public getLAToken_args getEmptyArgsInstance() {
+        return new getLAToken_args();
+      }
+
+      public AsyncMethodCallback<GetLATokenTResponse> getResultHandler(final AsyncFrameBuffer fb, final int seqid) {
+        final org.apache.thrift.AsyncProcessFunction fcall = this;
+        return new AsyncMethodCallback<GetLATokenTResponse>() { 
+          public void onComplete(GetLATokenTResponse o) {
+            getLAToken_result result = new getLAToken_result();
+            result.success = o;
+            try {
+              fcall.sendResponse(fb,result, org.apache.thrift.protocol.TMessageType.REPLY,seqid);
+              return;
+            } catch (Exception e) {
+              LOGGER.error("Exception writing to internal frame buffer", e);
+            }
+            fb.close();
+          }
+          public void onError(Exception e) {
+            byte msgType = org.apache.thrift.protocol.TMessageType.REPLY;
+            org.apache.thrift.TBase msg;
+            getLAToken_result result = new getLAToken_result();
+            if (e instanceof alluxio.thrift.AlluxioTException) {
+                        result.e = (alluxio.thrift.AlluxioTException) e;
+                        result.setEIsSet(true);
+                        msg = result;
+            }
+             else 
+            {
+              msgType = org.apache.thrift.protocol.TMessageType.EXCEPTION;
+              msg = (org.apache.thrift.TBase)new org.apache.thrift.TApplicationException(org.apache.thrift.TApplicationException.INTERNAL_ERROR, e.getMessage());
+            }
+            try {
+              fcall.sendResponse(fb,msg,msgType,seqid);
+              return;
+            } catch (Exception ex) {
+              LOGGER.error("Exception writing to internal frame buffer", ex);
+            }
+            fb.close();
+          }
+        };
+      }
+
+      protected boolean isOneway() {
+        return false;
+      }
+
+      public void start(I iface, getLAToken_args args, org.apache.thrift.async.AsyncMethodCallback<GetLATokenTResponse> resultHandler) throws TException {
+        iface.getLAToken(args.alluxioPath, args.option,resultHandler);
       }
     }
 
@@ -18344,6 +18493,950 @@ public class FileSystemMasterClientService {
         BitSet incoming = iprot.readBitSet(2);
         if (incoming.get(0)) {
           struct.success = new UnmountTResponse();
+          struct.success.read(iprot);
+          struct.setSuccessIsSet(true);
+        }
+        if (incoming.get(1)) {
+          struct.e = new alluxio.thrift.AlluxioTException();
+          struct.e.read(iprot);
+          struct.setEIsSet(true);
+        }
+      }
+    }
+
+  }
+
+  public static class getLAToken_args implements org.apache.thrift.TBase<getLAToken_args, getLAToken_args._Fields>, java.io.Serializable, Cloneable, Comparable<getLAToken_args>   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("getLAToken_args");
+
+    private static final org.apache.thrift.protocol.TField ALLUXIO_PATH_FIELD_DESC = new org.apache.thrift.protocol.TField("alluxioPath", org.apache.thrift.protocol.TType.STRING, (short)1);
+    private static final org.apache.thrift.protocol.TField OPTION_FIELD_DESC = new org.apache.thrift.protocol.TField("option", org.apache.thrift.protocol.TType.STRUCT, (short)2);
+
+    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
+    static {
+      schemes.put(StandardScheme.class, new getLAToken_argsStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new getLAToken_argsTupleSchemeFactory());
+    }
+
+    private String alluxioPath; // required
+    private GetLATokenTOptions option; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      ALLUXIO_PATH((short)1, "alluxioPath"),
+      OPTION((short)2, "option");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 1: // ALLUXIO_PATH
+            return ALLUXIO_PATH;
+          case 2: // OPTION
+            return OPTION;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.ALLUXIO_PATH, new org.apache.thrift.meta_data.FieldMetaData("alluxioPath", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING)));
+      tmpMap.put(_Fields.OPTION, new org.apache.thrift.meta_data.FieldMetaData("option", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, GetLATokenTOptions.class)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(getLAToken_args.class, metaDataMap);
+    }
+
+    public getLAToken_args() {
+    }
+
+    public getLAToken_args(
+      String alluxioPath,
+      GetLATokenTOptions option)
+    {
+      this();
+      this.alluxioPath = alluxioPath;
+      this.option = option;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public getLAToken_args(getLAToken_args other) {
+      if (other.isSetAlluxioPath()) {
+        this.alluxioPath = other.alluxioPath;
+      }
+      if (other.isSetOption()) {
+        this.option = new GetLATokenTOptions(other.option);
+      }
+    }
+
+    public getLAToken_args deepCopy() {
+      return new getLAToken_args(this);
+    }
+
+    @Override
+    public void clear() {
+      this.alluxioPath = null;
+      this.option = null;
+    }
+
+    public String getAlluxioPath() {
+      return this.alluxioPath;
+    }
+
+    public getLAToken_args setAlluxioPath(String alluxioPath) {
+      this.alluxioPath = alluxioPath;
+      return this;
+    }
+
+    public void unsetAlluxioPath() {
+      this.alluxioPath = null;
+    }
+
+    /** Returns true if field alluxioPath is set (has been assigned a value) and false otherwise */
+    public boolean isSetAlluxioPath() {
+      return this.alluxioPath != null;
+    }
+
+    public void setAlluxioPathIsSet(boolean value) {
+      if (!value) {
+        this.alluxioPath = null;
+      }
+    }
+
+    public GetLATokenTOptions getOption() {
+      return this.option;
+    }
+
+    public getLAToken_args setOption(GetLATokenTOptions option) {
+      this.option = option;
+      return this;
+    }
+
+    public void unsetOption() {
+      this.option = null;
+    }
+
+    /** Returns true if field option is set (has been assigned a value) and false otherwise */
+    public boolean isSetOption() {
+      return this.option != null;
+    }
+
+    public void setOptionIsSet(boolean value) {
+      if (!value) {
+        this.option = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case ALLUXIO_PATH:
+        if (value == null) {
+          unsetAlluxioPath();
+        } else {
+          setAlluxioPath((String)value);
+        }
+        break;
+
+      case OPTION:
+        if (value == null) {
+          unsetOption();
+        } else {
+          setOption((GetLATokenTOptions)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case ALLUXIO_PATH:
+        return getAlluxioPath();
+
+      case OPTION:
+        return getOption();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case ALLUXIO_PATH:
+        return isSetAlluxioPath();
+      case OPTION:
+        return isSetOption();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof getLAToken_args)
+        return this.equals((getLAToken_args)that);
+      return false;
+    }
+
+    public boolean equals(getLAToken_args that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_alluxioPath = true && this.isSetAlluxioPath();
+      boolean that_present_alluxioPath = true && that.isSetAlluxioPath();
+      if (this_present_alluxioPath || that_present_alluxioPath) {
+        if (!(this_present_alluxioPath && that_present_alluxioPath))
+          return false;
+        if (!this.alluxioPath.equals(that.alluxioPath))
+          return false;
+      }
+
+      boolean this_present_option = true && this.isSetOption();
+      boolean that_present_option = true && that.isSetOption();
+      if (this_present_option || that_present_option) {
+        if (!(this_present_option && that_present_option))
+          return false;
+        if (!this.option.equals(that.option))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      List<Object> list = new ArrayList<Object>();
+
+      boolean present_alluxioPath = true && (isSetAlluxioPath());
+      list.add(present_alluxioPath);
+      if (present_alluxioPath)
+        list.add(alluxioPath);
+
+      boolean present_option = true && (isSetOption());
+      list.add(present_option);
+      if (present_option)
+        list.add(option);
+
+      return list.hashCode();
+    }
+
+    @Override
+    public int compareTo(getLAToken_args other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+
+      lastComparison = Boolean.valueOf(isSetAlluxioPath()).compareTo(other.isSetAlluxioPath());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetAlluxioPath()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.alluxioPath, other.alluxioPath);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetOption()).compareTo(other.isSetOption());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetOption()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.option, other.option);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("getLAToken_args(");
+      boolean first = true;
+
+      sb.append("alluxioPath:");
+      if (this.alluxioPath == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.alluxioPath);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("option:");
+      if (this.option == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.option);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+      // check for sub-struct validity
+      if (option != null) {
+        option.validate();
+      }
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class getLAToken_argsStandardSchemeFactory implements SchemeFactory {
+      public getLAToken_argsStandardScheme getScheme() {
+        return new getLAToken_argsStandardScheme();
+      }
+    }
+
+    private static class getLAToken_argsStandardScheme extends StandardScheme<getLAToken_args> {
+
+      public void read(org.apache.thrift.protocol.TProtocol iprot, getLAToken_args struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            case 1: // ALLUXIO_PATH
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRING) {
+                struct.alluxioPath = iprot.readString();
+                struct.setAlluxioPathIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 2: // OPTION
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.option = new GetLATokenTOptions();
+                struct.option.read(iprot);
+                struct.setOptionIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            default:
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      public void write(org.apache.thrift.protocol.TProtocol oprot, getLAToken_args struct) throws org.apache.thrift.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.alluxioPath != null) {
+          oprot.writeFieldBegin(ALLUXIO_PATH_FIELD_DESC);
+          oprot.writeString(struct.alluxioPath);
+          oprot.writeFieldEnd();
+        }
+        if (struct.option != null) {
+          oprot.writeFieldBegin(OPTION_FIELD_DESC);
+          struct.option.write(oprot);
+          oprot.writeFieldEnd();
+        }
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class getLAToken_argsTupleSchemeFactory implements SchemeFactory {
+      public getLAToken_argsTupleScheme getScheme() {
+        return new getLAToken_argsTupleScheme();
+      }
+    }
+
+    private static class getLAToken_argsTupleScheme extends TupleScheme<getLAToken_args> {
+
+      @Override
+      public void write(org.apache.thrift.protocol.TProtocol prot, getLAToken_args struct) throws org.apache.thrift.TException {
+        TTupleProtocol oprot = (TTupleProtocol) prot;
+        BitSet optionals = new BitSet();
+        if (struct.isSetAlluxioPath()) {
+          optionals.set(0);
+        }
+        if (struct.isSetOption()) {
+          optionals.set(1);
+        }
+        oprot.writeBitSet(optionals, 2);
+        if (struct.isSetAlluxioPath()) {
+          oprot.writeString(struct.alluxioPath);
+        }
+        if (struct.isSetOption()) {
+          struct.option.write(oprot);
+        }
+      }
+
+      @Override
+      public void read(org.apache.thrift.protocol.TProtocol prot, getLAToken_args struct) throws org.apache.thrift.TException {
+        TTupleProtocol iprot = (TTupleProtocol) prot;
+        BitSet incoming = iprot.readBitSet(2);
+        if (incoming.get(0)) {
+          struct.alluxioPath = iprot.readString();
+          struct.setAlluxioPathIsSet(true);
+        }
+        if (incoming.get(1)) {
+          struct.option = new GetLATokenTOptions();
+          struct.option.read(iprot);
+          struct.setOptionIsSet(true);
+        }
+      }
+    }
+
+  }
+
+  public static class getLAToken_result implements org.apache.thrift.TBase<getLAToken_result, getLAToken_result._Fields>, java.io.Serializable, Cloneable, Comparable<getLAToken_result>   {
+    private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("getLAToken_result");
+
+    private static final org.apache.thrift.protocol.TField SUCCESS_FIELD_DESC = new org.apache.thrift.protocol.TField("success", org.apache.thrift.protocol.TType.STRUCT, (short)0);
+    private static final org.apache.thrift.protocol.TField E_FIELD_DESC = new org.apache.thrift.protocol.TField("e", org.apache.thrift.protocol.TType.STRUCT, (short)1);
+
+    private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
+    static {
+      schemes.put(StandardScheme.class, new getLAToken_resultStandardSchemeFactory());
+      schemes.put(TupleScheme.class, new getLAToken_resultTupleSchemeFactory());
+    }
+
+    private GetLATokenTResponse success; // required
+    private alluxio.thrift.AlluxioTException e; // required
+
+    /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
+    public enum _Fields implements org.apache.thrift.TFieldIdEnum {
+      SUCCESS((short)0, "success"),
+      E((short)1, "e");
+
+      private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
+
+      static {
+        for (_Fields field : EnumSet.allOf(_Fields.class)) {
+          byName.put(field.getFieldName(), field);
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, or null if its not found.
+       */
+      public static _Fields findByThriftId(int fieldId) {
+        switch(fieldId) {
+          case 0: // SUCCESS
+            return SUCCESS;
+          case 1: // E
+            return E;
+          default:
+            return null;
+        }
+      }
+
+      /**
+       * Find the _Fields constant that matches fieldId, throwing an exception
+       * if it is not found.
+       */
+      public static _Fields findByThriftIdOrThrow(int fieldId) {
+        _Fields fields = findByThriftId(fieldId);
+        if (fields == null) throw new IllegalArgumentException("Field " + fieldId + " doesn't exist!");
+        return fields;
+      }
+
+      /**
+       * Find the _Fields constant that matches name, or null if its not found.
+       */
+      public static _Fields findByName(String name) {
+        return byName.get(name);
+      }
+
+      private final short _thriftId;
+      private final String _fieldName;
+
+      _Fields(short thriftId, String fieldName) {
+        _thriftId = thriftId;
+        _fieldName = fieldName;
+      }
+
+      public short getThriftFieldId() {
+        return _thriftId;
+      }
+
+      public String getFieldName() {
+        return _fieldName;
+      }
+    }
+
+    // isset id assignments
+    public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
+    static {
+      Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
+      tmpMap.put(_Fields.SUCCESS, new org.apache.thrift.meta_data.FieldMetaData("success", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, GetLATokenTResponse.class)));
+      tmpMap.put(_Fields.E, new org.apache.thrift.meta_data.FieldMetaData("e", org.apache.thrift.TFieldRequirementType.DEFAULT, 
+          new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRUCT)));
+      metaDataMap = Collections.unmodifiableMap(tmpMap);
+      org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(getLAToken_result.class, metaDataMap);
+    }
+
+    public getLAToken_result() {
+    }
+
+    public getLAToken_result(
+      GetLATokenTResponse success,
+      alluxio.thrift.AlluxioTException e)
+    {
+      this();
+      this.success = success;
+      this.e = e;
+    }
+
+    /**
+     * Performs a deep copy on <i>other</i>.
+     */
+    public getLAToken_result(getLAToken_result other) {
+      if (other.isSetSuccess()) {
+        this.success = new GetLATokenTResponse(other.success);
+      }
+      if (other.isSetE()) {
+        this.e = new alluxio.thrift.AlluxioTException(other.e);
+      }
+    }
+
+    public getLAToken_result deepCopy() {
+      return new getLAToken_result(this);
+    }
+
+    @Override
+    public void clear() {
+      this.success = null;
+      this.e = null;
+    }
+
+    public GetLATokenTResponse getSuccess() {
+      return this.success;
+    }
+
+    public getLAToken_result setSuccess(GetLATokenTResponse success) {
+      this.success = success;
+      return this;
+    }
+
+    public void unsetSuccess() {
+      this.success = null;
+    }
+
+    /** Returns true if field success is set (has been assigned a value) and false otherwise */
+    public boolean isSetSuccess() {
+      return this.success != null;
+    }
+
+    public void setSuccessIsSet(boolean value) {
+      if (!value) {
+        this.success = null;
+      }
+    }
+
+    public alluxio.thrift.AlluxioTException getE() {
+      return this.e;
+    }
+
+    public getLAToken_result setE(alluxio.thrift.AlluxioTException e) {
+      this.e = e;
+      return this;
+    }
+
+    public void unsetE() {
+      this.e = null;
+    }
+
+    /** Returns true if field e is set (has been assigned a value) and false otherwise */
+    public boolean isSetE() {
+      return this.e != null;
+    }
+
+    public void setEIsSet(boolean value) {
+      if (!value) {
+        this.e = null;
+      }
+    }
+
+    public void setFieldValue(_Fields field, Object value) {
+      switch (field) {
+      case SUCCESS:
+        if (value == null) {
+          unsetSuccess();
+        } else {
+          setSuccess((GetLATokenTResponse)value);
+        }
+        break;
+
+      case E:
+        if (value == null) {
+          unsetE();
+        } else {
+          setE((alluxio.thrift.AlluxioTException)value);
+        }
+        break;
+
+      }
+    }
+
+    public Object getFieldValue(_Fields field) {
+      switch (field) {
+      case SUCCESS:
+        return getSuccess();
+
+      case E:
+        return getE();
+
+      }
+      throw new IllegalStateException();
+    }
+
+    /** Returns true if field corresponding to fieldID is set (has been assigned a value) and false otherwise */
+    public boolean isSet(_Fields field) {
+      if (field == null) {
+        throw new IllegalArgumentException();
+      }
+
+      switch (field) {
+      case SUCCESS:
+        return isSetSuccess();
+      case E:
+        return isSetE();
+      }
+      throw new IllegalStateException();
+    }
+
+    @Override
+    public boolean equals(Object that) {
+      if (that == null)
+        return false;
+      if (that instanceof getLAToken_result)
+        return this.equals((getLAToken_result)that);
+      return false;
+    }
+
+    public boolean equals(getLAToken_result that) {
+      if (that == null)
+        return false;
+
+      boolean this_present_success = true && this.isSetSuccess();
+      boolean that_present_success = true && that.isSetSuccess();
+      if (this_present_success || that_present_success) {
+        if (!(this_present_success && that_present_success))
+          return false;
+        if (!this.success.equals(that.success))
+          return false;
+      }
+
+      boolean this_present_e = true && this.isSetE();
+      boolean that_present_e = true && that.isSetE();
+      if (this_present_e || that_present_e) {
+        if (!(this_present_e && that_present_e))
+          return false;
+        if (!this.e.equals(that.e))
+          return false;
+      }
+
+      return true;
+    }
+
+    @Override
+    public int hashCode() {
+      List<Object> list = new ArrayList<Object>();
+
+      boolean present_success = true && (isSetSuccess());
+      list.add(present_success);
+      if (present_success)
+        list.add(success);
+
+      boolean present_e = true && (isSetE());
+      list.add(present_e);
+      if (present_e)
+        list.add(e);
+
+      return list.hashCode();
+    }
+
+    @Override
+    public int compareTo(getLAToken_result other) {
+      if (!getClass().equals(other.getClass())) {
+        return getClass().getName().compareTo(other.getClass().getName());
+      }
+
+      int lastComparison = 0;
+
+      lastComparison = Boolean.valueOf(isSetSuccess()).compareTo(other.isSetSuccess());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetSuccess()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.success, other.success);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      lastComparison = Boolean.valueOf(isSetE()).compareTo(other.isSetE());
+      if (lastComparison != 0) {
+        return lastComparison;
+      }
+      if (isSetE()) {
+        lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.e, other.e);
+        if (lastComparison != 0) {
+          return lastComparison;
+        }
+      }
+      return 0;
+    }
+
+    public _Fields fieldForId(int fieldId) {
+      return _Fields.findByThriftId(fieldId);
+    }
+
+    public void read(org.apache.thrift.protocol.TProtocol iprot) throws org.apache.thrift.TException {
+      schemes.get(iprot.getScheme()).getScheme().read(iprot, this);
+    }
+
+    public void write(org.apache.thrift.protocol.TProtocol oprot) throws org.apache.thrift.TException {
+      schemes.get(oprot.getScheme()).getScheme().write(oprot, this);
+      }
+
+    @Override
+    public String toString() {
+      StringBuilder sb = new StringBuilder("getLAToken_result(");
+      boolean first = true;
+
+      sb.append("success:");
+      if (this.success == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.success);
+      }
+      first = false;
+      if (!first) sb.append(", ");
+      sb.append("e:");
+      if (this.e == null) {
+        sb.append("null");
+      } else {
+        sb.append(this.e);
+      }
+      first = false;
+      sb.append(")");
+      return sb.toString();
+    }
+
+    public void validate() throws org.apache.thrift.TException {
+      // check for required fields
+      // check for sub-struct validity
+      if (success != null) {
+        success.validate();
+      }
+    }
+
+    private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
+      try {
+        write(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(out)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private void readObject(java.io.ObjectInputStream in) throws java.io.IOException, ClassNotFoundException {
+      try {
+        read(new org.apache.thrift.protocol.TCompactProtocol(new org.apache.thrift.transport.TIOStreamTransport(in)));
+      } catch (org.apache.thrift.TException te) {
+        throw new java.io.IOException(te);
+      }
+    }
+
+    private static class getLAToken_resultStandardSchemeFactory implements SchemeFactory {
+      public getLAToken_resultStandardScheme getScheme() {
+        return new getLAToken_resultStandardScheme();
+      }
+    }
+
+    private static class getLAToken_resultStandardScheme extends StandardScheme<getLAToken_result> {
+
+      public void read(org.apache.thrift.protocol.TProtocol iprot, getLAToken_result struct) throws org.apache.thrift.TException {
+        org.apache.thrift.protocol.TField schemeField;
+        iprot.readStructBegin();
+        while (true)
+        {
+          schemeField = iprot.readFieldBegin();
+          if (schemeField.type == org.apache.thrift.protocol.TType.STOP) { 
+            break;
+          }
+          switch (schemeField.id) {
+            case 0: // SUCCESS
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.success = new GetLATokenTResponse();
+                struct.success.read(iprot);
+                struct.setSuccessIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            case 1: // E
+              if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
+                struct.e = new alluxio.thrift.AlluxioTException();
+                struct.e.read(iprot);
+                struct.setEIsSet(true);
+              } else { 
+                org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+              }
+              break;
+            default:
+              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
+          }
+          iprot.readFieldEnd();
+        }
+        iprot.readStructEnd();
+
+        // check for required fields of primitive type, which can't be checked in the validate method
+        struct.validate();
+      }
+
+      public void write(org.apache.thrift.protocol.TProtocol oprot, getLAToken_result struct) throws org.apache.thrift.TException {
+        struct.validate();
+
+        oprot.writeStructBegin(STRUCT_DESC);
+        if (struct.success != null) {
+          oprot.writeFieldBegin(SUCCESS_FIELD_DESC);
+          struct.success.write(oprot);
+          oprot.writeFieldEnd();
+        }
+        if (struct.e != null) {
+          oprot.writeFieldBegin(E_FIELD_DESC);
+          struct.e.write(oprot);
+          oprot.writeFieldEnd();
+        }
+        oprot.writeFieldStop();
+        oprot.writeStructEnd();
+      }
+
+    }
+
+    private static class getLAToken_resultTupleSchemeFactory implements SchemeFactory {
+      public getLAToken_resultTupleScheme getScheme() {
+        return new getLAToken_resultTupleScheme();
+      }
+    }
+
+    private static class getLAToken_resultTupleScheme extends TupleScheme<getLAToken_result> {
+
+      @Override
+      public void write(org.apache.thrift.protocol.TProtocol prot, getLAToken_result struct) throws org.apache.thrift.TException {
+        TTupleProtocol oprot = (TTupleProtocol) prot;
+        BitSet optionals = new BitSet();
+        if (struct.isSetSuccess()) {
+          optionals.set(0);
+        }
+        if (struct.isSetE()) {
+          optionals.set(1);
+        }
+        oprot.writeBitSet(optionals, 2);
+        if (struct.isSetSuccess()) {
+          struct.success.write(oprot);
+        }
+        if (struct.isSetE()) {
+          struct.e.write(oprot);
+        }
+      }
+
+      @Override
+      public void read(org.apache.thrift.protocol.TProtocol prot, getLAToken_result struct) throws org.apache.thrift.TException {
+        TTupleProtocol iprot = (TTupleProtocol) prot;
+        BitSet incoming = iprot.readBitSet(2);
+        if (incoming.get(0)) {
+          struct.success = new GetLATokenTResponse();
           struct.success.read(iprot);
           struct.setSuccessIsSet(true);
         }

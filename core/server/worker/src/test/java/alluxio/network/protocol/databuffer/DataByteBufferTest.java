@@ -11,13 +11,11 @@
 
 package alluxio.network.protocol.databuffer;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
-
 import alluxio.util.io.BufferUtils;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.FileRegion;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -46,7 +44,7 @@ public class DataByteBufferTest {
   public void nettyOutput() {
     DataByteBuffer data = new DataByteBuffer(mBuffer, LENGTH);
     Object output = data.getNettyOutput();
-    assertTrue(output instanceof ByteBuf || output instanceof FileRegion);
+    Assert.assertTrue(output instanceof ByteBuf || output instanceof FileRegion);
   }
 
   /**
@@ -55,7 +53,7 @@ public class DataByteBufferTest {
   @Test
   public void length() {
     DataByteBuffer data = new DataByteBuffer(mBuffer, LENGTH);
-    assertEquals(LENGTH, data.getLength());
+    Assert.assertEquals(LENGTH, data.getLength());
   }
 
   /**
@@ -65,7 +63,7 @@ public class DataByteBufferTest {
   public void readOnlyByteBuffer() {
     DataByteBuffer data = new DataByteBuffer(mBuffer, LENGTH);
     ByteBuffer readOnlyBuffer = data.getReadOnlyByteBuffer();
-    assertTrue(readOnlyBuffer.isReadOnly());
-    assertEquals(mBuffer, readOnlyBuffer);
+    Assert.assertTrue(readOnlyBuffer.isReadOnly());
+    Assert.assertEquals(mBuffer, readOnlyBuffer);
   }
 }

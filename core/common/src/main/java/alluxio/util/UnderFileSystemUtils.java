@@ -15,6 +15,8 @@ import alluxio.AlluxioURI;
 import alluxio.underfs.UnderFileSystem;
 import alluxio.underfs.options.DeleteOptions;
 
+import com.google.common.base.Throwables;
+
 import java.io.IOException;
 import java.io.OutputStream;
 
@@ -77,7 +79,7 @@ public final class UnderFileSystemUtils {
         ufs.deleteFile(path);
       }
     } catch (IOException e) {
-      throw new RuntimeException(e);
+      throw Throwables.propagate(e);
     }
   }
 
@@ -135,26 +137,6 @@ public final class UnderFileSystemUtils {
    */
   public static String getBucketName(AlluxioURI uri) {
     return uri.getAuthority();
-  }
-
-  /**
-   * Returns an approximate content hash, using the length and modification time.
-   *
-   * @param length the content length
-   * @param modTime the content last modification time
-   * @return the content hash
-   */
-  public static String approximateContentHash(long length, long modTime) {
-    // approximating the content hash with the file length and modtime.
-    StringBuilder sb = new StringBuilder();
-    sb.append('(');
-    sb.append("len:");
-    sb.append(length);
-    sb.append(", ");
-    sb.append("modtime:");
-    sb.append(modTime);
-    sb.append(')');
-    return sb.toString();
   }
 
   private UnderFileSystemUtils() {} // prevent instantiation

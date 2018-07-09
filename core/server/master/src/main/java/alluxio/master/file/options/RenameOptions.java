@@ -11,9 +11,6 @@
 
 package alluxio.master.file.options;
 
-import alluxio.thrift.RenameTOptions;
-import alluxio.wire.CommonOptions;
-
 import com.google.common.base.Objects;
 
 import javax.annotation.concurrent.NotThreadSafe;
@@ -23,7 +20,6 @@ import javax.annotation.concurrent.NotThreadSafe;
  */
 @NotThreadSafe
 public final class RenameOptions {
-  private CommonOptions mCommonOptions;
   private long mOperationTimeMs;
 
   /**
@@ -34,28 +30,7 @@ public final class RenameOptions {
   }
 
   private RenameOptions() {
-    super();
-    mCommonOptions = CommonOptions.defaults();
     mOperationTimeMs = System.currentTimeMillis();
-  }
-
-  /**
-   * @param options the thrift options to create from
-   */
-  public RenameOptions(RenameTOptions options) {
-    this();
-    if (options != null) {
-      if (options.isSetCommonOptions()) {
-        mCommonOptions = new CommonOptions(options.getCommonOptions());
-      }
-    }
-  }
-
-  /**
-   * @return the common options
-   */
-  public CommonOptions getCommonOptions() {
-    return mCommonOptions;
   }
 
   /**
@@ -63,15 +38,6 @@ public final class RenameOptions {
    */
   public long getOperationTimeMs() {
     return mOperationTimeMs;
-  }
-
-  /**
-   * @param options the common options
-   * @return the updated options object
-   */
-  public RenameOptions setCommonOptions(CommonOptions options) {
-    mCommonOptions = options;
-    return this;
   }
 
   /**
@@ -92,19 +58,17 @@ public final class RenameOptions {
       return false;
     }
     RenameOptions that = (RenameOptions) o;
-    return Objects.equal(mCommonOptions, that.mCommonOptions)
-        && mOperationTimeMs == that.mOperationTimeMs;
+    return mOperationTimeMs == that.mOperationTimeMs;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(mOperationTimeMs, mCommonOptions);
+    return Objects.hashCode(mOperationTimeMs);
   }
 
   @Override
   public String toString() {
     return Objects.toStringHelper(this)
-        .add("commonOptions", mCommonOptions)
         .add("operationTimeMs", mOperationTimeMs)
         .toString();
   }

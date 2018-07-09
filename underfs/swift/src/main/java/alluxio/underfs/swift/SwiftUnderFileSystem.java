@@ -24,8 +24,8 @@ import alluxio.underfs.swift.http.SwiftDirectClient;
 import alluxio.util.UnderFileSystemUtils;
 import alluxio.util.io.PathUtils;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.SerializationConfig;
 import org.javaswift.joss.client.factory.AccountConfig;
 import org.javaswift.joss.client.factory.AccountFactory;
 import org.javaswift.joss.client.factory.AuthenticationMethod;
@@ -157,7 +157,7 @@ public class SwiftUnderFileSystem extends ObjectUnderFileSystem {
     }
 
     ObjectMapper mapper = new ObjectMapper();
-    mapper.configure(SerializationFeature.WRAP_ROOT_VALUE, true);
+    mapper.configure(SerializationConfig.Feature.WRAP_ROOT_VALUE, true);
     mContainerName = containerName;
     mAccount = new AccountFactory(config).createAccount();
     // Do not allow container cache to avoid stale directory listings
@@ -313,8 +313,7 @@ public class SwiftUnderFileSystem extends ObjectUnderFileSystem {
       ObjectStatus[] res = new ObjectStatus[objects.size()];
       for (DirectoryOrObject object : objects) {
         if (object.isObject()) {
-          res[i++] = new ObjectStatus(object.getName(), object.getAsObject().getEtag(),
-              object.getAsObject().getContentLength(),
+          res[i++] = new ObjectStatus(object.getName(), object.getAsObject().getContentLength(),
               object.getAsObject().getLastModifiedAsDate().getTime());
         } else {
           res[i++] = new ObjectStatus(object.getName());
@@ -345,8 +344,7 @@ public class SwiftUnderFileSystem extends ObjectUnderFileSystem {
     Container container = mAccount.getContainer(mContainerName);
     StoredObject meta = container.getObject(key);
     if (meta != null && meta.exists()) {
-      return new ObjectStatus(key, meta.getEtag(), meta.getContentLength(),
-          meta.getLastModifiedAsDate().getTime());
+      return new ObjectStatus(key, meta.getContentLength(), meta.getLastModifiedAsDate().getTime());
     }
     return null;
   }

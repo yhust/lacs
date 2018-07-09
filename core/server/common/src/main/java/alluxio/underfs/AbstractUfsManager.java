@@ -16,6 +16,7 @@ import alluxio.Configuration;
 import alluxio.PropertyKey;
 import alluxio.exception.status.NotFoundException;
 import alluxio.exception.status.UnavailableException;
+import alluxio.thrift.UfsInfo;
 import alluxio.util.IdUtils;
 
 import com.google.common.base.Objects;
@@ -34,8 +35,6 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public abstract class AbstractUfsManager implements UfsManager {
   private static final Logger LOG = LoggerFactory.getLogger(AbstractUfsManager.class);
-
-  private final Object mLock = new Object();
 
   /**
    * The key of the UFS cache.
@@ -118,25 +117,28 @@ public abstract class AbstractUfsManager implements UfsManager {
     if (cachedFs != null) {
       return cachedFs;
     }
-    // On cache miss, synchronize the creation to ensure ufs is only created once
-    synchronized (mLock) {
-      cachedFs = mUnderFileSystemMap.get(key);
-      if (cachedFs != null) {
-        return cachedFs;
-      }
-      UnderFileSystem fs = UnderFileSystem.Factory.create(ufsUri.toString(), ufsConf);
-      mUnderFileSystemMap.putIfAbsent(key, fs);
+    UnderFileSystem fs = UnderFileSystem.Factory.create(ufsUri.toString(), ufsConf);
+    cachedFs = mUnderFileSystemMap.putIfAbsent(key, fs);
+    if (cachedFs == null) {
+      // above insert is successful
       mCloser.register(fs);
       return fs;
     }
+    try {
+      fs.close();
+    } catch (IOException e) {
+      // Cannot close the created ufs which fails the race.
+      LOG.error("Failed to close UFS {}", fs, e);
+    }
+    return cachedFs;
   }
 
   @Override
   public void addMount(long mountId, final AlluxioURI ufsUri,
       final UnderFileSystemConfiguration ufsConf) {
     Preconditions.checkArgument(mountId != IdUtils.INVALID_MOUNT_ID, "mountId");
-    Preconditions.checkNotNull(ufsUri, "ufsUri");
-    Preconditions.checkNotNull(ufsConf, "ufsConf");
+    Preconditions.checkArgument(ufsUri != null, "ufsUri");
+    Preconditions.checkArgument(ufsConf != null, "ufsConf");
     mMountIdToUfsInfoMap.put(mountId, new UfsInfo(new Supplier<UnderFileSystem>() {
       @Override
       public UnderFileSystem get() {

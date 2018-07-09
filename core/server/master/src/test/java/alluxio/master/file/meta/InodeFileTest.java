@@ -11,10 +11,6 @@
 
 package alluxio.master.file.meta;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import alluxio.Constants;
 import alluxio.exception.BlockInfoException;
 import alluxio.exception.ExceptionMessage;
@@ -47,12 +43,12 @@ public final class InodeFileTest extends AbstractInodeTest {
   public void equals() {
     InodeFile inode1 = createInodeFile(1);
     // self equal
-    assertEquals(inode1, inode1);
+    Assert.assertEquals(inode1, inode1);
     InodeFile inode2 = createInodeFile(1);
     // equal with same id
-    assertEquals(inode1, inode2);
+    Assert.assertEquals(inode1, inode2);
     InodeFile inode3 = createInodeFile(3);
-    assertFalse(inode1.equals(inode3));
+    Assert.assertFalse(inode1.equals(inode3));
   }
 
   /**
@@ -61,7 +57,7 @@ public final class InodeFileTest extends AbstractInodeTest {
   @Test
   public void getId() {
     InodeFile inode1 = createInodeFile(1);
-    assertEquals(createInodeFileId(1), inode1.getId());
+    Assert.assertEquals(createInodeFileId(1), inode1.getId());
   }
 
   /**
@@ -71,7 +67,7 @@ public final class InodeFileTest extends AbstractInodeTest {
   public void setLength() {
     InodeFile inodeFile = createInodeFile(1);
     inodeFile.setLength(LENGTH);
-    assertEquals(LENGTH, inodeFile.getLength());
+    Assert.assertEquals(LENGTH, inodeFile.getLength());
   }
 
   /**
@@ -122,7 +118,7 @@ public final class InodeFileTest extends AbstractInodeTest {
   @Test
   public void getBlockSizeBytes() {
     InodeFile inode1 = createInodeFile(1);
-    assertEquals(Constants.KB, inode1.getBlockSizeBytes());
+    Assert.assertEquals(Constants.KB, inode1.getBlockSizeBytes());
   }
 
   /**
@@ -137,20 +133,20 @@ public final class InodeFileTest extends AbstractInodeTest {
       blockIds.add(inodeFile.getNewBlockId());
     }
     for (int i = 0; i < NUM_BLOCKS; i++) {
-      assertEquals(blockIds.get(i), (Long) inodeFile.getBlockIdByIndex(i));
+      Assert.assertEquals(blockIds.get(i), (Long) inodeFile.getBlockIdByIndex(i));
     }
     try {
       inodeFile.getBlockIdByIndex(-1);
       Assert.fail();
     } catch (BlockInfoException e) {
-      assertEquals(String.format("blockIndex -1 is out of range. File blocks: %d",
+      Assert.assertEquals(String.format("blockIndex -1 is out of range. File blocks: %d",
           NUM_BLOCKS), e.getMessage());
     }
     try {
       inodeFile.getBlockIdByIndex(NUM_BLOCKS);
       Assert.fail();
     } catch (BlockInfoException e) {
-      assertEquals(String.format("blockIndex %d is out of range. File blocks: %d",
+      Assert.assertEquals(String.format("blockIndex %d is out of range. File blocks: %d",
           NUM_BLOCKS, NUM_BLOCKS), e.getMessage());
     }
   }
@@ -161,10 +157,10 @@ public final class InodeFileTest extends AbstractInodeTest {
   @Test
   public void setCompleted() {
     InodeFile inode1 = createInodeFile(1);
-    assertFalse(inode1.isCompleted());
+    Assert.assertFalse(inode1.isCompleted());
 
     inode1.setCompleted(true);
-    assertTrue(inode1.isCompleted());
+    Assert.assertTrue(inode1.isCompleted());
   }
 
   /**
@@ -173,9 +169,9 @@ public final class InodeFileTest extends AbstractInodeTest {
   @Test
   public void permissionStatus() {
     InodeFile inode1 = createInodeFile(1);
-    assertEquals(TEST_OWNER, inode1.getOwner());
-    assertEquals(TEST_GROUP, inode1.getGroup());
-    assertEquals(Mode.defaults().applyFileUMask().toShort(), inode1.getMode());
+    Assert.assertEquals(TEST_OWNER, inode1.getOwner());
+    Assert.assertEquals(TEST_GROUP, inode1.getGroup());
+    Assert.assertEquals(Mode.defaults().applyFileUMask().toShort(), inode1.getMode());
   }
 
   /**
@@ -184,14 +180,14 @@ public final class InodeFileTest extends AbstractInodeTest {
   @Test
   public void lockRead() {
     InodeFile inode1 = createInodeFile(1);
-    assertFalse(inode1.isReadLocked());
-    assertFalse(inode1.isWriteLocked());
+    Assert.assertFalse(inode1.isReadLocked());
+    Assert.assertFalse(inode1.isWriteLocked());
     inode1.lockRead();
-    assertTrue(inode1.isReadLocked());
-    assertFalse(inode1.isWriteLocked());
+    Assert.assertTrue(inode1.isReadLocked());
+    Assert.assertFalse(inode1.isWriteLocked());
     inode1.unlockRead();
-    assertFalse(inode1.isReadLocked());
-    assertFalse(inode1.isWriteLocked());
+    Assert.assertFalse(inode1.isReadLocked());
+    Assert.assertFalse(inode1.isWriteLocked());
   }
 
   /**
@@ -203,7 +199,7 @@ public final class InodeFileTest extends AbstractInodeTest {
     InodeDirectory dir1 = createInodeDirectory();
     inode1.setParentId(dir1.getId());
     inode1.lockReadAndCheckParent(dir1);
-    assertTrue(inode1.isReadLocked());
+    Assert.assertTrue(inode1.isReadLocked());
     inode1.unlockRead();
   }
 
@@ -232,7 +228,7 @@ public final class InodeFileTest extends AbstractInodeTest {
     inode1.setName(name);
     inode1.setParentId(dir1.getId());
     inode1.lockReadAndCheckNameAndParent(dir1, name);
-    assertTrue(inode1.isReadLocked());
+    Assert.assertTrue(inode1.isReadLocked());
     inode1.unlockRead();
   }
 
@@ -291,11 +287,11 @@ public final class InodeFileTest extends AbstractInodeTest {
   public void lockWrite() {
     InodeFile inode1 = createInodeFile(1);
     inode1.lockWrite();
-    assertFalse(inode1.isReadLocked());
-    assertTrue(inode1.isWriteLocked());
+    Assert.assertFalse(inode1.isReadLocked());
+    Assert.assertTrue(inode1.isWriteLocked());
     inode1.unlockWrite();
-    assertFalse(inode1.isReadLocked());
-    assertFalse(inode1.isWriteLocked());
+    Assert.assertFalse(inode1.isReadLocked());
+    Assert.assertFalse(inode1.isWriteLocked());
   }
 
   /**
@@ -307,7 +303,7 @@ public final class InodeFileTest extends AbstractInodeTest {
     InodeDirectory dir1 = createInodeDirectory();
     inode1.setParentId(dir1.getId());
     inode1.lockWriteAndCheckParent(dir1);
-    assertTrue(inode1.isWriteLocked());
+    Assert.assertTrue(inode1.isWriteLocked());
     inode1.unlockWrite();
   }
 
@@ -336,7 +332,7 @@ public final class InodeFileTest extends AbstractInodeTest {
     inode1.setName(name);
     inode1.setParentId(dir1.getId());
     inode1.lockWriteAndCheckNameAndParent(dir1, name);
-    assertTrue(inode1.isWriteLocked());
+    Assert.assertTrue(inode1.isWriteLocked());
     inode1.unlockWrite();
   }
 

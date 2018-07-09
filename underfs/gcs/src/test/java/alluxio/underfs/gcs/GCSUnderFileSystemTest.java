@@ -11,14 +11,13 @@
 
 package alluxio.underfs.gcs;
 
-import static org.junit.Assert.assertFalse;
-
 import alluxio.AlluxioURI;
 import alluxio.underfs.UnderFileSystemConfiguration;
 import alluxio.underfs.options.DeleteOptions;
 
 import org.jets3t.service.ServiceException;
 import org.jets3t.service.impl.rest.httpclient.GoogleStorageService;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
@@ -63,7 +62,7 @@ public class GCSUnderFileSystemTest {
 
     boolean result = mGCSUnderFileSystem.deleteDirectory(PATH,
         DeleteOptions.defaults().setRecursive(false));
-    assertFalse(result);
+    Assert.assertFalse(result);
   }
 
   /**
@@ -77,7 +76,7 @@ public class GCSUnderFileSystemTest {
 
     boolean result = mGCSUnderFileSystem.deleteDirectory(PATH,
         DeleteOptions.defaults().setRecursive(true));
-    assertFalse(result);
+    Assert.assertFalse(result);
   }
 
   /**
@@ -90,6 +89,6 @@ public class GCSUnderFileSystemTest {
         .thenThrow(ServiceException.class);
 
     boolean result = mGCSUnderFileSystem.renameFile(SRC, DST);
-    assertFalse(result);
+    Assert.assertFalse(result);
   }
 }

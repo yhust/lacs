@@ -11,10 +11,8 @@
 
 package alluxio.hadoop;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-
 import org.apache.hadoop.fs.Path;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.net.URI;
@@ -32,7 +30,7 @@ public final class HadoopUtilsTest {
     final Path path = new Path("/foo/bar/baz");
 
     final String output = HadoopUtils.getPathWithoutScheme(path);
-    assertEquals("/foo/bar/baz", output);
+    Assert.assertEquals("/foo/bar/baz", output);
   }
 
   /**
@@ -43,7 +41,7 @@ public final class HadoopUtilsTest {
     final Path path = new Path("file:///foo/bar/baz");
 
     final String output = HadoopUtils.getPathWithoutScheme(path);
-    assertEquals("/foo/bar/baz", output);
+    Assert.assertEquals("/foo/bar/baz", output);
   }
 
   /**
@@ -59,7 +57,7 @@ public final class HadoopUtilsTest {
     final Path path = new Path("hdfs://localhost:1234/foo/bar/baz?please=dont&show=up");
 
     final String output = HadoopUtils.getPathWithoutScheme(path);
-    assertFalse("/foo/bar/baz".equals(output));
+    Assert.assertFalse("/foo/bar/baz".equals(output));
   }
 
   /**
@@ -70,6 +68,6 @@ public final class HadoopUtilsTest {
     final Path path = new Path(URI.create("hdfs://localhost:1234/foo/bar/baz?please=dont&show=up"));
 
     final String output = HadoopUtils.getPathWithoutScheme(path);
-    assertEquals("/foo/bar/baz", output);
+    Assert.assertEquals("/foo/bar/baz", output);
   }
 }

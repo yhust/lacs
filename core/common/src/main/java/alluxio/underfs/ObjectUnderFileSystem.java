@@ -15,8 +15,6 @@ import alluxio.AlluxioURI;
 import alluxio.Configuration;
 import alluxio.PropertyKey;
 import alluxio.exception.ExceptionMessage;
-import alluxio.retry.ExponentialBackoffRetry;
-import alluxio.retry.RetryPolicy;
 import alluxio.underfs.options.CreateOptions;
 import alluxio.underfs.options.DeleteOptions;
 import alluxio.underfs.options.FileLocationOptions;
@@ -38,6 +36,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -45,7 +44,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.NotThreadSafe;
 import javax.annotation.concurrent.ThreadSafe;
 
@@ -90,35 +88,23 @@ public abstract class ObjectUnderFileSystem extends BaseUnderFileSystem {
    * Information about a single object in object UFS.
    */
   protected class ObjectStatus {
-    private static final String INVALID_CONTENT_HASH = "";
     private static final long INVALID_CONTENT_LENGTH = -1L;
     private static final long INVALID_MODIFIED_TIME = -1L;
 
-    private final String mContentHash;
     private final long mContentLength;
     private final long mLastModifiedTimeMs;
     private final String mName;
 
-    public ObjectStatus(String name, String contentHash, long contentLength,
-        long lastModifiedTimeMs) {
-      mContentHash = contentHash;
+    public ObjectStatus(String name, long contentLength, long lastModifiedTimeMs) {
       mContentLength = contentLength;
       mLastModifiedTimeMs = lastModifiedTimeMs;
       mName = name;
     }
 
     public ObjectStatus(String name) {
-      mContentHash = INVALID_CONTENT_HASH;
       mContentLength = INVALID_CONTENT_LENGTH;
       mLastModifiedTimeMs = INVALID_MODIFIED_TIME;
       mName = name;
-    }
-
-    /**
-     * @return the hash of the content
-     */
-    public String getContentHash() {
-      return mContentHash;
     }
 
     /**
@@ -154,7 +140,7 @@ public abstract class ObjectUnderFileSystem extends BaseUnderFileSystem {
    */
   public interface ObjectListingChunk {
     /**
-     * Returns objects in a pseudo-directory which may be a file or a directory.
+     * Objects in a pseudo-directory which may be a file or a directory.
      *
      * @return a list of object statuses
      */
@@ -168,12 +154,11 @@ public abstract class ObjectUnderFileSystem extends BaseUnderFileSystem {
     String[] getCommonPrefixes();
 
     /**
-     * Gets next chunk of object listings.
+     * Get next chunk of object listings.
      *
      * @return null if listing did not find anything or is done, otherwise return new
      * {@link ObjectListingChunk} for the next chunk
      */
-    @Nullable
     ObjectListingChunk getNextChunk() throws IOException;
   }
 
@@ -308,7 +293,7 @@ public abstract class ObjectUnderFileSystem extends BaseUnderFileSystem {
     public DeleteBuffer() {
       mBatches = new ArrayList<>();
       mBatchesResult = new ArrayList<>();
-      mCurrentBatchBuffer = new ArrayList<>();
+      mCurrentBatchBuffer = new LinkedList<>();
       mEntriesAdded = 0;
     }
 
@@ -336,7 +321,7 @@ public abstract class ObjectUnderFileSystem extends BaseUnderFileSystem {
      */
     public List<String> getResult() throws IOException {
       submitBatch();
-      List<String> result = new ArrayList<>();
+      LinkedList<String> result = new LinkedList<>();
       for (Future<List<String>> list : mBatchesResult) {
         try {
           result.addAll(list.get());
@@ -360,7 +345,7 @@ public abstract class ObjectUnderFileSystem extends BaseUnderFileSystem {
     private void submitBatch() throws IOException {
       if (mCurrentBatchBuffer.size() != 0) {
         int batchNumber = mBatches.size();
-        mBatches.add(new ArrayList<>(mCurrentBatchBuffer));
+        mBatches.add(new LinkedList<>(mCurrentBatchBuffer));
         mCurrentBatchBuffer.clear();
         mBatchesResult.add(batchNumber,
             mExecutorService.submit(new DeleteThread(mBatches.get(batchNumber))));
@@ -419,7 +404,6 @@ public abstract class ObjectUnderFileSystem extends BaseUnderFileSystem {
 
   // Not supported
   @Override
-  @Nullable
   public List<String> getFileLocations(String path) throws IOException {
     LOG.debug("getFileLocations is not supported when using default ObjectUnderFileSystem.");
     return null;
@@ -427,7 +411,6 @@ public abstract class ObjectUnderFileSystem extends BaseUnderFileSystem {
 
   // Not supported
   @Override
-  @Nullable
   public List<String> getFileLocations(String path, FileLocationOptions options)
       throws IOException {
     LOG.debug("getFileLocations is not supported when using default ObjectUnderFileSystem.");
@@ -445,28 +428,12 @@ public abstract class ObjectUnderFileSystem extends BaseUnderFileSystem {
     ObjectStatus details = getObjectStatus(stripPrefixIfPresent(path));
     if (details != null) {
       ObjectPermissions permissions = getPermissions();
-      return new UfsFileStatus(path, details.getContentHash(), details.getContentLength(),
-          details.getLastModifiedTimeMs(), permissions.getOwner(), permissions.getGroup(),
-          permissions.getMode());
+      return new UfsFileStatus(path, details.getContentLength(), details.getLastModifiedTimeMs(),
+          permissions.getOwner(), permissions.getGroup(), permissions.getMode());
     } else {
       LOG.warn("Error fetching file status, assuming file {} does not exist", path);
       throw new FileNotFoundException(path);
     }
-  }
-
-  @Override
-  public UfsStatus getStatus(String path) throws IOException {
-    if (isRoot(path)) {
-      return getDirectoryStatus(path);
-    }
-    ObjectStatus details = getObjectStatus(stripPrefixIfPresent(path));
-    if (details != null) {
-      ObjectPermissions permissions = getPermissions();
-      return new UfsFileStatus(path, details.getContentHash(), details.getContentLength(),
-          details.getLastModifiedTimeMs(), permissions.getOwner(), permissions.getGroup(),
-          permissions.getMode());
-    }
-    return getDirectoryStatus(path);
   }
 
   @Override
@@ -538,21 +505,7 @@ public abstract class ObjectUnderFileSystem extends BaseUnderFileSystem {
 
   @Override
   public InputStream open(String path, OpenOptions options) throws IOException {
-    IOException thrownException = null;
-    RetryPolicy retryPolicy = new ExponentialBackoffRetry(
-        (int) Configuration.getMs(PropertyKey.UNDERFS_OBJECT_STORE_READ_RETRY_BASE_SLEEP_MS),
-        (int) Configuration.getMs(PropertyKey.UNDERFS_OBJECT_STORE_READ_RETRY_MAX_SLEEP_MS),
-        Configuration.getInt(PropertyKey.UNDERFS_OBJECT_STORE_READ_RETRY_MAX_NUM));
-    while (retryPolicy.attemptRetry()) {
-      try {
-        return openObject(stripPrefixIfPresent(path), options);
-      } catch (IOException e) {
-        LOG.warn("{} attempt to open {} failed with exception : {}", retryPolicy.getRetryCount(),
-            path, e.getMessage());
-        thrownException = e;
-      }
-    }
-    throw thrownException;
+    return openObject(stripPrefixIfPresent(path), options);
   }
 
   @Override
@@ -666,7 +619,7 @@ public abstract class ObjectUnderFileSystem extends BaseUnderFileSystem {
    * @return list of successfully deleted keys
    */
   protected List<String> deleteObjects(List<String> keys) throws IOException {
-    List<String> result = new ArrayList<>();
+    List<String> result = new LinkedList<>();
     for (String key : keys) {
       boolean status = deleteObject(key);
       // If key is a directory, it is possible that it was not created through Alluxio and no
@@ -711,8 +664,7 @@ public abstract class ObjectUnderFileSystem extends BaseUnderFileSystem {
    * @param key ufs key to get metadata for
    * @return {@link ObjectStatus} if key exists and successful, otherwise null
    */
-  @Nullable
-  protected abstract ObjectStatus getObjectStatus(String key) throws IOException;
+  protected abstract ObjectStatus getObjectStatus(String key);
 
   /**
    * Get parent path.
@@ -720,7 +672,6 @@ public abstract class ObjectUnderFileSystem extends BaseUnderFileSystem {
    * @param path ufs path including scheme and bucket
    * @return the parent path, or null if the parent does not exist
    */
-  @Nullable
   protected String getParentPath(String path) {
     // Root does not have a parent.
     if (isRoot(path)) {
@@ -772,7 +723,6 @@ public abstract class ObjectUnderFileSystem extends BaseUnderFileSystem {
    * @param recursive whether to request immediate children only, or all descendants
    * @return chunked object listing, or null if key is not found
    */
-  @Nullable
   protected abstract ObjectListingChunk getObjectListingChunk(String key, boolean recursive)
       throws IOException;
 
@@ -783,7 +733,6 @@ public abstract class ObjectUnderFileSystem extends BaseUnderFileSystem {
    * @param recursive whether to request immediate children only, or all descendants
    * @return chunked object listing, or null if the path does not exist as a pseudo-directory
    */
-  @Nullable
   protected ObjectListingChunk getObjectListingChunkForPath(String path, boolean recursive)
       throws IOException {
     // Check if anything begins with <folder_path>/
@@ -816,7 +765,6 @@ public abstract class ObjectUnderFileSystem extends BaseUnderFileSystem {
    * @param options for listing
    * @return an array of the file and folder names in this directory
    */
-  @Nullable
   protected UfsStatus[] listInternal(String path, ListOptions options) throws IOException {
     ObjectListingChunk chunk = getObjectListingChunkForPath(path, options.isRecursive());
     if (chunk == null) {
@@ -863,9 +811,8 @@ public abstract class ObjectUnderFileSystem extends BaseUnderFileSystem {
         } else {
           // Child is a file
           children.put(child,
-              new UfsFileStatus(child, status.getContentHash(), status.getContentLength(),
-                  status.getLastModifiedTimeMs(), permissions.getOwner(), permissions.getGroup(),
-                  permissions.getMode()));
+              new UfsFileStatus(child, status.getContentLength(), status.getLastModifiedTimeMs(),
+                  permissions.getOwner(), permissions.getGroup(), permissions.getMode()));
         }
       }
       // Handle case (2)

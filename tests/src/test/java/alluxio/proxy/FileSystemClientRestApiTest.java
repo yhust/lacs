@@ -11,10 +11,6 @@
 
 package alluxio.proxy;
 
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-import static org.junit.Assert.assertEquals;
-
 import alluxio.AlluxioURI;
 import alluxio.client.file.options.CreateDirectoryOptions;
 import alluxio.client.file.options.CreateFileOptions;
@@ -39,6 +35,7 @@ import alluxio.wire.FileInfo;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Iterables;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -81,7 +78,7 @@ public final class FileSystemClientRestApiTest extends RestApiTest {
         PATHS_PREFIX + uri.toString() + "/" + PathsRestServiceHandler.CREATE_DIRECTORY, NO_PARAMS,
         HttpMethod.POST, null,
         TestCaseOptions.defaults().setBody(CreateDirectoryOptions.defaults())).run();
-    assertTrue(
+    Assert.assertTrue(
         mFileSystemMaster.listStatus(uri, alluxio.master.file.options.ListStatusOptions.defaults())
             .isEmpty());
   }
@@ -95,7 +92,7 @@ public final class FileSystemClientRestApiTest extends RestApiTest {
         HttpMethod.POST, null, TestCaseOptions.defaults().setBody(DeleteOptions.defaults())).run();
     try {
       mFileSystemMaster.getFileInfo(uri, GET_STATUS_OPTIONS);
-      fail("file should have been removed");
+      Assert.fail("file should have been removed");
     } catch (FileDoesNotExistException e) {
       // Expected
     }
@@ -106,7 +103,7 @@ public final class FileSystemClientRestApiTest extends RestApiTest {
     AlluxioURI uri = new AlluxioURI("/file");
     String message = "Greetings traveller!";
     writeFile(uri, message.getBytes());
-    assertEquals(message, new String(readFile(uri)));
+    Assert.assertEquals(message, new String(readFile(uri)));
   }
 
   @Test
@@ -135,8 +132,8 @@ public final class FileSystemClientRestApiTest extends RestApiTest {
         PATHS_PREFIX + uri.toString() + "/" + PathsRestServiceHandler.GET_STATUS, NO_PARAMS,
         HttpMethod.POST, TestCaseOptions.defaults().setBody(GetStatusOptions.defaults())).call();
     FileInfo fileInfo = new ObjectMapper().readValue(result, FileInfo.class);
-    assertEquals(uri.getPath(), fileInfo.getPath());
-    assertEquals(0, fileInfo.getLength());
+    Assert.assertEquals(uri.getPath(), fileInfo.getPath());
+    Assert.assertEquals(0, fileInfo.getLength());
   }
 
   @Test
@@ -150,8 +147,8 @@ public final class FileSystemClientRestApiTest extends RestApiTest {
     List<FileInfo> fileInfos =
         new ObjectMapper().readValue(result, new TypeReference<List<FileInfo>>() {});
     FileInfo fileInfo = Iterables.getOnlyElement(fileInfos);
-    assertEquals(uri.getPath(), fileInfo.getPath());
-    assertEquals(0, fileInfo.getLength());
+    Assert.assertEquals(uri.getPath(), fileInfo.getPath());
+    Assert.assertEquals(0, fileInfo.getLength());
   }
 
   @Test
@@ -176,7 +173,7 @@ public final class FileSystemClientRestApiTest extends RestApiTest {
         HttpMethod.POST, null, TestCaseOptions.defaults().setBody(RenameOptions.defaults())).run();
     try {
       mFileSystemMaster.getFileInfo(uri1, GET_STATUS_OPTIONS);
-      fail("file should have been removed");
+      Assert.fail("file should have been removed");
     } catch (FileDoesNotExistException e) {
       // Expected
     }
@@ -193,7 +190,7 @@ public final class FileSystemClientRestApiTest extends RestApiTest {
         .setBody(SetAttributeOptions.defaults().setMode(Mode.defaults())))
         .run();
     FileInfo fileInfo = mFileSystemMaster.getFileInfo(uri, GET_STATUS_OPTIONS);
-    assertEquals(uri.toString(), fileInfo.getPath());
+    Assert.assertEquals(uri.toString(), fileInfo.getPath());
   }
 
   @Test
@@ -215,7 +212,7 @@ public final class FileSystemClientRestApiTest extends RestApiTest {
         PATHS_PREFIX + uri.toString() + "/" + PathsRestServiceHandler.GET_STATUS, NO_PARAMS,
         HttpMethod.POST, null).call();
     FileInfo fileInfo = new ObjectMapper().readValue(result, FileInfo.class);
-    assertEquals(message.length(), fileInfo.getLength());
+    Assert.assertEquals(message.length(), fileInfo.getLength());
   }
 
   private byte[] readFile(AlluxioURI path) throws Exception {

@@ -86,7 +86,7 @@ public class AtomicFileOutputStream extends OutputStream {
     }
 
     // Preserve owner and group in case delegation was used to create the path
-    if (mOptions.getOwner() != null || mOptions.getGroup() != null) {
+    if (!mOptions.getOwner().isEmpty() || !mOptions.getGroup().isEmpty()) {
       try {
         mUfs.setOwner(mPermanentPath, mOptions.getOwner(), mOptions.getGroup());
       } catch (Exception e) {

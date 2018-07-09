@@ -23,9 +23,6 @@ import alluxio.underfs.UnderFileSystem;
 import alluxio.util.CommonUtils;
 import alluxio.util.FormatUtils;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,8 +39,6 @@ import javax.servlet.http.HttpServletResponse;
  */
 @ThreadSafe
 public final class WebInterfaceGeneralServlet extends HttpServlet {
-  private static final Logger LOG = LoggerFactory.getLogger(WebInterfaceGeneralServlet.class);
-
   /**
    * Class to make referencing tiered storage information more intuitive.
    */
@@ -171,7 +166,7 @@ public final class WebInterfaceGeneralServlet extends HttpServlet {
    *
    * @param request The {@link HttpServletRequest} object
    */
-  private void populateValues(HttpServletRequest request) {
+  private void populateValues(HttpServletRequest request) throws IOException {
     BlockMaster blockMaster = mMasterProcess.getMaster(BlockMaster.class);
     FileSystemMaster fileSystemMaster = mMasterProcess.getMaster(FileSystemMaster.class);
 
@@ -210,41 +205,26 @@ public final class WebInterfaceGeneralServlet extends HttpServlet {
     String ufsRoot = Configuration.get(PropertyKey.MASTER_MOUNT_TABLE_ROOT_UFS);
     UnderFileSystem ufs = UnderFileSystem.Factory.create(ufsRoot);
 
-    String totalSpace = "UNKNOWN";
-    try {
-      long sizeBytes = ufs.getSpace(ufsRoot, UnderFileSystem.SpaceType.SPACE_TOTAL);
-      if (sizeBytes >= 0) {
-        totalSpace = FormatUtils.getSizeFromBytes(sizeBytes);
-      }
-    } catch (IOException e) {
-      // Exception may be thrown when UFS connection is lost
-      LOG.warn("Failed to get size of total space of root UFS: {}", e.getMessage());
+    long sizeBytes = ufs.getSpace(ufsRoot, UnderFileSystem.SpaceType.SPACE_TOTAL);
+    if (sizeBytes >= 0) {
+      request.setAttribute("diskCapacity", FormatUtils.getSizeFromBytes(sizeBytes));
+    } else {
+      request.setAttribute("diskCapacity", "UNKNOWN");
     }
-    request.setAttribute("diskCapacity", totalSpace);
 
-    String usedSpace = "UNKNOWN";
-    try {
-      long sizeBytes = ufs.getSpace(ufsRoot, UnderFileSystem.SpaceType.SPACE_USED);
-      if (sizeBytes >= 0) {
-        usedSpace = FormatUtils.getSizeFromBytes(sizeBytes);
-      }
-    } catch (IOException e) {
-      // Exception may be thrown when UFS connection is lost
-      LOG.warn("Failed to get size of used space of root UFS: {}", e.getMessage());
+    sizeBytes = ufs.getSpace(ufsRoot, UnderFileSystem.SpaceType.SPACE_USED);
+    if (sizeBytes >= 0) {
+      request.setAttribute("diskUsedCapacity", FormatUtils.getSizeFromBytes(sizeBytes));
+    } else {
+      request.setAttribute("diskUsedCapacity", "UNKNOWN");
     }
-    request.setAttribute("diskUsedCapacity", usedSpace);
 
-    String freeSpace = "UNKNOWN";
-    try {
-      long sizeBytes = ufs.getSpace(ufsRoot, UnderFileSystem.SpaceType.SPACE_FREE);
-      if (sizeBytes >= 0) {
-        freeSpace = FormatUtils.getSizeFromBytes(sizeBytes);
-      }
-    } catch (IOException e) {
-      // Exception may be thrown when UFS connection is lost
-      LOG.warn("Failed to get size of free space of root UFS: {}", e.getMessage());
+    sizeBytes = ufs.getSpace(ufsRoot, UnderFileSystem.SpaceType.SPACE_FREE);
+    if (sizeBytes >= 0) {
+      request.setAttribute("diskFreeCapacity", FormatUtils.getSizeFromBytes(sizeBytes));
+    } else {
+      request.setAttribute("diskFreeCapacity", "UNKNOWN");
     }
-    request.setAttribute("diskFreeCapacity", freeSpace);
 
     StorageTierInfo[] infos = generateOrderedStorageTierInfo();
     request.setAttribute("storageTierInfos", infos);

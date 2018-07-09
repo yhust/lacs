@@ -15,7 +15,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.anyObject;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
@@ -90,7 +89,6 @@ public final class AlluxioMasterRestServiceHandlerTest {
   private BlockMaster mBlockMaster;
   private MasterRegistry mRegistry;
   private AlluxioMasterRestServiceHandler mHandler;
-  private SafeModeManager mSafeModeManager;
 
   @Rule
   public TemporaryFolder mTestFolder = new TemporaryFolder();
@@ -114,9 +112,8 @@ public final class AlluxioMasterRestServiceHandlerTest {
     mMasterProcess = mock(MasterProcess.class);
     ServletContext context = mock(ServletContext.class);
     mRegistry = new MasterRegistry();
-    mSafeModeManager = new TestSafeModeManager();
     JournalSystem journalSystem = JournalTestUtils.createJournalSystem(mTestFolder);
-    mBlockMaster = new BlockMasterFactory().create(mRegistry, journalSystem, mSafeModeManager);
+    mBlockMaster = new BlockMasterFactory().create(mRegistry, journalSystem);
     mRegistry.start(true);
     when(mMasterProcess.getMaster(BlockMaster.class)).thenReturn(mBlockMaster);
     when(context.getAttribute(MasterWebServer.ALLUXIO_MASTER_SERVLET_RESOURCE_KEY)).thenReturn(
@@ -136,10 +133,8 @@ public final class AlluxioMasterRestServiceHandlerTest {
 
   private void registerFileSystemMock() throws IOException {
     UnderFileSystemFactory underFileSystemFactoryMock = mock(UnderFileSystemFactory.class);
-    when(underFileSystemFactoryMock.supportsPath(anyString(), anyObject()))
-        .thenReturn(Boolean.FALSE);
-    when(underFileSystemFactoryMock.supportsPath(eq(TEST_PATH), anyObject()))
-        .thenReturn(Boolean.TRUE);
+    when(underFileSystemFactoryMock.supportsPath(anyString())).thenReturn(Boolean.FALSE);
+    when(underFileSystemFactoryMock.supportsPath(TEST_PATH)).thenReturn(Boolean.TRUE);
     UnderFileSystem underFileSystemMock = mock(UnderFileSystem.class);
     when(underFileSystemMock.getSpace(TEST_PATH, UnderFileSystem.SpaceType.SPACE_FREE)).thenReturn(
         UFS_SPACE_FREE);

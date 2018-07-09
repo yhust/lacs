@@ -11,10 +11,7 @@
 
 package alluxio.worker.block;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -54,8 +51,8 @@ public final class BlockHeartbeatReporterTest {
   @Test
   public void generateReportEmpty() {
     BlockHeartbeatReport report = mReporter.generateReport();
-    assertTrue(report.getAddedBlocks().isEmpty());
-    assertTrue(report.getRemovedBlocks().isEmpty());
+    Assert.assertTrue(report.getAddedBlocks().isEmpty());
+    Assert.assertTrue(report.getRemovedBlocks().isEmpty());
   }
 
   /**
@@ -75,18 +72,18 @@ public final class BlockHeartbeatReporterTest {
 
     // Block1 moved to memory
     List<Long> addedBlocksMem = addedBlocks.get("MEM");
-    assertEquals(1, addedBlocksMem.size());
-    assertEquals(block1, addedBlocksMem.get(0));
+    Assert.assertEquals(1, addedBlocksMem.size());
+    Assert.assertEquals(block1, addedBlocksMem.get(0));
 
     // Block2 moved to ssd
     List<Long> addedBlocksSsd = addedBlocks.get("SSD");
-    assertEquals(1, addedBlocksSsd.size());
-    assertEquals(block2, addedBlocksSsd.get(0));
+    Assert.assertEquals(1, addedBlocksSsd.size());
+    Assert.assertEquals(block2, addedBlocksSsd.get(0));
 
     // Block3 moved to hdd
     List<Long> addedBlocksHdd = addedBlocks.get("HDD");
-    assertEquals(1, addedBlocksHdd.size());
-    assertEquals(block3, addedBlocksHdd.get(0));
+    Assert.assertEquals(1, addedBlocksHdd.size());
+    Assert.assertEquals(block3, addedBlocksHdd.get(0));
   }
 
   /**
@@ -100,12 +97,12 @@ public final class BlockHeartbeatReporterTest {
 
     // First report should have updates
     BlockHeartbeatReport report = mReporter.generateReport();
-    assertFalse(report.getAddedBlocks().isEmpty());
+    Assert.assertFalse(report.getAddedBlocks().isEmpty());
 
     // Second report should not have updates
     BlockHeartbeatReport nextReport = mReporter.generateReport();
-    assertTrue(nextReport.getAddedBlocks().isEmpty());
-    assertTrue(nextReport.getRemovedBlocks().isEmpty());
+    Assert.assertTrue(nextReport.getAddedBlocks().isEmpty());
+    Assert.assertTrue(nextReport.getRemovedBlocks().isEmpty());
   }
 
   /**
@@ -124,14 +121,14 @@ public final class BlockHeartbeatReporterTest {
 
     // All blocks should be removed
     List<Long> removedBlocks = report.getRemovedBlocks();
-    assertEquals(3, removedBlocks.size());
-    assertTrue(removedBlocks.contains(block1));
-    assertTrue(removedBlocks.contains(block2));
-    assertTrue(removedBlocks.contains(block3));
+    Assert.assertEquals(3, removedBlocks.size());
+    Assert.assertTrue(removedBlocks.contains(block1));
+    Assert.assertTrue(removedBlocks.contains(block2));
+    Assert.assertTrue(removedBlocks.contains(block3));
 
     // No blocks should have been added
     Map<String, List<Long>> addedBlocks = report.getAddedBlocks();
-    assertTrue(addedBlocks.isEmpty());
+    Assert.assertTrue(addedBlocks.isEmpty());
   }
 
   /**
@@ -146,11 +143,11 @@ public final class BlockHeartbeatReporterTest {
 
     // The block should not be in the added blocks list
     BlockHeartbeatReport report = mReporter.generateReport();
-    assertEquals(null, report.getAddedBlocks().get("MEM"));
+    Assert.assertEquals(null, report.getAddedBlocks().get("MEM"));
 
     // The block should be in the removed blocks list
     List<Long> removedBlocks = report.getRemovedBlocks();
-    assertEquals(1, removedBlocks.size());
-    assertTrue(removedBlocks.contains(block1));
+    Assert.assertEquals(1, removedBlocks.size());
+    Assert.assertTrue(removedBlocks.contains(block1));
   }
 }

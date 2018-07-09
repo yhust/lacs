@@ -16,6 +16,7 @@ import alluxio.Constants;
 import alluxio.MasterStorageTierAssoc;
 import alluxio.PropertyKey;
 import alluxio.StorageTierAssoc;
+import alluxio.clock.Clock;
 import alluxio.clock.SystemClock;
 import alluxio.collections.ConcurrentHashSet;
 import alluxio.collections.IndexDefinition;
@@ -23,16 +24,15 @@ import alluxio.collections.IndexedSet;
 import alluxio.exception.BlockInfoException;
 import alluxio.exception.ExceptionMessage;
 import alluxio.exception.NoWorkerException;
-import alluxio.exception.status.UnavailableException;
 import alluxio.heartbeat.HeartbeatContext;
 import alluxio.heartbeat.HeartbeatExecutor;
 import alluxio.heartbeat.HeartbeatThread;
 import alluxio.master.AbstractMaster;
-import alluxio.master.MasterContext;
 import alluxio.master.block.meta.MasterBlockInfo;
 import alluxio.master.block.meta.MasterBlockLocation;
 import alluxio.master.block.meta.MasterWorkerInfo;
 import alluxio.master.journal.JournalContext;
+import alluxio.master.journal.JournalSystem;
 import alluxio.metrics.MetricsSystem;
 import alluxio.proto.journal.Block.BlockContainerIdGeneratorEntry;
 import alluxio.proto.journal.Block.BlockInfoEntry;
@@ -55,12 +55,12 @@ import com.codahale.metrics.Gauge;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterators;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
+import io.netty.util.internal.chmv8.ConcurrentHashMapV8;
 import org.apache.thrift.TProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.time.Clock;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -72,15 +72,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
-import java.util.function.Function;
 
 import javax.annotation.concurrent.GuardedBy;
 import javax.annotation.concurrent.NotThreadSafe;
 
 /**
- * This block master manages the metadata for all the blocks and block workers in Alluxio.
+ * This master manages the metadata for all the blocks and block workers in Alluxio.
  */
 @NotThreadSafe // TODO(jiri): make thread-safe (c.f. ALLUXIO-1664)
 public final class DefaultBlockMaster extends AbstractMaster implements BlockMaster {
@@ -131,8 +129,8 @@ public final class DefaultBlockMaster extends AbstractMaster implements BlockMas
 
   // Block metadata management.
   /** Blocks on all workers, including active and lost blocks. This state must be journaled. */
-  private final ConcurrentHashMap<Long, MasterBlockInfo> mBlocks =
-      new ConcurrentHashMap<>(8192, 0.90f, 64);
+  private final ConcurrentHashMapV8<Long, MasterBlockInfo> mBlocks =
+      new ConcurrentHashMapV8<>(8192, 0.90f, 64);
   /** Keeps track of blocks which are no longer in Alluxio storage. */
   private final ConcurrentHashSet<Long> mLostBlocks = new ConcurrentHashSet<>(64, 0.90f, 64);
 
@@ -169,24 +167,24 @@ public final class DefaultBlockMaster extends AbstractMaster implements BlockMas
   /**
    * Creates a new instance of {@link DefaultBlockMaster}.
    *
-   * @param masterContext the context for Alluxio master
+   * @param journalSystem the journal system to use for tracking master operations
    */
-  DefaultBlockMaster(MasterContext masterContext) {
-    this(masterContext, new SystemClock(), ExecutorServiceFactories
+  DefaultBlockMaster(JournalSystem journalSystem) {
+    this(journalSystem, new SystemClock(), ExecutorServiceFactories
         .fixedThreadPoolExecutorServiceFactory(Constants.BLOCK_MASTER_NAME, 2));
   }
 
   /**
    * Creates a new instance of {@link DefaultBlockMaster}.
    *
-   * @param masterContext the context for Alluxio master
+   * @param journalSystem the journal system to use for tracking master operations
    * @param clock the clock to use for determining the time
    * @param executorServiceFactory a factory for creating the executor service to use for running
    *        maintenance threads
    */
-  DefaultBlockMaster(MasterContext masterContext, Clock clock,
+  DefaultBlockMaster(JournalSystem journalSystem, Clock clock,
       ExecutorServiceFactory executorServiceFactory) {
-    super(masterContext, clock, executorServiceFactory);
+    super(journalSystem, clock, executorServiceFactory);
     Metrics.registerGauges(this);
   }
 
@@ -283,10 +281,7 @@ public final class DefaultBlockMaster extends AbstractMaster implements BlockMas
   }
 
   @Override
-  public List<WorkerInfo> getWorkerInfoList() throws UnavailableException {
-    if (mSafeModeManager.isInSafeMode()) {
-      throw new UnavailableException(ExceptionMessage.MASTER_IN_SAFEMODE.getMessage());
-    }
+  public List<WorkerInfo> getWorkerInfoList() {
     List<WorkerInfo> workerInfoList = new ArrayList<>(mWorkers.size());
     for (MasterWorkerInfo worker : mWorkers) {
       synchronized (worker) {
@@ -336,7 +331,7 @@ public final class DefaultBlockMaster extends AbstractMaster implements BlockMas
   }
 
   @Override
-  public void removeBlocks(List<Long> blockIds, boolean delete) throws UnavailableException {
+  public void removeBlocks(List<Long> blockIds, boolean delete) {
     try (JournalContext journalContext = createJournalContext()) {
       for (long blockId : blockIds) {
         MasterBlockInfo block = mBlocks.get(blockId);
@@ -361,7 +356,7 @@ public final class DefaultBlockMaster extends AbstractMaster implements BlockMas
             if (mBlocks.remove(blockId) != null) {
               JournalEntry entry = JournalEntry.newBuilder()
                   .setDeleteBlock(DeleteBlockEntry.newBuilder().setBlockId(blockId)).build();
-              journalContext.append(entry);
+              appendJournalEntry(entry, journalContext);
             }
           }
         }
@@ -381,26 +376,11 @@ public final class DefaultBlockMaster extends AbstractMaster implements BlockMas
     }
   }
 
-  @Override
-  public void validateBlocks(Function<Long, Boolean> validator, boolean repair)
-      throws UnavailableException {
-    List<Long> invalidBlocks = new ArrayList<>();
-    for (long blockId : mBlocks.keySet()) {
-      if (!validator.apply(blockId)) {
-        invalidBlocks.add(blockId);
-      }
-    }
-    if (repair && !invalidBlocks.isEmpty()) {
-      LOG.warn("Deleting {} invalid blocks.", invalidBlocks.size());
-      removeBlocks(invalidBlocks, true);
-    }
-  }
-
   /**
    * @return a new block container id
    */
   @Override
-  public long getNewContainerId() throws UnavailableException {
+  public long getNewContainerId() {
     synchronized (mBlockContainerIdGenerator) {
       long containerId = mBlockContainerIdGenerator.getNewContainerId();
       if (containerId < mJournaledNextContainerId) {
@@ -421,7 +401,7 @@ public final class DefaultBlockMaster extends AbstractMaster implements BlockMas
       try (JournalContext journalContext = createJournalContext()) {
         // This must be flushed while holding the lock on mBlockContainerIdGenerator, in order to
         // prevent subsequent calls to return ids that have not been journaled and flushed.
-        journalContext.append(getContainerIdJournalEntry());
+        appendJournalEntry(getContainerIdJournalEntry(), journalContext);
       }
       return containerId;
     }
@@ -441,7 +421,7 @@ public final class DefaultBlockMaster extends AbstractMaster implements BlockMas
   // TODO(binfan): check the logic is correct or not when commitBlock is a retry
   @Override
   public void commitBlock(long workerId, long usedBytesOnTier, String tierAlias, long blockId,
-      long length) throws NoWorkerException, UnavailableException {
+      long length) throws NoWorkerException {
     LOG.debug("Commit block from workerId: {}, usedBytesOnTier: {}, blockId: {}, length: {}",
         workerId, usedBytesOnTier, blockId, length);
 
@@ -484,7 +464,8 @@ public final class DefaultBlockMaster extends AbstractMaster implements BlockMas
             if (writeJournal) {
               BlockInfoEntry blockInfo =
                   BlockInfoEntry.newBuilder().setBlockId(blockId).setLength(length).build();
-              journalContext.append(JournalEntry.newBuilder().setBlockInfo(blockInfo).build());
+              appendJournalEntry(JournalEntry.newBuilder().setBlockInfo(blockInfo).build(),
+                  journalContext);
             }
             // At this point, both the worker and the block metadata are locked.
 
@@ -507,7 +488,7 @@ public final class DefaultBlockMaster extends AbstractMaster implements BlockMas
   }
 
   @Override
-  public void commitBlockInUFS(long blockId, long length) throws UnavailableException {
+  public void commitBlockInUFS(long blockId, long length) {
     LOG.debug("Commit block in ufs. blockId: {}, length: {}", blockId, length);
     if (mBlocks.get(blockId) != null) {
       // Block metadata already exists, so do not need to create a new one.
@@ -522,14 +503,15 @@ public final class DefaultBlockMaster extends AbstractMaster implements BlockMas
           // Successfully added the new block metadata. Append a journal entry for the new metadata.
           BlockInfoEntry blockInfo =
               BlockInfoEntry.newBuilder().setBlockId(blockId).setLength(length).build();
-          journalContext.append(JournalEntry.newBuilder().setBlockInfo(blockInfo).build());
+          appendJournalEntry(JournalEntry.newBuilder().setBlockInfo(blockInfo).build(),
+              journalContext);
         }
       }
     }
   }
 
   @Override
-  public BlockInfo getBlockInfo(long blockId) throws BlockInfoException, UnavailableException {
+  public BlockInfo getBlockInfo(long blockId) throws BlockInfoException {
     MasterBlockInfo block = mBlocks.get(blockId);
     if (block == null) {
       throw new BlockInfoException(ExceptionMessage.BLOCK_META_NOT_FOUND, blockId);
@@ -540,7 +522,7 @@ public final class DefaultBlockMaster extends AbstractMaster implements BlockMas
   }
 
   @Override
-  public List<BlockInfo> getBlockInfoList(List<Long> blockIds) throws UnavailableException {
+  public List<BlockInfo> getBlockInfoList(List<Long> blockIds) {
     List<BlockInfo> ret = new ArrayList<>(blockIds.size());
     for (long blockId : blockIds) {
       MasterBlockInfo block = mBlocks.get(blockId);
@@ -640,7 +622,6 @@ public final class DefaultBlockMaster extends AbstractMaster implements BlockMas
           totalBytesOnTiers, usedBytesOnTiers, blocks);
       processWorkerRemovedBlocks(worker, removedBlocks);
       processWorkerAddedBlocks(worker, currentBlocksOnTiers);
-      processWorkerOrphanedBlocks(worker);
     }
 
     LOG.info("registerWorker(): {}", worker);
@@ -725,20 +706,8 @@ public final class DefaultBlockMaster extends AbstractMaster implements BlockMas
             mLostBlocks.remove(blockId);
           }
         } else {
-          LOG.warn("Invalid block: {} from worker {}.", blockId,
-              workerInfo.getWorkerAddress().getHost());
+          LOG.warn("Failed to register workerId: {} to blockId: {}", workerInfo.getId(), blockId);
         }
-      }
-    }
-  }
-
-  @GuardedBy("workerInfo")
-  private void processWorkerOrphanedBlocks(MasterWorkerInfo workerInfo) {
-    for (long block : workerInfo.getBlocks()) {
-      if (!mBlocks.containsKey(block)) {
-        LOG.info("Requesting delete for orphaned block: {} from worker {}.", block,
-            workerInfo.getWorkerAddress().getHost());
-        workerInfo.updateToRemovedBlock(true, block);
       }
     }
   }
@@ -756,10 +725,7 @@ public final class DefaultBlockMaster extends AbstractMaster implements BlockMas
    * @return a {@link BlockInfo} from a {@link MasterBlockInfo}. Populates worker locations
    */
   @GuardedBy("masterBlockInfo")
-  private BlockInfo generateBlockInfo(MasterBlockInfo masterBlockInfo) throws UnavailableException {
-    if (mSafeModeManager.isInSafeMode()) {
-      throw new UnavailableException(ExceptionMessage.MASTER_IN_SAFEMODE.getMessage());
-    }
+  private BlockInfo generateBlockInfo(MasterBlockInfo masterBlockInfo) {
     // "Join" to get all the addresses of the workers.
     List<BlockLocation> locations = new ArrayList<>();
     List<MasterBlockLocation> blockLocations = masterBlockInfo.getBlockLocations();
@@ -809,8 +775,8 @@ public final class DefaultBlockMaster extends AbstractMaster implements BlockMas
         synchronized (worker) {
           final long lastUpdate = mClock.millis() - worker.getLastUpdatedTimeMs();
           if (lastUpdate > masterWorkerTimeoutMs) {
-            LOG.error("The worker {}({}) timed out after {}ms without a heartbeat!", worker.getId(),
-                worker.getWorkerAddress(), lastUpdate);
+            LOG.error("The worker {} timed out after {}ms without a heartbeat!", worker,
+                lastUpdate);
             mLostWorkers.add(worker);
             mWorkers.remove(worker);
             processWorkerRemovedBlocks(worker, worker.getBlocks());

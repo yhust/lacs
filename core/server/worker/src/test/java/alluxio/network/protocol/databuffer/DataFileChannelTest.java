@@ -11,12 +11,10 @@
 
 package alluxio.network.protocol.databuffer;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import alluxio.util.io.BufferUtils;
 
 import io.netty.channel.FileRegion;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -60,7 +58,7 @@ public class DataFileChannelTest {
   public void nettyOutput() {
     DataFileChannel data = new DataFileChannel(mFile, OFFSET, LENGTH);
     Object output = data.getNettyOutput();
-    assertTrue(output instanceof FileRegion);
+    Assert.assertTrue(output instanceof FileRegion);
   }
 
   /**
@@ -69,6 +67,6 @@ public class DataFileChannelTest {
   @Test
   public void length() {
     DataFileChannel data = new DataFileChannel(mFile, OFFSET, LENGTH);
-    assertEquals(LENGTH, data.getLength());
+    Assert.assertEquals(LENGTH, data.getLength());
   }
 }

@@ -11,7 +11,7 @@
 
 package alluxio.client.file.options;
 
-import alluxio.test.util.CommonUtils;
+import alluxio.CommonTestUtils;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -29,6 +29,6 @@ public class UnmountOptionsTest {
 
   @Test
   public void equalsTest() throws Exception {
-    CommonUtils.testEquals(UnmountOptions.class);
+    CommonTestUtils.testEquals(UnmountOptions.class);
   }
 }

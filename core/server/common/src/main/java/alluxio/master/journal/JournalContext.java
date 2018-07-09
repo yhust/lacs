@@ -11,7 +11,6 @@
 
 package alluxio.master.journal;
 
-import alluxio.exception.status.UnavailableException;
 import alluxio.proto.journal.Journal.JournalEntry;
 
 import java.io.Closeable;
@@ -25,6 +24,11 @@ public interface JournalContext extends Closeable {
    */
   void append(JournalEntry entry);
 
+  /**
+   * @return the journal flush counter
+   */
+  long getFlushCounter();
+
   @Override
-  void close() throws UnavailableException;
+  void close();
 }

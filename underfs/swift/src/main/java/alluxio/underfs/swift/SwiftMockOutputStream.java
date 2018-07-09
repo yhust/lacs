@@ -11,7 +11,6 @@
 
 package alluxio.underfs.swift;
 
-import alluxio.util.CommonUtils;
 import alluxio.util.io.PathUtils;
 
 import org.javaswift.joss.model.Account;
@@ -63,7 +62,7 @@ public class SwiftMockOutputStream extends OutputStream {
       mAccount = account;
       mContainerName = containerName;
       mObjectName = objectName;
-      mFile = new File(PathUtils.concatPath(CommonUtils.getTmpDir(), UUID.randomUUID()));
+      mFile = new File(PathUtils.concatPath("/tmp", UUID.randomUUID()));
       mOutputStream  = new BufferedOutputStream(new FileOutputStream(mFile));
     } catch (Exception e) {
       LOG.error(e.getMessage());

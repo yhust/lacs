@@ -11,10 +11,6 @@
 
 package alluxio.worker.block.meta;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import alluxio.exception.BlockAlreadyExistsException;
 import alluxio.exception.BlockDoesNotExistException;
 import alluxio.exception.ExceptionMessage;
@@ -129,10 +125,10 @@ public final class StorageDirTest {
     }
 
     mDir = newStorageDir(testDir);
-    assertEquals(TEST_DIR_CAPACITY, mDir.getCapacityBytes());
-    assertEquals(availableBytes, mDir.getAvailableBytes());
+    Assert.assertEquals(TEST_DIR_CAPACITY, mDir.getCapacityBytes());
+    Assert.assertEquals(availableBytes, mDir.getAvailableBytes());
     for (int blockId = 0; blockId < nBlock; blockId++) {
-      assertTrue(mDir.hasBlockMeta(blockId));
+      Assert.assertTrue(mDir.hasBlockMeta(blockId));
     }
   }
 
@@ -143,9 +139,9 @@ public final class StorageDirTest {
    * @param capacity capacity bytes
    */
   private void assertMetadataEmpty(StorageDir dir, long capacity) {
-    assertEquals(capacity, dir.getCapacityBytes());
-    assertEquals(capacity, dir.getAvailableBytes());
-    assertTrue(dir.getBlockIds().isEmpty());
+    Assert.assertEquals(capacity, dir.getCapacityBytes());
+    Assert.assertEquals(capacity, dir.getAvailableBytes());
+    Assert.assertTrue(dir.getBlockIds().isEmpty());
   }
 
   /**
@@ -159,7 +155,7 @@ public final class StorageDirTest {
     assertMetadataEmpty(dir, capacity);
     File[] files = dirPath.listFiles();
     Assert.assertNotNull(files);
-    assertEquals(0, files.length);
+    Assert.assertEquals(0, files.length);
   }
 
   /**
@@ -186,7 +182,7 @@ public final class StorageDirTest {
 
     File newDir = new File(testDir, "dir");
     boolean created = newDir.mkdir();
-    assertTrue(created);
+    Assert.assertTrue(created);
 
     mDir = newStorageDir(testDir);
     assertStorageDirEmpty(testDir, mDir, TEST_DIR_CAPACITY);
@@ -210,7 +206,7 @@ public final class StorageDirTest {
     // assert file not deleted
     File[] files = testDir.listFiles();
     Assert.assertNotNull(files);
-    assertEquals(1, files.length);
+    Assert.assertEquals(1, files.length);
   }
 
   /**
@@ -220,34 +216,34 @@ public final class StorageDirTest {
   @Test
   public void getBytes() throws Exception {
     // Initial state
-    assertEquals(TEST_DIR_CAPACITY, mDir.getCapacityBytes());
-    assertEquals(TEST_DIR_CAPACITY, mDir.getAvailableBytes());
-    assertEquals(0, mDir.getCommittedBytes());
+    Assert.assertEquals(TEST_DIR_CAPACITY, mDir.getCapacityBytes());
+    Assert.assertEquals(TEST_DIR_CAPACITY, mDir.getAvailableBytes());
+    Assert.assertEquals(0, mDir.getCommittedBytes());
 
     // Add a temp block
     mDir.addTempBlockMeta(mTempBlockMeta);
-    assertEquals(TEST_DIR_CAPACITY, mDir.getCapacityBytes());
-    assertEquals(TEST_DIR_CAPACITY - TEST_TEMP_BLOCK_SIZE, mDir.getAvailableBytes());
-    assertEquals(0, mDir.getCommittedBytes());
+    Assert.assertEquals(TEST_DIR_CAPACITY, mDir.getCapacityBytes());
+    Assert.assertEquals(TEST_DIR_CAPACITY - TEST_TEMP_BLOCK_SIZE, mDir.getAvailableBytes());
+    Assert.assertEquals(0, mDir.getCommittedBytes());
 
     // Add a committed block
     mDir.addBlockMeta(mBlockMeta);
-    assertEquals(TEST_DIR_CAPACITY, mDir.getCapacityBytes());
-    assertEquals(TEST_DIR_CAPACITY - TEST_BLOCK_SIZE - TEST_TEMP_BLOCK_SIZE,
+    Assert.assertEquals(TEST_DIR_CAPACITY, mDir.getCapacityBytes());
+    Assert.assertEquals(TEST_DIR_CAPACITY - TEST_BLOCK_SIZE - TEST_TEMP_BLOCK_SIZE,
         mDir.getAvailableBytes());
-    assertEquals(TEST_BLOCK_SIZE, mDir.getCommittedBytes());
+    Assert.assertEquals(TEST_BLOCK_SIZE, mDir.getCommittedBytes());
 
     // Remove the temp block added
     mDir.removeTempBlockMeta(mTempBlockMeta);
-    assertEquals(TEST_DIR_CAPACITY, mDir.getCapacityBytes());
-    assertEquals(TEST_DIR_CAPACITY - TEST_BLOCK_SIZE, mDir.getAvailableBytes());
-    assertEquals(TEST_BLOCK_SIZE, mDir.getCommittedBytes());
+    Assert.assertEquals(TEST_DIR_CAPACITY, mDir.getCapacityBytes());
+    Assert.assertEquals(TEST_DIR_CAPACITY - TEST_BLOCK_SIZE, mDir.getAvailableBytes());
+    Assert.assertEquals(TEST_BLOCK_SIZE, mDir.getCommittedBytes());
 
     // Remove the committed block added
     mDir.removeBlockMeta(mBlockMeta);
-    assertEquals(TEST_DIR_CAPACITY, mDir.getCapacityBytes());
-    assertEquals(TEST_DIR_CAPACITY, mDir.getAvailableBytes());
-    assertEquals(0, mDir.getCommittedBytes());
+    Assert.assertEquals(TEST_DIR_CAPACITY, mDir.getCapacityBytes());
+    Assert.assertEquals(TEST_DIR_CAPACITY, mDir.getAvailableBytes());
+    Assert.assertEquals(0, mDir.getCommittedBytes());
   }
 
   /**
@@ -255,7 +251,7 @@ public final class StorageDirTest {
    */
   @Test
   public void getDirPath() {
-    assertEquals(mTestDirPath, mDir.getDirPath());
+    Assert.assertEquals(mTestDirPath, mDir.getDirPath());
   }
 
   /**
@@ -263,7 +259,7 @@ public final class StorageDirTest {
    */
   @Test
   public void getParentTier() {
-    assertEquals(mTier, mDir.getParentTier());
+    Assert.assertEquals(mTier, mDir.getParentTier());
   }
 
   /**
@@ -271,7 +267,7 @@ public final class StorageDirTest {
    */
   @Test
   public void getDirIndex() {
-    assertEquals(TEST_DIR_INDEX, mDir.getDirIndex());
+    Assert.assertEquals(TEST_DIR_INDEX, mDir.getDirIndex());
   }
 
   /**
@@ -288,7 +284,7 @@ public final class StorageDirTest {
     mDir.addBlockMeta(blockMeta2);
 
     List<Long> actual = mDir.getBlockIds();
-    assertEquals(Sets.newHashSet(blockId1, blockId2), new HashSet<>(actual));
+    Assert.assertEquals(Sets.newHashSet(blockId1, blockId2), new HashSet<>(actual));
   }
 
   /**
@@ -305,7 +301,7 @@ public final class StorageDirTest {
     mDir.addBlockMeta(blockMeta2);
 
     List<BlockMeta> actual = mDir.getBlocks();
-    assertEquals(Sets.newHashSet(blockMeta1, blockMeta2), new HashSet<>(actual));
+    Assert.assertEquals(Sets.newHashSet(blockMeta1, blockMeta2), new HashSet<>(actual));
   }
 
   /**
@@ -432,17 +428,17 @@ public final class StorageDirTest {
    */
   @Test
   public void blockMeta() throws Exception {
-    assertFalse(mDir.hasBlockMeta(TEST_BLOCK_ID));
-    assertEquals(TEST_DIR_CAPACITY, mDir.getAvailableBytes());
+    Assert.assertFalse(mDir.hasBlockMeta(TEST_BLOCK_ID));
+    Assert.assertEquals(TEST_DIR_CAPACITY, mDir.getAvailableBytes());
 
     mDir.addBlockMeta(mBlockMeta);
-    assertTrue(mDir.hasBlockMeta(TEST_BLOCK_ID));
-    assertEquals(mBlockMeta, mDir.getBlockMeta(TEST_BLOCK_ID));
-    assertEquals(TEST_DIR_CAPACITY - TEST_BLOCK_SIZE, mDir.getAvailableBytes());
+    Assert.assertTrue(mDir.hasBlockMeta(TEST_BLOCK_ID));
+    Assert.assertEquals(mBlockMeta, mDir.getBlockMeta(TEST_BLOCK_ID));
+    Assert.assertEquals(TEST_DIR_CAPACITY - TEST_BLOCK_SIZE, mDir.getAvailableBytes());
 
     mDir.removeBlockMeta(mBlockMeta);
-    assertFalse(mDir.hasBlockMeta(TEST_BLOCK_ID));
-    assertEquals(TEST_DIR_CAPACITY, mDir.getAvailableBytes());
+    Assert.assertFalse(mDir.hasBlockMeta(TEST_BLOCK_ID));
+    Assert.assertEquals(TEST_DIR_CAPACITY, mDir.getAvailableBytes());
   }
 
   /**
@@ -451,17 +447,17 @@ public final class StorageDirTest {
    */
   @Test
   public void tempBlockMeta() throws Exception {
-    assertFalse(mDir.hasTempBlockMeta(TEST_TEMP_BLOCK_ID));
-    assertEquals(TEST_DIR_CAPACITY, mDir.getAvailableBytes());
+    Assert.assertFalse(mDir.hasTempBlockMeta(TEST_TEMP_BLOCK_ID));
+    Assert.assertEquals(TEST_DIR_CAPACITY, mDir.getAvailableBytes());
 
     mDir.addTempBlockMeta(mTempBlockMeta);
-    assertTrue(mDir.hasTempBlockMeta(TEST_TEMP_BLOCK_ID));
-    assertEquals(mTempBlockMeta, mDir.getTempBlockMeta(TEST_TEMP_BLOCK_ID));
-    assertEquals(TEST_DIR_CAPACITY - TEST_TEMP_BLOCK_SIZE, mDir.getAvailableBytes());
+    Assert.assertTrue(mDir.hasTempBlockMeta(TEST_TEMP_BLOCK_ID));
+    Assert.assertEquals(mTempBlockMeta, mDir.getTempBlockMeta(TEST_TEMP_BLOCK_ID));
+    Assert.assertEquals(TEST_DIR_CAPACITY - TEST_TEMP_BLOCK_SIZE, mDir.getAvailableBytes());
 
     mDir.removeTempBlockMeta(mTempBlockMeta);
-    assertFalse(mDir.hasTempBlockMeta(TEST_TEMP_BLOCK_ID));
-    assertEquals(TEST_DIR_CAPACITY, mDir.getAvailableBytes());
+    Assert.assertFalse(mDir.hasTempBlockMeta(TEST_TEMP_BLOCK_ID));
+    Assert.assertEquals(TEST_DIR_CAPACITY, mDir.getAvailableBytes());
   }
 
   /**
@@ -470,10 +466,10 @@ public final class StorageDirTest {
   @Test
   public void resizeTempBlockMeta() throws Exception {
     mDir.addTempBlockMeta(mTempBlockMeta);
-    assertEquals(TEST_DIR_CAPACITY - TEST_TEMP_BLOCK_SIZE, mDir.getAvailableBytes());
+    Assert.assertEquals(TEST_DIR_CAPACITY - TEST_TEMP_BLOCK_SIZE, mDir.getAvailableBytes());
     final long newSize = TEST_TEMP_BLOCK_SIZE + 10;
     mDir.resizeTempBlockMeta(mTempBlockMeta, newSize);
-    assertEquals(TEST_DIR_CAPACITY - newSize, mDir.getAvailableBytes());
+    Assert.assertEquals(TEST_DIR_CAPACITY - newSize, mDir.getAvailableBytes());
   }
 
   /**
@@ -488,10 +484,10 @@ public final class StorageDirTest {
       mDir.resizeTempBlockMeta(mTempBlockMeta, newSize);
       Assert.fail("Should throw an Exception when newSize is smaller than oldSize");
     } catch (Exception e) {
-      assertTrue(e instanceof InvalidWorkerStateException);
+      Assert.assertTrue(e instanceof InvalidWorkerStateException);
       Assert.assertThat(e.getMessage(),
           CoreMatchers.equalTo("Shrinking block, not supported!"));
-      assertEquals(TEST_TEMP_BLOCK_SIZE, mTempBlockMeta.getBlockSize());
+      Assert.assertEquals(TEST_TEMP_BLOCK_SIZE, mTempBlockMeta.getBlockSize());
     }
   }
 
@@ -504,7 +500,7 @@ public final class StorageDirTest {
     mDir.addTempBlockMeta(mTempBlockMeta);
     // resize the temp block size to the dir capacity, which is the limit
     mDir.resizeTempBlockMeta(mTempBlockMeta, TEST_DIR_CAPACITY);
-    assertEquals(TEST_DIR_CAPACITY, mTempBlockMeta.getBlockSize());
+    Assert.assertEquals(TEST_DIR_CAPACITY, mTempBlockMeta.getBlockSize());
     mThrown.expect(IllegalStateException.class);
     mThrown.expectMessage("Available bytes should always be non-negative");
     // resize again, now the newSize is more than available bytes, exception thrown
@@ -542,19 +538,19 @@ public final class StorageDirTest {
     for (TempBlockMeta tempBlockMeta : actual) {
       actualBlockIds.add(tempBlockMeta.getBlockId());
     }
-    assertEquals(Sets.newHashSet(tempBlockMeta1, tempBlockMeta2),
+    Assert.assertEquals(Sets.newHashSet(tempBlockMeta1, tempBlockMeta2),
         new HashSet<>(actual));
-    assertTrue(mDir.hasTempBlockMeta(tempBlockId1));
-    assertTrue(mDir.hasTempBlockMeta(tempBlockId2));
+    Assert.assertTrue(mDir.hasTempBlockMeta(tempBlockId1));
+    Assert.assertTrue(mDir.hasTempBlockMeta(tempBlockId2));
 
     // Two temp blocks created by TEST_SESSION_ID are expected to be removed
     mDir.cleanupSessionTempBlocks(TEST_SESSION_ID, actualBlockIds);
-    assertFalse(mDir.hasTempBlockMeta(tempBlockId1));
-    assertFalse(mDir.hasTempBlockMeta(tempBlockId2));
+    Assert.assertFalse(mDir.hasTempBlockMeta(tempBlockId1));
+    Assert.assertFalse(mDir.hasTempBlockMeta(tempBlockId2));
     // Temp block created by otherSessionId is expected to stay
-    assertTrue(mDir.hasTempBlockMeta(tempBlockId3));
+    Assert.assertTrue(mDir.hasTempBlockMeta(tempBlockId3));
     // Block created by TEST_SESSION_ID is expected to stay
-    assertTrue(mDir.hasBlockMeta(TEST_BLOCK_ID));
+    Assert.assertTrue(mDir.hasBlockMeta(TEST_BLOCK_ID));
   }
 
   /**
@@ -563,7 +559,7 @@ public final class StorageDirTest {
   @Test
   public void toBlockStoreLocation() {
     StorageTier tier = mDir.getParentTier();
-    assertEquals(new BlockStoreLocation(tier.getTierAlias(), mDir.getDirIndex()),
+    Assert.assertEquals(new BlockStoreLocation(tier.getTierAlias(), mDir.getDirIndex()),
         mDir.toBlockStoreLocation());
   }
 }

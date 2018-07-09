@@ -11,7 +11,7 @@
 
 package alluxio.client.file.options;
 
-import alluxio.test.util.CommonUtils;
+import alluxio.CommonTestUtils;
 import alluxio.wire.LoadMetadataType;
 
 import org.junit.Assert;
@@ -31,7 +31,7 @@ public class ExistsOptionsTest {
 
   @Test
   public void equalsTest() throws Exception {
-    CommonUtils.testEquals(ExistsOptions.class);
+    CommonTestUtils.testEquals(ExistsOptions.class);
   }
 
   @Test

@@ -200,14 +200,14 @@ public final class FormatUtils {
   }
 
   /**
-   * Regular expression pattern to separate digits (negative sign allowed) and letters in a string.
+   * Regular expression pattern to separate digits and letters in a string.
    */
-  private static final Pattern SEP_DIGIT_LETTER = Pattern.compile("([-]?[0-9]*)([a-zA-Z]*)");
+  private static final Pattern SEP_DIGIT_LETTER = Pattern.compile("([0-9]*)([a-zA-Z]*)");
 
   /**
-   * Parses a String size to Milliseconds. Supports negative numbers.
+   * Parses a String size to Milliseconds.
    *
-   * @param timeSize the size of a time, e.g. 1M, 5H, 10D, -1
+   * @param timeSize the size of a time, e.g. 1M, 5H, 10D
    * @return the time size in milliseconds
    */
   public static long parseTimeSize(String timeSize) {
@@ -220,26 +220,21 @@ public final class FormatUtils {
       size = m.group(2);
     }
     double douTime = Double.parseDouble(time);
-    long sign = 1;
-    if (douTime < 0) {
-      sign = -1;
-      douTime = -douTime;
-    }
     size = size.toLowerCase();
     if (size.isEmpty() || size.equalsIgnoreCase("ms")
         || size.equalsIgnoreCase("millisecond")) {
-      return sign * (long) (douTime + alpha);
+      return (long) (douTime + alpha);
     } else if (size.equalsIgnoreCase("s") || size.equalsIgnoreCase("sec")
         || size.equalsIgnoreCase("second")) {
-      return sign * (long) (douTime * Constants.SECOND + alpha);
+      return (long) (douTime * Constants.SECOND + alpha);
     } else if (size.equalsIgnoreCase("m") || size.equalsIgnoreCase("min")
         || size.equalsIgnoreCase("minute")) {
-      return sign * (long) (douTime * Constants.MINUTE + alpha);
+      return (long) (douTime * Constants.MINUTE + alpha);
     } else if (size.equalsIgnoreCase("h") || size.equalsIgnoreCase("hr")
         || size.equalsIgnoreCase("hour")) {
-      return sign * (long) (douTime * Constants.HOUR + alpha);
+      return (long) (douTime * Constants.HOUR + alpha);
     } else if (size.equalsIgnoreCase("d") || size.equalsIgnoreCase("day")) {
-      return sign * (long) (douTime * Constants.DAY + alpha);
+      return (long) (douTime * Constants.DAY + alpha);
     } else {
       throw new IllegalArgumentException("Fail to parse " + timeSize + " to milliseconds");
     }

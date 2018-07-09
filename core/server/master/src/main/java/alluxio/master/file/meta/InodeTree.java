@@ -23,9 +23,7 @@ import alluxio.exception.FileAlreadyExistsException;
 import alluxio.exception.FileDoesNotExistException;
 import alluxio.exception.InvalidPathException;
 import alluxio.exception.PreconditionMessage;
-import alluxio.exception.status.UnavailableException;
 import alluxio.master.block.ContainerIdGenerable;
-import alluxio.master.file.BlockDeletionContext;
 import alluxio.master.file.options.CreateDirectoryOptions;
 import alluxio.master.file.options.CreateFileOptions;
 import alluxio.master.file.options.CreatePathOptions;
@@ -40,7 +38,6 @@ import alluxio.proto.journal.Journal;
 import alluxio.retry.ExponentialBackoffRetry;
 import alluxio.retry.RetryPolicy;
 import alluxio.security.authorization.Mode;
-import alluxio.underfs.UfsStatus;
 import alluxio.underfs.UnderFileSystem;
 import alluxio.underfs.options.MkdirsOptions;
 import alluxio.util.io.PathUtils;
@@ -61,11 +58,10 @@ import java.util.NoSuchElementException;
 import java.util.Queue;
 import java.util.Set;
 
-import javax.annotation.Nullable;
 import javax.annotation.concurrent.NotThreadSafe;
 
 /**
- * Represents the tree of Inodes.
+ * Represents the tree of Inode's.
  */
 @NotThreadSafe
 // TODO(jiri): Make this class thread-safe.
@@ -153,7 +149,7 @@ public class InodeTree implements JournalEntryIterable {
    * @param group the root group
    * @param mode the root mode
    */
-  public void initializeRoot(String owner, String group, Mode mode) throws UnavailableException {
+  public void initializeRoot(String owner, String group, Mode mode) {
     if (mRoot == null) {
       InodeDirectory root = InodeDirectory.create(mDirectoryIdGenerator.getNewDirectoryId(),
           NO_PARENT, ROOT_INODE_NAME,
@@ -165,7 +161,6 @@ public class InodeTree implements JournalEntryIterable {
   /**
    * @return username of root of inode tree, null if the inode tree is not initialized
    */
-  @Nullable
   public String getRootUserName() {
     if (mRoot == null) {
       return null;
@@ -602,17 +597,11 @@ public class InodeTree implements JournalEntryIterable {
             continue;
           }
         } else {
-          try {
-            // Successfully added the child, while holding the write lock.
-            dir.setPinned(currentInodeDirectory.isPinned());
-            if (options.isPersisted()) {
-              // Do not journal the persist entry, since a creation entry will be journaled instead.
-              syncPersistDirectory(dir, NoopJournalContext.INSTANCE);
-            }
-          } catch (Exception e) {
-            // Failed to persist the directory, so remove it from the parent.
-            currentInodeDirectory.removeChild(dir);
-            throw e;
+          // Successfully added the child, while holding the write lock.
+          dir.setPinned(currentInodeDirectory.isPinned());
+          if (options.isPersisted()) {
+            // Do not journal the persist entry, since a creation entry will be journaled instead.
+            syncPersistDirectory(dir, NoopJournalContext.INSTANCE);
           }
           // Journal the new inode.
           journalContext.append(dir.toJournalEntry());
@@ -786,11 +775,10 @@ public class InodeTree implements JournalEntryIterable {
    * @param opTimeMs The operation time
    * @param deleteOptions the delete options
    * @param journalContext the journal context
-   * @param blockDeletionContext the block deletion context
    * @throws FileDoesNotExistException if the Inode cannot be retrieved
    */
   public void deleteInode(LockedInodePath inodePath, long opTimeMs, DeleteOptions deleteOptions,
-      JournalContext journalContext, BlockDeletionContext blockDeletionContext)
+      JournalContext journalContext)
       throws FileDoesNotExistException {
     Inode<?> inode = inodePath.getInode();
     InodeDirectory parent = (InodeDirectory) mInodes.getFirst(inode.getParentId());
@@ -806,10 +794,6 @@ public class InodeTree implements JournalEntryIterable {
         .setRecursive(deleteOptions.isRecursive())
         .setOpTimeMs(opTimeMs).build();
     journalContext.append(Journal.JournalEntry.newBuilder().setDeleteFile(deleteFile).build());
-
-    if (inode.isFile()) {
-      blockDeletionContext.registerBlocksForDeletion(((InodeFile) inode).getBlockIds());
-    }
 
     parent.removeChild(inode);
     parent.setLastModificationTimeMs(opTimeMs);
@@ -1015,23 +999,7 @@ public class InodeTree implements JournalEntryIterable {
           MkdirsOptions mkdirsOptions =
               MkdirsOptions.defaults().setCreateParent(false).setOwner(dir.getOwner())
                   .setGroup(dir.getGroup()).setMode(new Mode(dir.getMode()));
-          if (!ufs.mkdirs(ufsUri, mkdirsOptions)) {
-            // Directory might already exist. Try loading the status from ufs.
-            UfsStatus status;
-            try {
-              status = ufs.getStatus(ufsUri);
-            } catch (Exception e) {
-              throw new IOException(String.format("Cannot sync UFS directory %s: %s.", ufsUri,
-                  e.getMessage()), e);
-            }
-            if (status.isFile()) {
-              throw new InvalidPathException(String.format(
-                  "Error persisting directory. A file exists at the UFS location %s.", ufsUri));
-            }
-            dir.setOwner(status.getOwner())
-                .setGroup(status.getGroup())
-                .setMode(status.getMode());
-          }
+          ufs.mkdirs(ufsUri, mkdirsOptions);
           dir.setPersistenceState(PersistenceState.PERSISTED);
 
           // Append the persist entry to the journal.

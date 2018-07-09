@@ -25,7 +25,6 @@ import alluxio.util.executor.ExecutorServiceFactories;
 import alluxio.util.io.PathUtils;
 
 import com.amazonaws.AmazonClientException;
-import com.amazonaws.AmazonServiceException;
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.Protocol;
 import com.amazonaws.auth.AWSCredentialsProvider;
@@ -61,7 +60,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
@@ -307,18 +306,15 @@ public class S3AUnderFileSystem extends ObjectUnderFileSystem {
 
   @Override
   protected List<String> deleteObjects(List<String> keys) throws IOException {
-    if (!Configuration.getBoolean(PropertyKey.UNDERFS_S3A_BULK_DELETE_ENABLED)) {
-      return super.deleteObjects(keys);
-    }
     Preconditions.checkArgument(keys != null && keys.size() <= getListingChunkLengthMax());
     try {
-      List<DeleteObjectsRequest.KeyVersion> keysToDelete = new ArrayList<>();
+      List<DeleteObjectsRequest.KeyVersion> keysToDelete = new LinkedList<>();
       for (String key : keys) {
         keysToDelete.add(new DeleteObjectsRequest.KeyVersion(key));
       }
       DeleteObjectsResult deletedObjectsResult =
           mClient.deleteObjects(new DeleteObjectsRequest(mBucketName).withKeys(keysToDelete));
-      List<String> deletedObjects = new ArrayList<>();
+      List<String> deletedObjects = new LinkedList<>();
       for (DeleteObjectsResult.DeletedObject deletedObject : deletedObjectsResult
           .getDeletedObjects()) {
         deletedObjects.add(deletedObject.getKey());
@@ -411,8 +407,7 @@ public class S3AUnderFileSystem extends ObjectUnderFileSystem {
       ObjectStatus[] ret = new ObjectStatus[objects.size()];
       int i = 0;
       for (S3ObjectSummary obj : objects) {
-        ret[i++] = new ObjectStatus(obj.getKey(), obj.getETag(), obj.getSize(),
-            obj.getLastModified().getTime());
+        ret[i++] = new ObjectStatus(obj.getKey(), obj.getSize(), obj.getLastModified().getTime());
       }
       return ret;
     }
@@ -455,8 +450,7 @@ public class S3AUnderFileSystem extends ObjectUnderFileSystem {
       ObjectStatus[] ret = new ObjectStatus[objects.size()];
       int i = 0;
       for (S3ObjectSummary obj : objects) {
-        ret[i++] = new ObjectStatus(obj.getKey(), obj.getETag(), obj.getSize(),
-            obj.getLastModified().getTime());
+        ret[i++] = new ObjectStatus(obj.getKey(), obj.getSize(), obj.getLastModified().getTime());
       }
       return ret;
     }
@@ -482,18 +476,17 @@ public class S3AUnderFileSystem extends ObjectUnderFileSystem {
 
   @Override
   @Nullable
-  protected ObjectStatus getObjectStatus(String key) throws IOException {
+  protected ObjectStatus getObjectStatus(String key) {
     try {
       ObjectMetadata meta = mClient.getObjectMetadata(mBucketName, key);
-      return new ObjectStatus(key, meta.getETag(), meta.getContentLength(),
-          meta.getLastModified().getTime());
-    } catch (AmazonServiceException e) {
-      if (e.getStatusCode() == 404) { // file not found, possible for exists calls
+      if (meta == null) {
         return null;
       }
-      throw new IOException(e);
+      return new ObjectStatus(key, meta.getContentLength(), meta.getLastModified().getTime());
     } catch (AmazonClientException e) {
-      throw new IOException(e);
+      LOG.debug("getObjectStatus error for {}, exception: {}. Assuming file does not exist.", key,
+          e.getMessage());
+      return null;
     }
   }
 

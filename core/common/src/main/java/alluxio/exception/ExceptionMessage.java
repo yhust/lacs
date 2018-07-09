@@ -33,7 +33,6 @@ public enum ExceptionMessage {
   PATH_INVALID("Path {0} is invalid"),
 
   // general block
-  BLOCK_UNAVAILABLE("Block {0} is unavailable in both Alluxio and UFS."),
   CANNOT_REQUEST_SPACE("Not enough space left on worker {0} to store blockId {1,number,#}."),
   NO_LOCAL_WORKER("Local address {0} requested but there is no local worker"),
   NO_SPACE_FOR_BLOCK_ON_WORKER("There is no worker with enough space for a new block of size {0}"),
@@ -89,14 +88,10 @@ public enum ExceptionMessage {
   MOVE_UNCOMMITTED_BLOCK("Cannot move uncommitted blockId {0,number,#}"),
   NO_BLOCK_ID_FOUND("blockId {0,number,#} not found"),
   NO_EVICTION_PLAN_TO_FREE_SPACE("No eviction plan by evictor to free space"),
-  NO_SPACE_FOR_BLOCK_ALLOCATION_TIMEOUT(
-      "Failed to allocate {0,number,#} bytes after {1}ms for blockId {2,number,#}"),
-  NO_SPACE_FOR_BLOCK_ALLOCATION_RETRIES_EXCEEDED(
-      "Failed to allocate {0,number,#} bytes after {1} attempts for blockId {2,number,#}"),
-  NO_SPACE_FOR_BLOCK_MOVE_TIMEOUT(
-      "Failed to find space in {0} to move blockId {1,number,#} after {2}ms"),
-  NO_SPACE_FOR_BLOCK_MOVE_RETRIES_EXCEEDED(
-      "Failed to find space in {0} to move blockId {1,number,#} after {2} attempts"),
+  NO_SPACE_FOR_BLOCK_ALLOCATION(
+      "Failed to allocate {0,number,#} bytes after {1} retries for blockId {2,number,#}"),
+  NO_SPACE_FOR_BLOCK_MOVE(
+      "Failed to find space in {0} to move blockId {1,number,#} after {2} retries"),
   REMOVE_UNCOMMITTED_BLOCK("Cannot remove uncommitted blockId {0,number,#}"),
   TEMP_BLOCK_ID_COMMITTED(
       "Temp blockId {0,number,#} is not available, because it is already committed"),
@@ -156,9 +151,6 @@ public enum ExceptionMessage {
   // block master
   NO_WORKER_FOUND("No worker with workerId {0,number,#} is found"),
 
-  // safe mode
-  MASTER_IN_SAFEMODE("Alluxio master is in safe mode. Please try again later."),
-
   // file system master ufs
   FAILED_UFS_CREATE("Failed to create {0} in the under file system"),
   FAILED_UFS_RENAME("Failed to rename {0} to {1} in the under file system"),
@@ -181,7 +173,6 @@ public enum ExceptionMessage {
   DESTINATION_CANNOT_BE_FILE(
       "The destination cannot be an existing file when the source is a directory or a list of "
           + "files."),
-  INVALID_TIME("{0} is not valid time"),
 
   // lineage
   DELETE_LINEAGE_WITH_CHILDREN("The lineage {0} to delete has child lineages"),

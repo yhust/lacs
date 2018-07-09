@@ -15,23 +15,22 @@ import alluxio.Configuration;
 import alluxio.PropertyKey;
 import alluxio.client.block.BlockMasterClient;
 import alluxio.client.block.BlockMasterClientPool;
-import alluxio.network.netty.NettyClient;
+import alluxio.client.netty.NettyClient;
 import alluxio.exception.ExceptionMessage;
 import alluxio.exception.status.UnavailableException;
 import alluxio.master.MasterInquireClient;
 import alluxio.metrics.MetricsSystem;
-import alluxio.network.netty.NettyChannelPool;
+import alluxio.network.connection.NettyChannelPool;
 import alluxio.resource.CloseableResource;
-import alluxio.util.CommonUtils;
 import alluxio.util.network.NetworkAddressUtils;
 import alluxio.wire.WorkerInfo;
 import alluxio.wire.WorkerNetAddress;
 
 import com.codahale.metrics.Gauge;
+import com.google.common.base.Preconditions;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import io.netty.util.internal.chmv8.ConcurrentHashMapV8;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -39,8 +38,6 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.concurrent.GuardedBy;
 import javax.annotation.concurrent.ThreadSafe;
@@ -59,9 +56,7 @@ import javax.security.auth.Subject;
  */
 @ThreadSafe
 public final class FileSystemContext implements Closeable {
-  private static final Logger LOG = LoggerFactory.getLogger(FileSystemContext.class);
-
-  public static final FileSystemContext INSTANCE = create();
+  public static final FileSystemContext INSTANCE = create(null);
 
   static {
     MetricsSystem.startSinks();
@@ -72,12 +67,9 @@ public final class FileSystemContext implements Closeable {
   private volatile FileSystemMasterClientPool mFileSystemMasterClientPool;
   private volatile BlockMasterClientPool mBlockMasterClientPool;
 
-  // Closed flag for debugging information.
-  private final AtomicBoolean mClosed;
-
   // The netty data server channel pools.
-  private final ConcurrentHashMap<SocketAddress, NettyChannelPool>
-      mNettyChannelPools = new ConcurrentHashMap<>();
+  private final ConcurrentHashMapV8<SocketAddress, NettyChannelPool>
+      mNettyChannelPools = new ConcurrentHashMapV8<>();
 
   /** The shared master inquire client associated with the {@link FileSystemContext}. */
   @GuardedBy("this")
@@ -99,6 +91,8 @@ public final class FileSystemContext implements Closeable {
   private final Subject mParentSubject;
 
   /**
+   * Creates a new file system context.
+   *
    * @return the context
    */
   public static FileSystemContext create() {
@@ -106,23 +100,14 @@ public final class FileSystemContext implements Closeable {
   }
 
   /**
+   * Creates a file system context with a subject.
+   *
    * @param subject the parent subject, set to null if not present
    * @return the context
    */
   public static FileSystemContext create(Subject subject) {
-    return create(subject, MasterInquireClient.Factory.create());
-  }
-
-  /**
-   * @param subject the parent subject, set to null if not present
-   * @param masterInquireClient the client to use for determining the master; note that if the
-   *        context is reset, this client will be replaced with a new masterInquireClient based on
-   *        global configuration
-   * @return the context
-   */
-  public static FileSystemContext create(Subject subject, MasterInquireClient masterInquireClient) {
     FileSystemContext context = new FileSystemContext(subject);
-    context.init(masterInquireClient);
+    context.init();
     return context;
   }
 
@@ -133,20 +118,16 @@ public final class FileSystemContext implements Closeable {
    */
   private FileSystemContext(Subject subject) {
     mParentSubject = subject;
-    mClosed = new AtomicBoolean(false);
   }
 
   /**
    * Initializes the context. Only called in the factory methods and reset.
-   *
-   * @param masterInquireClient the client to use for determining the master
    */
-  private synchronized void init(MasterInquireClient masterInquireClient) {
-    mMasterInquireClient = masterInquireClient;
+  private synchronized void init() {
+    mMasterInquireClient = MasterInquireClient.Factory.create();
     mFileSystemMasterClientPool =
         new FileSystemMasterClientPool(mParentSubject, mMasterInquireClient);
     mBlockMasterClientPool = new BlockMasterClientPool(mParentSubject, mMasterInquireClient);
-    mClosed.set(false);
   }
 
   /**
@@ -160,7 +141,6 @@ public final class FileSystemContext implements Closeable {
     mFileSystemMasterClientPool = null;
     mBlockMasterClientPool.close();
     mBlockMasterClientPool = null;
-    mMasterInquireClient = null;
 
     for (NettyChannelPool pool : mNettyChannelPools.values()) {
       pool.close();
@@ -168,9 +148,9 @@ public final class FileSystemContext implements Closeable {
     mNettyChannelPools.clear();
 
     synchronized (this) {
+      mMasterInquireClient = null;
       mLocalWorkerInitialized = false;
       mLocalWorker = null;
-      mClosed.set(true);
     }
   }
 
@@ -180,7 +160,7 @@ public final class FileSystemContext implements Closeable {
    */
   public synchronized void reset() throws IOException {
     close();
-    init(MasterInquireClient.Factory.create());
+    init();
   }
 
   /**
@@ -278,13 +258,8 @@ public final class FileSystemContext implements Closeable {
    */
   public void releaseNettyChannel(WorkerNetAddress workerNetAddress, Channel channel) {
     SocketAddress address = NetworkAddressUtils.getDataPortSocketAddress(workerNetAddress);
-    if (mNettyChannelPools.containsKey(address)) {
-      mNettyChannelPools.get(address).release(channel);
-    } else {
-      LOG.warn("No channel pool for address {}, closing channel instead. Context is closed: {}",
-          address, mClosed.get());
-      CommonUtils.closeChannel(channel);
-    }
+    Preconditions.checkArgument(mNettyChannelPools.containsKey(address));
+    mNettyChannelPools.get(address).release(channel);
   }
 
   /**

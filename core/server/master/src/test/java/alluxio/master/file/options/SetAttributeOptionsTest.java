@@ -11,7 +11,7 @@
 
 package alluxio.master.file.options;
 
-import alluxio.test.util.CommonUtils;
+import alluxio.CommonTestUtils;
 import alluxio.wire.TtlAction;
 
 import org.junit.Assert;
@@ -57,7 +57,7 @@ public final class SetAttributeOptionsTest {
 
   @Test
   public void equalsTest() throws Exception {
-    CommonUtils.testEquals(SetAttributeOptions.class);
+    CommonTestUtils.testEquals(SetAttributeOptions.class);
   }
 
   @Test

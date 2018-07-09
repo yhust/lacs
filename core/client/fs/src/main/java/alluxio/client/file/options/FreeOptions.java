@@ -13,7 +13,6 @@ package alluxio.client.file.options;
 
 import alluxio.annotation.PublicApi;
 import alluxio.thrift.FreeTOptions;
-import alluxio.wire.CommonOptions;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -28,7 +27,6 @@ import javax.annotation.concurrent.NotThreadSafe;
 @NotThreadSafe
 @JsonInclude(Include.NON_EMPTY)
 public final class FreeOptions {
-  private CommonOptions mCommonOptions;
   private boolean mForced;
   private boolean mRecursive;
 
@@ -40,16 +38,8 @@ public final class FreeOptions {
   }
 
   private FreeOptions() {
-    mCommonOptions = CommonOptions.defaults();
     mForced = false;
     mRecursive = false;
-  }
-
-  /**
-   * @return the common options
-   */
-  public CommonOptions getCommonOptions() {
-    return mCommonOptions;
   }
 
   /**
@@ -66,15 +56,6 @@ public final class FreeOptions {
    */
   public boolean isRecursive() {
     return mRecursive;
-  }
-
-  /**
-   * @param options the common options
-   * @return the updated options object
-   */
-  public FreeOptions setCommonOptions(CommonOptions options) {
-    mCommonOptions = options;
-    return this;
   }
 
   /**
@@ -110,22 +91,17 @@ public final class FreeOptions {
       return false;
     }
     FreeOptions that = (FreeOptions) o;
-    return Objects.equal(mCommonOptions, that.mCommonOptions)
-        && Objects.equal(mForced, that.mForced)
-        && Objects.equal(mRecursive, that.mRecursive);
+    return Objects.equal(mForced, that.mForced) && Objects.equal(mRecursive, that.mRecursive);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(mCommonOptions, mForced, mRecursive);
+    return Objects.hashCode(mForced, mRecursive);
   }
 
   @Override
   public String toString() {
-    return Objects.toStringHelper(this)
-        .add("commonOptions", mCommonOptions)
-        .add("forced", mForced)
-        .add("recursive", mRecursive)
+    return Objects.toStringHelper(this).add("forced", mForced).add("recursive", mRecursive)
         .toString();
   }
 
@@ -136,7 +112,6 @@ public final class FreeOptions {
     FreeTOptions options = new FreeTOptions();
     options.setForced(mForced);
     options.setRecursive(mRecursive);
-    options.setCommonOptions(mCommonOptions.toThrift());
     return options;
   }
 }

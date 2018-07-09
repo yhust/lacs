@@ -82,8 +82,6 @@ group: Resources
 
 -   要进行Hadoop文件系统的契约式设计测试（用hadoop 2.6.0），运行：`mvn -PcontractTest clean test`。
 
--   如果libfuse库丢失，测试将被忽略。要运行这些测试，请安装[本页]中所提到的正确的库(Mounting-Alluxio-FS-with-FUSE.html#requirements)。
-
 #### 编码风格
 
 -   请遵循已有代码的风格。具体地，我们使用[Google Java style](https://google.github.io/styleguide/javaguide.html)风格，但有以下不同：
@@ -91,7 +89,6 @@ group: Resources
     -  第三方导入被整理到一起以使得IDE格式化起来更简单
     -  类成员变量要使用`m`前缀，例如`private WorkerClient mWorkerClient;`
     -  静态成员变量要使用`s`前缀，例如`public static String sUnderFSAddress;`
--   Bash脚本遵循[Google Shell style](https://google.github.io/styleguide/shell.xml), 且必须兼容Bash 3.x版本
 -   你可以下载我们提供的[Eclipse formatter](../resources/alluxio-code-formatter-eclipse.xml)
     -  为了让Eclipse能够正确地组织你的导入, 配置"组织导入"以看上去像
        [这样](../resources/eclipse_imports.png)

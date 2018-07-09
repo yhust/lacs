@@ -59,10 +59,9 @@ public class MasterTestUtils {
       throws Exception {
     String masterJournal = Configuration.get(PropertyKey.MASTER_JOURNAL_FOLDER);
     MasterRegistry registry = new MasterRegistry();
-    SafeModeManager safeModeManager = new TestSafeModeManager();
     JournalSystem journalSystem = JournalTestUtils.createJournalSystem(masterJournal);
-    new BlockMasterFactory().create(registry, journalSystem, safeModeManager);
-    new FileSystemMasterFactory().create(registry, journalSystem, safeModeManager);
+    new BlockMasterFactory().create(registry, journalSystem);
+    new FileSystemMasterFactory().create(registry, journalSystem);
     journalSystem.start();
     journalSystem.setMode(isLeader ? Mode.PRIMARY : Mode.SECONDARY);
     registry.start(isLeader);

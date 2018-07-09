@@ -49,7 +49,6 @@ public final class MockBlockReader implements BlockReader {
     return buf.writeBytes(mBytes).readableBytes() - remaining;
   }
 
-  @Override
   public boolean isClosed() {
     return false;
   }

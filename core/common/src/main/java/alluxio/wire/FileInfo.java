@@ -11,8 +11,6 @@
 
 package alluxio.wire;
 
-import alluxio.Constants;
-
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 
@@ -55,7 +53,6 @@ public final class FileInfo implements Serializable {
   private ArrayList<FileBlockInfo> mFileBlockInfos = new ArrayList<>();
   private long mMountId;
   private int mInAlluxioPercentage;
-  private String mUfsFingerprint = Constants.INVALID_UFS_FINGERPRINT;
 
   /**
    * Creates a new instance of {@link FileInfo}.
@@ -98,9 +95,6 @@ public final class FileInfo implements Serializable {
     }
     mMountId = fileInfo.getMountId();
     mInAlluxioPercentage = fileInfo.getInAlluxioPercentage();
-    if (fileInfo.isSetUfsFingerprint()) {
-      mUfsFingerprint = fileInfo.getUfsFingerprint();
-    }
   }
 
   /**
@@ -279,13 +273,6 @@ public final class FileInfo implements Serializable {
   }
 
   /**
-   * @return the ufs fingerprint for this file
-   */
-  public String getUfsFingerprint() {
-    return mUfsFingerprint;
-  }
-
-  /**
    * @param fileId the file id to use
    * @return the file information
    */
@@ -309,7 +296,7 @@ public final class FileInfo implements Serializable {
    * @return the file information
    */
   public FileInfo setPath(String path) {
-    Preconditions.checkNotNull(path, "path");
+    Preconditions.checkNotNull(path);
     mPath = path;
     return this;
   }
@@ -319,7 +306,7 @@ public final class FileInfo implements Serializable {
    * @return the file information
    */
   public FileInfo setUfsPath(String ufsPath) {
-    Preconditions.checkNotNull(ufsPath, "ufsPath");
+    Preconditions.checkNotNull(ufsPath);
     mUfsPath = ufsPath;
     return this;
   }
@@ -401,7 +388,7 @@ public final class FileInfo implements Serializable {
    * @return the file information
    */
   public FileInfo setBlockIds(List<Long> blockIds) {
-    Preconditions.checkNotNull(blockIds, "blockIds");
+    Preconditions.checkNotNull(blockIds);
     mBlockIds = new ArrayList<>(blockIds);
     return this;
   }
@@ -456,7 +443,7 @@ public final class FileInfo implements Serializable {
    * @return the file information
    */
   public FileInfo setOwner(String owner) {
-    Preconditions.checkNotNull(owner, "owner");
+    Preconditions.checkNotNull(owner);
     mOwner = owner;
     return this;
   }
@@ -466,7 +453,7 @@ public final class FileInfo implements Serializable {
    * @return the file information
    */
   public FileInfo setGroup(String group) {
-    Preconditions.checkNotNull(group, "group");
+    Preconditions.checkNotNull(group);
     mGroup = group;
     return this;
   }
@@ -485,7 +472,7 @@ public final class FileInfo implements Serializable {
    * @return the file information
    */
   public FileInfo setPersistenceState(String persistenceState) {
-    Preconditions.checkNotNull(persistenceState, "persistenceState");
+    Preconditions.checkNotNull(persistenceState);
     mPersistenceState = persistenceState;
     return this;
   }
@@ -518,15 +505,6 @@ public final class FileInfo implements Serializable {
   }
 
   /**
-   * @param ufsFingerprint the ufs fingerprint to use
-   * @return the file information
-   */
-  public FileInfo setUfsFingerprint(String ufsFingerprint) {
-    mUfsFingerprint = ufsFingerprint;
-    return this;
-  }
-
-  /**
    * @return thrift representation of the file information
    */
   protected alluxio.thrift.FileInfo toThrift() {
@@ -540,7 +518,7 @@ public final class FileInfo implements Serializable {
         mCreationTimeMs, mCompleted, mFolder, mPinned, mCacheable, mPersisted, mBlockIds,
         mInMemoryPercentage, mLastModificationTimeMs, mTtl, mOwner, mGroup, mMode,
         mPersistenceState, mMountPoint, fileBlockInfos, ThriftUtils.toThrift(mTtlAction), mMountId,
-        mInAlluxioPercentage, mUfsFingerprint);
+        mInAlluxioPercentage);
     return info;
   }
 
@@ -563,8 +541,7 @@ public final class FileInfo implements Serializable {
         && mOwner.equals(that.mOwner) && mGroup.equals(that.mGroup) && mMode == that.mMode
         && mPersistenceState.equals(that.mPersistenceState) && mMountPoint == that.mMountPoint
         && mFileBlockInfos.equals(that.mFileBlockInfos) && mTtlAction == that.mTtlAction
-        && mMountId == that.mMountId && mInAlluxioPercentage == that.mInAlluxioPercentage
-        && mUfsFingerprint.equals(that.mUfsFingerprint);
+        && mMountId == that.mMountId && mInAlluxioPercentage == that.mInAlluxioPercentage;
   }
 
   @Override
@@ -572,8 +549,7 @@ public final class FileInfo implements Serializable {
     return Objects.hashCode(mFileId, mName, mPath, mUfsPath, mLength, mBlockSizeBytes,
         mCreationTimeMs, mCompleted, mFolder, mPinned, mCacheable, mPersisted, mBlockIds,
         mInMemoryPercentage, mLastModificationTimeMs, mTtl, mOwner, mGroup, mMode,
-        mPersistenceState, mMountPoint, mFileBlockInfos, mTtlAction, mInAlluxioPercentage,
-        mUfsFingerprint);
+        mPersistenceState, mMountPoint, mFileBlockInfos, mTtlAction, mInAlluxioPercentage);
   }
 
   @Override
@@ -588,7 +564,6 @@ public final class FileInfo implements Serializable {
         .add("persistenceState", mPersistenceState).add("mountPoint", mMountPoint)
         .add("fileBlockInfos", mFileBlockInfos)
         .add("mountId", mMountId).add("inAlluxioPercentage", mInAlluxioPercentage)
-        .add("ufsFingerprint", mUfsFingerprint)
         .toString();
   }
 }

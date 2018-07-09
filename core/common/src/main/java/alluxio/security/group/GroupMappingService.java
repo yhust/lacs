@@ -54,11 +54,15 @@ public interface GroupMappingService {
       if (sCachedGroupMapping == null) {
         synchronized (Factory.class) {
           if (sCachedGroupMapping == null) {
-            LOG.debug("Creating new Groups object");
-            GroupMappingService groupMappingService =
-                CommonUtils.createNewClassInstance(Configuration.<GroupMappingService>getClass(
-                    PropertyKey.SECURITY_GROUP_MAPPING_CLASS), null, null);
-            sCachedGroupMapping = new CachedGroupMapping(groupMappingService);
+            try {
+              LOG.debug("Creating new Groups object");
+              GroupMappingService groupMappingService = CommonUtils.createNewClassInstance(
+                  Configuration.<GroupMappingService>getClass(
+                      PropertyKey.SECURITY_GROUP_MAPPING_CLASS), null, null);
+              sCachedGroupMapping = new CachedGroupMapping(groupMappingService);
+            } catch (Exception e) {
+              throw new RuntimeException(e);
+            }
           }
         }
       }

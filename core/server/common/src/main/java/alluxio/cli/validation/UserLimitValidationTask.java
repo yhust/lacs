@@ -14,12 +14,11 @@ package alluxio.cli.validation;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.Map;
 
 /**
  * Task for validating system limit for current user.
  */
-public final class UserLimitValidationTask extends AbstractValidationTask {
+public final class UserLimitValidationTask implements ValidationTask {
   private static final int NUMBER_OF_OPEN_FILES_MIN = 16384;
   private static final int NUMBER_OF_OPEN_FILES_MAX = 800000;
   private static final int NUMBER_OF_USER_PROCESSES_MIN = 16384;
@@ -37,7 +36,7 @@ public final class UserLimitValidationTask extends AbstractValidationTask {
   }
 
   @Override
-  public TaskResult validate(Map<String, String> optionsMap) {
+  public boolean validate() {
     try {
       Process process = Runtime.getRuntime().exec(new String[] {"bash", "-c", mCommand});
       try (BufferedReader processOutputReader = new BufferedReader(
@@ -45,37 +44,37 @@ public final class UserLimitValidationTask extends AbstractValidationTask {
         String line = processOutputReader.readLine();
         if (line == null) {
           System.err.format("Unable to check user limit for %s.%n", mName);
-          return TaskResult.FAILED;
+          return false;
         }
 
         if (line.equals("unlimited")) {
           if (mUpperBound != null) {
             System.err.format("The user limit for %s is unlimited. It should be less than %d%n",
                 mName, mUpperBound);
-            return TaskResult.WARNING;
+            return false;
           }
 
-          return TaskResult.OK;
+          return true;
         }
 
         int value = Integer.parseInt(line);
         if (mUpperBound != null && value > mUpperBound) {
           System.err.format("The user limit for %s is too large. The current value is %d. "
               + "It should be less than %d%n", mName, value, mUpperBound);
-          return TaskResult.WARNING;
+          return false;
         }
 
         if (mLowerBound != null && value < mLowerBound) {
           System.err.format("The user limit for %s is too small. The current value is %d. "
-              + "For production use, it should be bigger than %d%n", mName, value, mLowerBound);
-          return TaskResult.WARNING;
+              + "It should be bigger than %d%n", mName, value, mLowerBound);
+          return false;
         }
 
-        return TaskResult.OK;
+        return true;
       }
     } catch (IOException e) {
       System.err.format("Unable to check user limit for %s: %s.%n", mName, e.getMessage());
-      return TaskResult.FAILED;
+      return false;
     }
   }
 

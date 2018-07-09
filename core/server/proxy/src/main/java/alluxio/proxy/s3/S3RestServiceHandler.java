@@ -212,7 +212,7 @@ public final class S3RestServiceHandler {
   @PUT
   @Path(OBJECT_PARAM)
   @ReturnType("java.lang.Void")
-  @Consumes(MediaType.WILDCARD)
+  @Consumes(MediaType.APPLICATION_OCTET_STREAM)
   public Response createObjectOrUploadPart(@HeaderParam("Content-MD5") final String contentMD5,
       @PathParam("bucket") final String bucket,
       @PathParam("object") final String object,

@@ -63,7 +63,7 @@ public final class BlockMasterSync implements HeartbeatExecutor {
   private final BlockWorker mBlockWorker;
 
   /** The worker ID for the worker. This may change if the master asks the worker to re-register. */
-  private final AtomicReference<Long> mWorkerId;
+  private AtomicReference<Long> mWorkerId;
 
   /** The net address of the worker. */
   private final WorkerNetAddress mWorkerAddress;

@@ -29,7 +29,6 @@ import alluxio.master.LocalAlluxioCluster;
 import alluxio.master.MasterRegistry;
 import alluxio.master.MasterTestUtils;
 import alluxio.master.NoopMaster;
-import alluxio.master.file.DefaultFileSystemMaster;
 import alluxio.master.file.FileSystemMaster;
 import alluxio.master.file.options.GetStatusOptions;
 import alluxio.master.file.options.ListStatusOptions;
@@ -490,14 +489,17 @@ public class UfsJournalIntegrationTest extends BaseIntegrationTest {
 
     // Start a standby master, which will replay the mount entry from the journal.
     MasterRegistry registry = MasterTestUtils.createStandbyFileSystemMasterFromJournal();
-    Assert.assertTrue(registry.get(FileSystemMaster.class) instanceof DefaultFileSystemMaster);
-    final DefaultFileSystemMaster fsMaster =
-        (DefaultFileSystemMaster) registry.get(FileSystemMaster.class);
+    final FileSystemMaster fsMaster = registry.get(FileSystemMaster.class);
     try {
-      CommonUtils.waitFor("journal checkpoint replay", new Function<Void, Boolean>() {
+      CommonUtils.waitFor("standby journal checkpoint replay", new Function<Void, Boolean>() {
         @Override
         public Boolean apply(Void input) {
-          return fsMaster.getMountTable().containsKey(mountUri.toString());
+          try {
+            fsMaster.listStatus(mountUri, ListStatusOptions.defaults());
+            return true;
+          } catch (Exception e) {
+            return false;
+          }
         }
       }, WaitForOptions.defaults().setTimeoutMs(60 * Constants.SECOND_MS));
     } finally {

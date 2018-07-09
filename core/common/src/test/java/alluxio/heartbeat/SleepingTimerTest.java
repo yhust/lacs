@@ -19,8 +19,6 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 
-import java.time.Duration;
-
 /**
  * Unit tests for {@link SleepingTimer}.
  */
@@ -56,9 +54,9 @@ public final class SleepingTimerTest {
     final SleepingTimer timer =
         new SleepingTimer(THREAD_NAME, INTERVAL_MS, mMockLogger, mFakeClock, mMockSleeper);
     timer.tick(); // first tick won't sleep
-    Mockito.verify(mMockSleeper, Mockito.times(0)).sleep(Mockito.any(Duration.class));
+    Mockito.verify(mMockSleeper, Mockito.times(0)).sleep(Mockito.anyLong());
     timer.tick();
-    Mockito.verify(mMockSleeper).sleep(Duration.ofMillis(INTERVAL_MS));
+    Mockito.verify(mMockSleeper).sleep(INTERVAL_MS);
   }
 
   /**
@@ -74,6 +72,6 @@ public final class SleepingTimerTest {
     stimer.tick();
     mFakeClock.addTimeMs(INTERVAL_MS / 3);
     stimer.tick();
-    Mockito.verify(mMockSleeper).sleep(Duration.ofMillis(INTERVAL_MS - (INTERVAL_MS / 3)));
+    Mockito.verify(mMockSleeper).sleep(INTERVAL_MS - (INTERVAL_MS / 3));
   }
 }

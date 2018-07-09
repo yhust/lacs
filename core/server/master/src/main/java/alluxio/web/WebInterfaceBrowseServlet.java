@@ -24,7 +24,6 @@ import alluxio.exception.AccessControlException;
 import alluxio.exception.AlluxioException;
 import alluxio.exception.FileDoesNotExistException;
 import alluxio.exception.InvalidPathException;
-import alluxio.exception.status.UnavailableException;
 import alluxio.master.MasterProcess;
 import alluxio.master.block.BlockMaster;
 import alluxio.master.file.FileSystemMaster;
@@ -204,11 +203,6 @@ public final class WebInterfaceBrowseServlet extends HttpServlet {
       request.setAttribute("invalidPathError", "Error: Invalid Path " + e.getLocalizedMessage());
       getServletContext().getRequestDispatcher("/browse.jsp").forward(request, response);
       return;
-    } catch (UnavailableException e) {
-      request.setAttribute("invalidPathError",
-          "The service is temporarily unavailable. " + e.getMessage());
-      getServletContext().getRequestDispatcher("/browse.jsp").forward(request, response);
-      return;
     } catch (IOException e) {
       request.setAttribute("invalidPathError",
           "Error: File " + currentPath + " is not available " + e.getMessage());
@@ -300,8 +294,7 @@ public final class WebInterfaceBrowseServlet extends HttpServlet {
    * @throws AccessControlException if permission checking fails
    */
   private void setPathDirectories(AlluxioURI path, HttpServletRequest request)
-      throws FileDoesNotExistException, InvalidPathException, AccessControlException,
-      UnavailableException {
+      throws FileDoesNotExistException, InvalidPathException, AccessControlException {
     FileSystemMaster fileSystemMaster = mMasterProcess.getMaster(FileSystemMaster.class);
     if (path.isRoot()) {
       request.setAttribute("pathInfos", new UIFileInfo[0]);

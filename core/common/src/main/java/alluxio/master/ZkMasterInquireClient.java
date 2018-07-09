@@ -28,7 +28,6 @@ import org.apache.zookeeper.data.Stat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Closeable;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,7 +39,7 @@ import javax.annotation.concurrent.ThreadSafe;
  * Utility to get leader from zookeeper.
  */
 @ThreadSafe
-public final class ZkMasterInquireClient implements MasterInquireClient, Closeable {
+public final class ZkMasterInquireClient implements MasterInquireClient {
   private static final Logger LOG = LoggerFactory.getLogger(ZkMasterInquireClient.class);
 
   /** Map from key spliced by the address for Zookeeper and path of leader to created client. */

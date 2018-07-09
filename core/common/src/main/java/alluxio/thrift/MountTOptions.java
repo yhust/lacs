@@ -41,7 +41,6 @@ public class MountTOptions implements org.apache.thrift.TBase<MountTOptions, Mou
   private static final org.apache.thrift.protocol.TField READ_ONLY_FIELD_DESC = new org.apache.thrift.protocol.TField("readOnly", org.apache.thrift.protocol.TType.BOOL, (short)1);
   private static final org.apache.thrift.protocol.TField PROPERTIES_FIELD_DESC = new org.apache.thrift.protocol.TField("properties", org.apache.thrift.protocol.TType.MAP, (short)2);
   private static final org.apache.thrift.protocol.TField SHARED_FIELD_DESC = new org.apache.thrift.protocol.TField("shared", org.apache.thrift.protocol.TType.BOOL, (short)3);
-  private static final org.apache.thrift.protocol.TField COMMON_OPTIONS_FIELD_DESC = new org.apache.thrift.protocol.TField("commonOptions", org.apache.thrift.protocol.TType.STRUCT, (short)4);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -52,14 +51,12 @@ public class MountTOptions implements org.apache.thrift.TBase<MountTOptions, Mou
   private boolean readOnly; // optional
   private Map<String,String> properties; // optional
   private boolean shared; // optional
-  private FileSystemMasterCommonTOptions commonOptions; // optional
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
     READ_ONLY((short)1, "readOnly"),
     PROPERTIES((short)2, "properties"),
-    SHARED((short)3, "shared"),
-    COMMON_OPTIONS((short)4, "commonOptions");
+    SHARED((short)3, "shared");
 
     private static final Map<String, _Fields> byName = new HashMap<String, _Fields>();
 
@@ -80,8 +77,6 @@ public class MountTOptions implements org.apache.thrift.TBase<MountTOptions, Mou
           return PROPERTIES;
         case 3: // SHARED
           return SHARED;
-        case 4: // COMMON_OPTIONS
-          return COMMON_OPTIONS;
         default:
           return null;
       }
@@ -125,7 +120,7 @@ public class MountTOptions implements org.apache.thrift.TBase<MountTOptions, Mou
   private static final int __READONLY_ISSET_ID = 0;
   private static final int __SHARED_ISSET_ID = 1;
   private byte __isset_bitfield = 0;
-  private static final _Fields optionals[] = {_Fields.READ_ONLY,_Fields.PROPERTIES,_Fields.SHARED,_Fields.COMMON_OPTIONS};
+  private static final _Fields optionals[] = {_Fields.READ_ONLY,_Fields.PROPERTIES,_Fields.SHARED};
   public static final Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> metaDataMap;
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
@@ -137,8 +132,6 @@ public class MountTOptions implements org.apache.thrift.TBase<MountTOptions, Mou
             new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.STRING))));
     tmpMap.put(_Fields.SHARED, new org.apache.thrift.meta_data.FieldMetaData("shared", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
         new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
-    tmpMap.put(_Fields.COMMON_OPTIONS, new org.apache.thrift.meta_data.FieldMetaData("commonOptions", org.apache.thrift.TFieldRequirementType.OPTIONAL, 
-        new org.apache.thrift.meta_data.StructMetaData(org.apache.thrift.protocol.TType.STRUCT, FileSystemMasterCommonTOptions.class)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(MountTOptions.class, metaDataMap);
   }
@@ -157,9 +150,6 @@ public class MountTOptions implements org.apache.thrift.TBase<MountTOptions, Mou
       this.properties = __this__properties;
     }
     this.shared = other.shared;
-    if (other.isSetCommonOptions()) {
-      this.commonOptions = new FileSystemMasterCommonTOptions(other.commonOptions);
-    }
   }
 
   public MountTOptions deepCopy() {
@@ -173,7 +163,6 @@ public class MountTOptions implements org.apache.thrift.TBase<MountTOptions, Mou
     this.properties = null;
     setSharedIsSet(false);
     this.shared = false;
-    this.commonOptions = null;
   }
 
   public boolean isReadOnly() {
@@ -257,30 +246,6 @@ public class MountTOptions implements org.apache.thrift.TBase<MountTOptions, Mou
     __isset_bitfield = EncodingUtils.setBit(__isset_bitfield, __SHARED_ISSET_ID, value);
   }
 
-  public FileSystemMasterCommonTOptions getCommonOptions() {
-    return this.commonOptions;
-  }
-
-  public MountTOptions setCommonOptions(FileSystemMasterCommonTOptions commonOptions) {
-    this.commonOptions = commonOptions;
-    return this;
-  }
-
-  public void unsetCommonOptions() {
-    this.commonOptions = null;
-  }
-
-  /** Returns true if field commonOptions is set (has been assigned a value) and false otherwise */
-  public boolean isSetCommonOptions() {
-    return this.commonOptions != null;
-  }
-
-  public void setCommonOptionsIsSet(boolean value) {
-    if (!value) {
-      this.commonOptions = null;
-    }
-  }
-
   public void setFieldValue(_Fields field, Object value) {
     switch (field) {
     case READ_ONLY:
@@ -307,14 +272,6 @@ public class MountTOptions implements org.apache.thrift.TBase<MountTOptions, Mou
       }
       break;
 
-    case COMMON_OPTIONS:
-      if (value == null) {
-        unsetCommonOptions();
-      } else {
-        setCommonOptions((FileSystemMasterCommonTOptions)value);
-      }
-      break;
-
     }
   }
 
@@ -328,9 +285,6 @@ public class MountTOptions implements org.apache.thrift.TBase<MountTOptions, Mou
 
     case SHARED:
       return isShared();
-
-    case COMMON_OPTIONS:
-      return getCommonOptions();
 
     }
     throw new IllegalStateException();
@@ -349,8 +303,6 @@ public class MountTOptions implements org.apache.thrift.TBase<MountTOptions, Mou
       return isSetProperties();
     case SHARED:
       return isSetShared();
-    case COMMON_OPTIONS:
-      return isSetCommonOptions();
     }
     throw new IllegalStateException();
   }
@@ -395,15 +347,6 @@ public class MountTOptions implements org.apache.thrift.TBase<MountTOptions, Mou
         return false;
     }
 
-    boolean this_present_commonOptions = true && this.isSetCommonOptions();
-    boolean that_present_commonOptions = true && that.isSetCommonOptions();
-    if (this_present_commonOptions || that_present_commonOptions) {
-      if (!(this_present_commonOptions && that_present_commonOptions))
-        return false;
-      if (!this.commonOptions.equals(that.commonOptions))
-        return false;
-    }
-
     return true;
   }
 
@@ -425,11 +368,6 @@ public class MountTOptions implements org.apache.thrift.TBase<MountTOptions, Mou
     list.add(present_shared);
     if (present_shared)
       list.add(shared);
-
-    boolean present_commonOptions = true && (isSetCommonOptions());
-    list.add(present_commonOptions);
-    if (present_commonOptions)
-      list.add(commonOptions);
 
     return list.hashCode();
   }
@@ -468,16 +406,6 @@ public class MountTOptions implements org.apache.thrift.TBase<MountTOptions, Mou
     }
     if (isSetShared()) {
       lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.shared, other.shared);
-      if (lastComparison != 0) {
-        return lastComparison;
-      }
-    }
-    lastComparison = Boolean.valueOf(isSetCommonOptions()).compareTo(other.isSetCommonOptions());
-    if (lastComparison != 0) {
-      return lastComparison;
-    }
-    if (isSetCommonOptions()) {
-      lastComparison = org.apache.thrift.TBaseHelper.compareTo(this.commonOptions, other.commonOptions);
       if (lastComparison != 0) {
         return lastComparison;
       }
@@ -523,16 +451,6 @@ public class MountTOptions implements org.apache.thrift.TBase<MountTOptions, Mou
       sb.append(this.shared);
       first = false;
     }
-    if (isSetCommonOptions()) {
-      if (!first) sb.append(", ");
-      sb.append("commonOptions:");
-      if (this.commonOptions == null) {
-        sb.append("null");
-      } else {
-        sb.append(this.commonOptions);
-      }
-      first = false;
-    }
     sb.append(")");
     return sb.toString();
   }
@@ -540,9 +458,6 @@ public class MountTOptions implements org.apache.thrift.TBase<MountTOptions, Mou
   public void validate() throws org.apache.thrift.TException {
     // check for required fields
     // check for sub-struct validity
-    if (commonOptions != null) {
-      commonOptions.validate();
-    }
   }
 
   private void writeObject(java.io.ObjectOutputStream out) throws java.io.IOException {
@@ -617,15 +532,6 @@ public class MountTOptions implements org.apache.thrift.TBase<MountTOptions, Mou
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
             }
             break;
-          case 4: // COMMON_OPTIONS
-            if (schemeField.type == org.apache.thrift.protocol.TType.STRUCT) {
-              struct.commonOptions = new FileSystemMasterCommonTOptions();
-              struct.commonOptions.read(iprot);
-              struct.setCommonOptionsIsSet(true);
-            } else { 
-              org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
-            }
-            break;
           default:
             org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
         }
@@ -666,13 +572,6 @@ public class MountTOptions implements org.apache.thrift.TBase<MountTOptions, Mou
         oprot.writeBool(struct.shared);
         oprot.writeFieldEnd();
       }
-      if (struct.commonOptions != null) {
-        if (struct.isSetCommonOptions()) {
-          oprot.writeFieldBegin(COMMON_OPTIONS_FIELD_DESC);
-          struct.commonOptions.write(oprot);
-          oprot.writeFieldEnd();
-        }
-      }
       oprot.writeFieldStop();
       oprot.writeStructEnd();
     }
@@ -700,10 +599,7 @@ public class MountTOptions implements org.apache.thrift.TBase<MountTOptions, Mou
       if (struct.isSetShared()) {
         optionals.set(2);
       }
-      if (struct.isSetCommonOptions()) {
-        optionals.set(3);
-      }
-      oprot.writeBitSet(optionals, 4);
+      oprot.writeBitSet(optionals, 3);
       if (struct.isSetReadOnly()) {
         oprot.writeBool(struct.readOnly);
       }
@@ -720,15 +616,12 @@ public class MountTOptions implements org.apache.thrift.TBase<MountTOptions, Mou
       if (struct.isSetShared()) {
         oprot.writeBool(struct.shared);
       }
-      if (struct.isSetCommonOptions()) {
-        struct.commonOptions.write(oprot);
-      }
     }
 
     @Override
     public void read(org.apache.thrift.protocol.TProtocol prot, MountTOptions struct) throws org.apache.thrift.TException {
       TTupleProtocol iprot = (TTupleProtocol) prot;
-      BitSet incoming = iprot.readBitSet(4);
+      BitSet incoming = iprot.readBitSet(3);
       if (incoming.get(0)) {
         struct.readOnly = iprot.readBool();
         struct.setReadOnlyIsSet(true);
@@ -751,11 +644,6 @@ public class MountTOptions implements org.apache.thrift.TBase<MountTOptions, Mou
       if (incoming.get(2)) {
         struct.shared = iprot.readBool();
         struct.setSharedIsSet(true);
-      }
-      if (incoming.get(3)) {
-        struct.commonOptions = new FileSystemMasterCommonTOptions();
-        struct.commonOptions.read(iprot);
-        struct.setCommonOptionsIsSet(true);
       }
     }
   }

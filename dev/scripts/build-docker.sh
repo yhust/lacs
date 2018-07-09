@@ -18,7 +18,7 @@ set -e
 
 readonly SCRIPT_DIR=$(cd "$( dirname "$0" )"; pwd)
 readonly DOCKER_DIR="${SCRIPT_DIR}/../../integration/docker"
-readonly GENERATE_TARBALLS_SCRIPT="${SCRIPT_DIR}/generate-tarballs"
+readonly GENERATE_TARBALL_SCRIPT="${SCRIPT_DIR}/generate-tarball.sh"
 
 # Builds a docker image from the specified tarball.
 function build_docker_image {
@@ -38,11 +38,10 @@ function build_docker_image {
 
 function main {
   cd "${SCRIPT_DIR}"
-  local tmp_dir="$(mktemp -d)"
-  "${GENERATE_TARBALLS_SCRIPT}" single -target "${tmp_dir}/alluxio-\${VERSION}.tar.gz"
-  local tarball="${tmp_dir}/$(ls -tr ${tmp_dir} | tail -1)"
+  "${GENERATE_TARBALL_SCRIPT}" --skipExtraClients
+  local tarball="${PWD}/tarballs/$(ls -tr tarballs | tail -1)"
+  echo ${tarball}
   build_docker_image "${tarball}"
-  rm -rf ${tmp_dir}
 }
 
 main "$@"

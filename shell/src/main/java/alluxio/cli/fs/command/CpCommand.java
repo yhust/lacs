@@ -15,6 +15,7 @@ import alluxio.AlluxioURI;
 import alluxio.Configuration;
 import alluxio.Constants;
 import alluxio.PropertyKey;
+import alluxio.client.ReadType;
 import alluxio.client.file.FileInStream;
 import alluxio.client.file.FileOutStream;
 import alluxio.client.file.FileSystem;
@@ -250,7 +251,7 @@ public final class CpCommand extends AbstractFileSystemCommand {
   private void copyFile(AlluxioURI srcPath, AlluxioURI dstPath)
       throws AlluxioException, IOException {
     try (Closer closer = Closer.create()) {
-      OpenFileOptions openFileOptions = OpenFileOptions.defaults();
+      OpenFileOptions openFileOptions = OpenFileOptions.defaults().setReadType(ReadType.NO_CACHE);
       FileInStream is = closer.register(mFileSystem.openFile(srcPath, openFileOptions));
       CreateFileOptions createFileOptions = CreateFileOptions.defaults();
       FileOutStream os = closer.register(mFileSystem.createFile(dstPath, createFileOptions));
@@ -397,10 +398,14 @@ public final class CpCommand extends AbstractFileSystemCommand {
       FileOutStream os = null;
       try (Closer closer = Closer.create()) {
         FileWriteLocationPolicy locationPolicy;
-        locationPolicy = CommonUtils.createNewClassInstance(
-            Configuration.<FileWriteLocationPolicy>getClass(
-                PropertyKey.USER_FILE_COPY_FROM_LOCAL_WRITE_LOCATION_POLICY),
-            new Class[] {}, new Object[] {});
+        try {
+          locationPolicy =
+              CommonUtils.createNewClassInstance(Configuration.<FileWriteLocationPolicy>getClass(
+                  PropertyKey.USER_FILE_COPY_FROM_LOCAL_WRITE_LOCATION_POLICY), new Class[] {},
+                  new Object[] {});
+        } catch (Exception e) {
+          throw new RuntimeException(e);
+        }
         os = closer.register(mFileSystem.createFile(dstPath,
             CreateFileOptions.defaults().setLocationPolicy(locationPolicy)));
         FileInputStream in = closer.register(new FileInputStream(src));
@@ -559,7 +564,7 @@ public final class CpCommand extends AbstractFileSystemCommand {
     File tmpDst = new File(outputFile.getPath() + randomSuffix);
 
     try (Closer closer = Closer.create()) {
-      OpenFileOptions options = OpenFileOptions.defaults();
+      OpenFileOptions options = OpenFileOptions.defaults().setReadType(ReadType.NO_CACHE);
       FileInStream is = closer.register(mFileSystem.openFile(srcPath, options));
       FileOutputStream out = closer.register(new FileOutputStream(tmpDst));
       byte[] buf = new byte[64 * Constants.MB];

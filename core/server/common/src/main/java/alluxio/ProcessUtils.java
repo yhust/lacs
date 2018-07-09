@@ -31,13 +31,13 @@ public final class ProcessUtils {
       process.start();
       LOG.info("Stopping {}.", process);
       System.exit(0);
-    } catch (Throwable t) {
-      LOG.error("Uncaught exception while running {}, stopping it and exiting.", process, t);
+    } catch (Exception e) {
+      LOG.error("Uncaught exception while running {}, stopping it and exiting.", process, e);
       try {
         process.stop();
-      } catch (Throwable t2) {
+      } catch (Exception e2) {
         // continue to exit
-        LOG.error("Uncaught exception while stopping {}, simply exiting.", process, t2);
+        LOG.error("Uncaught exception while stopping {}, simply exiting.", process, e2);
       }
       System.exit(-1);
     }
@@ -58,9 +58,9 @@ public final class ProcessUtils {
       public void run() {
         try {
           process.stop();
-        } catch (Throwable t) {
-          LOG.error("Failed to shutdown process.", t);
-          System.exit(-1);
+        } catch (Exception e) {
+          LOG.error("Failed to shutdown process.", e);
+          System.exit(0);
         }
       }
     });

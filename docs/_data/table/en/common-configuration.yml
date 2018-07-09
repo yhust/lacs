@@ -10,26 +10,14 @@ alluxio.fuse.debug.enabled:
   'Run FUSE in debug mode, and have the fuse process log every FS request.'
 alluxio.fuse.fs.name:
   'The FUSE file system name.'
+alluxio.fuse.fs.root:
+  'The Alluxio path mounted to the FUSE file system root.'
 alluxio.fuse.maxwrite.bytes:
   'Maximum granularity of write operations, capped by the kernel to 128KB max (as of Linux 3.16.0).'
+alluxio.fuse.mount.default:
+  'Mount path in the local file system for the FUSE.'
 alluxio.home:
   'Alluxio installation directory.'
-alluxio.jvm.monitor.info.threshold:
-  'Extra sleep time longer than this threshold, log INFO.'
-alluxio.jvm.monitor.sleep.interval:
-  'The time for the JVM monitor thread to sleep.'
-alluxio.jvm.monitor.warn.threshold:
-  'Extra sleep time longer than this threshold, log WARN.'
-alluxio.locality.compare.node.ip:
-  'Whether try to resolve the node IP address for locality checking'
-alluxio.locality.node:
-  'Value to use for determining node locality'
-alluxio.locality.order:
-  'Ordering of locality tiers'
-alluxio.locality.rack:
-  'Value to use for determining rack locality'
-alluxio.locality.script:
-  'A script to determine tiered identity for locality checking'
 alluxio.logger.type:
   'The type of logger.'
 alluxio.logs.dir:
@@ -77,23 +65,17 @@ alluxio.underfs.allow.set.owner.failure:
 alluxio.underfs.gcs.owner.id.to.username.mapping:
   'Optionally, specify a preset gcs owner id to Alluxio username static mapping in the format "id1=user1;id2=user2". The Google Cloud Storage IDs can be found at the console address https://console.cloud.google.com/storage/settings . Please use the "Owners" one.'
 alluxio.underfs.hdfs.configuration:
-  'Location of the HDFS configuration file.'
+  'Location of the hdfs configuration file.'
 alluxio.underfs.hdfs.impl:
   'The implementation class of the HDFS as the under storage system.'
 alluxio.underfs.hdfs.prefixes:
-  'Optionally, specify which prefixes should run through the HDFS implementation of UnderFileSystem. The delimiter is any whitespace and/or '',''.'
+  'Optionally, specify which prefixes should run through the Apache Hadoop implementation of UnderFileSystem. The delimiter is any whitespace and/or '',''.'
 alluxio.underfs.hdfs.remote:
   'Boolean indicating whether or not the under storage worker nodes are remote with respect to Alluxio worker nodes. If set to true, Alluxio will not attempt to discover locality information from the under storage because locality is impossible. This will improve performance. The default value is false.'
 alluxio.underfs.listing.length:
   'The maximum number of directory entries to list in a single query to under file system. If the total number of entries is greater than the specified length, multiple queries will be issued.'
 alluxio.underfs.object.store.mount.shared.publicly:
   'Whether or not to share object storage under storage system mounted point with all Alluxio users. Note that this configuration has no effect on HDFS nor local UFS.'
-alluxio.underfs.object.store.read.retry.base.sleep:
-  'Block reads from an object store automatically retry for transient errors with an exponential backoff. This property determines the base time in the exponential backoff.'
-alluxio.underfs.object.store.read.retry.max.num:
-  'Block reads from  an object store automatically retry for transient errors with an exponential backoff. This property determines the maximum number of retries.'
-alluxio.underfs.object.store.read.retry.max.sleep:
-  'Block reads from an object store automatically retry for transient errors with an exponential backoff. This property determines the maximum wait time in the backoff.'
 alluxio.underfs.object.store.service.threads:
   'The number of threads in executor pool for parallel object store UFS operations.'
 alluxio.underfs.oss.connection.max:
@@ -148,8 +130,6 @@ alluxio.work.dir:
   'The directory to use for Alluxio''s working directory. By default, the journal, logs, and under file system data (if using local filesystem) are written here.'
 alluxio.zookeeper.address:
   'Address of ZooKeeper.'
-alluxio.zookeeper.connection.timeout:
-  'Connection timeout to use when connecting to Zookeeper'
 alluxio.zookeeper.election.path:
   'Election directory in ZooKeeper.'
 alluxio.zookeeper.enabled:
@@ -158,8 +138,6 @@ alluxio.zookeeper.leader.inquiry.retry:
   'The number of retries to inquire leader from ZooKeeper.'
 alluxio.zookeeper.leader.path:
   'Leader directory in ZooKeeper.'
-alluxio.zookeeper.session.timeout:
-  'Session timeout to use when connecting to Zookeeper'
 aws.accessKeyId:
   'The access key of S3 bucket.'
 aws.secretKey:
@@ -177,7 +155,7 @@ fs.oss.endpoint:
 fs.swift.apikey:
   '(deprecated) The API key used for user:tenant authentication.'
 fs.swift.auth.method:
-  'Choice of authentication method: [tempauth (default), swiftauth, keystone, keystonev3].'
+  'Choice of authenitcation method: [tempauth (default), swiftauth, keystone, keystonev3].'
 fs.swift.auth.url:
   'Authentication URL for REST server, e.g., http://server:8090/auth/v1.0.'
 fs.swift.password:

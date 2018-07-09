@@ -12,8 +12,6 @@
 package alluxio.client.file.options;
 
 import alluxio.annotation.PublicApi;
-import alluxio.thrift.RenameTOptions;
-import alluxio.wire.CommonOptions;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -28,8 +26,6 @@ import javax.annotation.concurrent.NotThreadSafe;
 @NotThreadSafe
 @JsonInclude(Include.NON_EMPTY)
 public final class RenameOptions {
-  private CommonOptions mCommonOptions;
-
   /**
    * @return the default {@link RenameOptions}
    */
@@ -38,55 +34,21 @@ public final class RenameOptions {
   }
 
   private RenameOptions() {
-    mCommonOptions = CommonOptions.defaults();
-  }
-
-  /**
-   * @return the common options
-   */
-  public CommonOptions getCommonOptions() {
-    return mCommonOptions;
-  }
-
-  /**
-   * @param options the common options
-   * @return the updated options object
-   */
-  public RenameOptions setCommonOptions(CommonOptions options) {
-    mCommonOptions = options;
-    return this;
+    // No options currently
   }
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (!(o instanceof RenameOptions)) {
-      return false;
-    }
-    RenameOptions that = (RenameOptions) o;
-    return Objects.equal(mCommonOptions, that.mCommonOptions);
+    return this == o || o instanceof RenameOptions;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(mCommonOptions);
+    return 0;
   }
 
   @Override
   public String toString() {
-    return Objects.toStringHelper(this)
-        .add("commonOptions", mCommonOptions)
-        .toString();
-  }
-
-  /**
-   * @return Thrift representation of the options
-   */
-  public RenameTOptions toThrift() {
-    RenameTOptions options = new RenameTOptions();
-    options.setCommonOptions(mCommonOptions.toThrift());
-    return options;
+    return Objects.toStringHelper(this).toString();
   }
 }

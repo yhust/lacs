@@ -11,10 +11,7 @@
 
 package alluxio.resource;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.concurrent.locks.Lock;
@@ -34,7 +31,7 @@ public final class LockResourceTest {
     Lock lock = new ReentrantLock();
     try (LockResource r1 = new LockResource(lock)) {
       try (LockResource r2 = new LockResource(lock)) {
-        assertTrue(lock.tryLock());
+        Assert.assertTrue(lock.tryLock());
         lock.unlock();
       }
     }
@@ -49,24 +46,24 @@ public final class LockResourceTest {
 
     try (LockResource r1 = new LockResource(lock.readLock())) {
       try (LockResource r2 = new LockResource(lock.readLock())) {
-        assertEquals(lock.getReadHoldCount(), 2);
-        assertTrue(lock.readLock().tryLock());
+        Assert.assertEquals(lock.getReadHoldCount(), 2);
+        Assert.assertTrue(lock.readLock().tryLock());
         lock.readLock().unlock();
       }
     }
-    assertEquals(lock.getReadHoldCount(), 0);
+    Assert.assertEquals(lock.getReadHoldCount(), 0);
 
     try (LockResource r1 = new LockResource(lock.writeLock())) {
       try (LockResource r2 = new LockResource(lock.readLock())) {
-        assertTrue(lock.isWriteLockedByCurrentThread());
-        assertEquals(lock.getReadHoldCount(), 1);
+        Assert.assertTrue(lock.isWriteLockedByCurrentThread());
+        Assert.assertEquals(lock.getReadHoldCount(), 1);
       }
     }
-    assertFalse(lock.isWriteLockedByCurrentThread());
-    assertEquals(lock.getReadHoldCount(), 0);
+    Assert.assertFalse(lock.isWriteLockedByCurrentThread());
+    Assert.assertEquals(lock.getReadHoldCount(), 0);
 
     try (LockResource r = new LockResource(lock.readLock())) {
-      assertFalse(lock.writeLock().tryLock());
+      Assert.assertFalse(lock.writeLock().tryLock());
     }
   }
 }

@@ -145,22 +145,17 @@ abstract class AbstractWriteHandler<T extends WriteRequestContext<?>>
         initRequestContext(mContext);
       }
 
-      // If we have seen an error, return early and release the data. This can
-      // happen for (1) those mis-behaving clients who first sends some invalid requests, then
-      // then some random data, or (2) asynchronous requests arrive after the previous request fails
-      // and triggers abortion. It can leak memory if we do not release buffers here.
+      // Validate the write request.
+      validateWriteRequest(writeRequest, msg.getPayloadDataBuffer());
+
+      // If we have seen an error, return early and release the data. This can only
+      // happen for those mis-behaving clients who first sends some invalid requests, then
+      // then some random data. It can leak memory if we do not release buffers here.
       if (mContext.getError() != null) {
         if (msg.getPayloadDataBuffer() != null) {
           msg.getPayloadDataBuffer().release();
         }
-        LOG.warn("Ignore the request {} due to the error {} on context", mContext.getRequest(),
-            mContext.getError());
         return;
-      } else {
-        // Validate the write request. The validation is performed only when no error is in the
-        // context in order to prevent excessive logging on the subsequent arrived asynchronous
-        // requests after a previous request fails and triggers the abortion
-        validateWriteRequest(writeRequest, msg.getPayloadDataBuffer());
       }
 
       ByteBuf buf;
@@ -188,7 +183,7 @@ abstract class AbstractWriteHandler<T extends WriteRequestContext<?>>
 
   @Override
   public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-    LOG.error("Exception caught in AbstractWriteHandler for channel {}:", ctx.channel(), cause);
+    LOG.error("Exception caught {} in AbstractWriteHandler.", cause);
     pushAbortPacket(ctx.channel(), new Error(AlluxioStatusException.fromThrowable(cause), true));
   }
 
@@ -292,7 +287,7 @@ abstract class AbstractWriteHandler<T extends WriteRequestContext<?>>
           writeBuf(mContext, mChannel, buf, mContext.getPosToWrite());
           incrementMetrics(readableBytes);
         } catch (Exception e) {
-          LOG.error("Failed to write packet for request {}", mContext.getRequest(), e);
+          LOG.warn("Failed to write packet {}", e.getMessage());
           Throwables.propagateIfPossible(e);
           pushAbortPacket(mChannel,
               new Error(AlluxioStatusException.fromCheckedException(e), true));

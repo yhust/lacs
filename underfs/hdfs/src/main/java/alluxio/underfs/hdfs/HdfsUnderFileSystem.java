@@ -12,7 +12,6 @@
 package alluxio.underfs.hdfs;
 
 import alluxio.AlluxioURI;
-import alluxio.Constants;
 import alluxio.PropertyKey;
 import alluxio.retry.CountingRetry;
 import alluxio.retry.RetryPolicy;
@@ -29,8 +28,6 @@ import alluxio.underfs.options.DeleteOptions;
 import alluxio.underfs.options.FileLocationOptions;
 import alluxio.underfs.options.MkdirsOptions;
 import alluxio.underfs.options.OpenOptions;
-import alluxio.util.CommonUtils;
-import alluxio.util.UnderFileSystemUtils;
 
 import com.google.common.base.Preconditions;
 import org.apache.commons.lang3.StringUtils;
@@ -92,17 +89,12 @@ public class HdfsUnderFileSystem extends BaseUnderFileSystem
    * @param conf the configuration for this UFS
    * @param hdfsConf the configuration for HDFS
    */
-  public HdfsUnderFileSystem(AlluxioURI ufsUri, UnderFileSystemConfiguration conf,
+  HdfsUnderFileSystem(AlluxioURI ufsUri, UnderFileSystemConfiguration conf,
       Configuration hdfsConf) {
     super(ufsUri, conf);
     mUfsConf = conf;
     Path path = new Path(ufsUri.toString());
-    // UserGroupInformation.setConfiguration(hdfsConf) will trigger service loading.
-    // Stash the classloader to prevent service loading throwing exception due to
-    // classloader mismatch.
-    ClassLoader previousClassLoader = Thread.currentThread().getContextClassLoader();
     try {
-      Thread.currentThread().setContextClassLoader(hdfsConf.getClassLoader());
       // Set Hadoop UGI configuration to ensure UGI can be initialized by the shaded classes for
       // group service.
       UserGroupInformation.setConfiguration(hdfsConf);
@@ -110,8 +102,6 @@ public class HdfsUnderFileSystem extends BaseUnderFileSystem
     } catch (IOException e) {
       throw new RuntimeException(
           String.format("Failed to get Hadoop FileSystem client for %s", ufsUri), e);
-    } finally {
-      Thread.currentThread().setContextClassLoader(previousClassLoader);
     }
   }
 
@@ -241,15 +231,9 @@ public class HdfsUnderFileSystem extends BaseUnderFileSystem
     }
     List<String> ret = new ArrayList<>();
     try {
-      // The only usage of fileStatus is to get the path in getFileBlockLocations.
-      // In HDFS 2, there is an API getFileBlockLocation(Path path, long offset, long len),
-      // but in HDFS 1, the only API is
-      // getFileBlockLocation(FileStatus stat, long offset, long len).
-      // By constructing the file status manually, we can save one RPC call to getFileStatus.
-      FileStatus fileStatus = new FileStatus(0L, false, 0, 0L,
-          0L, 0L, null, null, null, new Path(path));
+      FileStatus fStatus = mFileSystem.getFileStatus(new Path(path));
       BlockLocation[] bLocations =
-          mFileSystem.getFileBlockLocations(fileStatus, options.getOffset(), 1);
+          mFileSystem.getFileBlockLocations(fStatus, options.getOffset(), 1);
       if (bLocations.length > 0) {
         String[] names = bLocations[0].getHosts();
         Collections.addAll(ret, names);
@@ -264,10 +248,8 @@ public class HdfsUnderFileSystem extends BaseUnderFileSystem
   public UfsFileStatus getFileStatus(String path) throws IOException {
     Path tPath = new Path(path);
     FileStatus fs = mFileSystem.getFileStatus(tPath);
-    String contentHash =
-        UnderFileSystemUtils.approximateContentHash(fs.getLen(), fs.getModificationTime());
-    return new UfsFileStatus(path, contentHash, fs.getLen(),
-        fs.getModificationTime(), fs.getOwner(), fs.getGroup(), fs.getPermission().toShort());
+    return new UfsFileStatus(path, fs.getLen(), fs.getModificationTime(), fs.getOwner(),
+        fs.getGroup(), fs.getPermission().toShort());
   }
 
   @Override
@@ -296,21 +278,6 @@ public class HdfsUnderFileSystem extends BaseUnderFileSystem
   }
 
   @Override
-  public UfsStatus getStatus(String path) throws IOException {
-    Path tPath = new Path(path);
-    FileStatus fs = mFileSystem.getFileStatus(tPath);
-    if (!fs.isDir()) {
-      // Return file status.
-      String contentHash =
-          UnderFileSystemUtils.approximateContentHash(fs.getLen(), fs.getModificationTime());
-      return new UfsFileStatus(path, contentHash, fs.getLen(), fs.getModificationTime(),
-          fs.getOwner(), fs.getGroup(), fs.getPermission().toShort());
-    }
-    // Return directory status.
-    return new UfsDirectoryStatus(path, fs.getOwner(), fs.getGroup(), fs.getPermission().toShort());
-  }
-
-  @Override
   public boolean isDirectory(String path) throws IOException {
     return mFileSystem.isDirectory(new Path(path));
   }
@@ -333,9 +300,7 @@ public class HdfsUnderFileSystem extends BaseUnderFileSystem
       // only return the relative path, to keep consistent with java.io.File.list()
       UfsStatus retStatus;
       if (!status.isDir()) {
-        String contentHash = UnderFileSystemUtils
-            .approximateContentHash(status.getLen(), status.getModificationTime());
-        retStatus = new UfsFileStatus(status.getPath().getName(), contentHash, status.getLen(),
+        retStatus = new UfsFileStatus(status.getPath().getName(), status.getLen(),
             status.getModificationTime(), status.getOwner(), status.getGroup(),
             status.getPermission().toShort());
       } else {
@@ -430,10 +395,6 @@ public class HdfsUnderFileSystem extends BaseUnderFileSystem
   public InputStream open(String path, OpenOptions options) throws IOException {
     IOException te = null;
     RetryPolicy retryPolicy = new CountingRetry(MAX_TRY);
-    DistributedFileSystem dfs = null;
-    if (mFileSystem instanceof DistributedFileSystem) {
-      dfs = (DistributedFileSystem) mFileSystem;
-    }
     while (retryPolicy.attemptRetry()) {
       try {
         FSDataInputStream inputStream = mFileSystem.open(new Path(path));
@@ -443,33 +404,10 @@ public class HdfsUnderFileSystem extends BaseUnderFileSystem
           inputStream.close();
           throw e;
         }
-        return new HdfsUnderFileInputStream(inputStream);
+        return inputStream;
       } catch (IOException e) {
         LOG.warn("{} try to open {} : {}", retryPolicy.getRetryCount(), path, e.getMessage());
         te = e;
-        if (options.getRecoverFailedOpen() && dfs != null && e.getMessage().toLowerCase()
-            .startsWith("cannot obtain block length for")) {
-          // This error can occur when an Alluxio journal file was not properly closed by Alluxio.
-          // In this scenario, the HDFS lease must be recovered in order for the file to be
-          // readable again. The 'recoverLease' API usually needs to be invoked multiple times
-          // to complete the lease recovery process.
-          try {
-            if (dfs.recoverLease(new Path(path))) {
-              LOG.warn("HDFS recoverLease-1 success for: {}", path);
-            } else {
-              // try one more time, after waiting
-              CommonUtils.sleepMs(5 * Constants.SECOND_MS);
-              if (dfs.recoverLease(new Path(path))) {
-                LOG.warn("HDFS recoverLease-2 success for: {}", path);
-              } else {
-                LOG.warn("HDFS recoverLease: path not closed: {}", path);
-              }
-            }
-          } catch (IOException e1) {
-            // ignore exception
-            LOG.warn("HDFS recoverLease failed for: {} error: {}", path, e1.getMessage());
-          }
-        }
       }
     }
     throw te;
@@ -496,9 +434,6 @@ public class HdfsUnderFileSystem extends BaseUnderFileSystem
 
   @Override
   public void setOwner(String path, String user, String group) throws IOException {
-    if (user == null && group == null) {
-      return;
-    }
     try {
       FileStatus fileStatus = mFileSystem.getFileStatus(new Path(path));
       mFileSystem.setOwner(fileStatus.getPath(), user, group);
@@ -595,10 +530,5 @@ public class HdfsUnderFileSystem extends BaseUnderFileSystem
       }
     }
     throw te;
-  }
-
-  @Override
-  public boolean isSeekable() {
-    return true;
   }
 }

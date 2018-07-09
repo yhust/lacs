@@ -22,7 +22,6 @@ import java.net.URI;
 import java.util.UUID;
 
 import javax.annotation.concurrent.ThreadSafe;
-import javax.annotation.Nullable;
 
 /**
  * A simple data structure that represents a journal file.
@@ -145,7 +144,6 @@ final class UfsJournalFile implements Comparable<UfsJournalFile> {
    * @param filename the filename
    * @return the instance of {@link UfsJournalFile}, null if the file invalid
    */
-  @Nullable
   static UfsJournalFile decodeLogFile(UfsJournal journal, String filename) {
     URI location = URIUtils.appendPathOrDie(journal.getLogDir(), filename);
     try {
@@ -174,7 +172,6 @@ final class UfsJournalFile implements Comparable<UfsJournalFile> {
    * @param filename the filename
    * @return the instance of {@link UfsJournalFile}, null if the file invalid
    */
-  @Nullable
   static UfsJournalFile decodeCheckpointFile(UfsJournal journal, String filename) {
     URI location = URIUtils.appendPathOrDie(journal.getCheckpointDir(), filename);
     try {

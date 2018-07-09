@@ -18,7 +18,6 @@ import alluxio.master.journal.JournalReader;
 import alluxio.proto.journal.Journal;
 import alluxio.proto.journal.Journal.JournalEntry;
 import alluxio.underfs.UnderFileSystem;
-import alluxio.underfs.options.OpenOptions;
 
 import com.google.common.base.Preconditions;
 import org.slf4j.Logger;
@@ -70,8 +69,7 @@ public final class UfsJournalReader implements JournalReader {
     JournalInputStream(UfsJournalFile file) throws IOException {
       mFile = file;
       LOG.info("Reading journal file {}.", file.getLocation());
-      mReader = new JournalEntryStreamReader(mUfs.open(file.getLocation().toString(),
-          OpenOptions.defaults().setRecoverFailedOpen(true)));
+      mReader = new JournalEntryStreamReader(mUfs.open(file.getLocation().toString()));
     }
 
     /**
@@ -131,14 +129,7 @@ public final class UfsJournalReader implements JournalReader {
   @Override
   public Journal.JournalEntry read() throws IOException, InvalidJournalEntryException {
     while (true) {
-      Journal.JournalEntry entry;
-      try {
-        entry = readInternal();
-      } catch (IOException e) {
-        throw new IOException(String
-            .format("Failed to read from journal: %s error: %s", mJournal.getLocation(),
-                e.getMessage()), e);
-      }
+      Journal.JournalEntry entry = readInternal();
       if (entry == null) {
         return null;
       }
@@ -156,8 +147,8 @@ public final class UfsJournalReader implements JournalReader {
         LOG.debug("Skipping duplicate log entry {} (next sequence number: {}).", entry,
             mNextSequenceNumber);
       } else {
-        throw new IllegalStateException(ExceptionMessage.JOURNAL_ENTRY_MISSING.getMessage(
-            mNextSequenceNumber, entry.getSequenceNumber()));
+        throw new InvalidJournalEntryException(ExceptionMessage.JOURNAL_ENTRY_MISSING,
+            mNextSequenceNumber, entry.getSequenceNumber());
       }
     }
   }
@@ -166,8 +157,9 @@ public final class UfsJournalReader implements JournalReader {
    * Reads the next journal entry.
    *
    * @return the journal entry, null if no journal entry is found
+   * @throws InvalidJournalEntryException if the journal entry found is invalid
    */
-  private Journal.JournalEntry readInternal() throws IOException {
+  private Journal.JournalEntry readInternal() throws IOException, InvalidJournalEntryException {
     updateInputStream();
     if (mInputStream == null) {
       return null;

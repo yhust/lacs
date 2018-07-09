@@ -19,6 +19,7 @@ import alluxio.WorkerStorageTierAssoc;
 import alluxio.exception.AlluxioException;
 import alluxio.exception.BlockAlreadyExistsException;
 import alluxio.exception.BlockDoesNotExistException;
+import alluxio.exception.ExceptionMessage;
 import alluxio.exception.InvalidWorkerStateException;
 import alluxio.exception.PreconditionMessage;
 import alluxio.exception.status.AlluxioStatusException;
@@ -26,13 +27,13 @@ import alluxio.underfs.UfsManager;
 import alluxio.underfs.UfsManager.UfsInfo;
 import alluxio.underfs.UnderFileSystem;
 import alluxio.underfs.options.OpenOptions;
-import alluxio.util.IdUtils;
 import alluxio.util.network.NetworkAddressUtils;
 import alluxio.worker.block.io.BlockReader;
 import alluxio.worker.block.io.BlockWriter;
 import alluxio.worker.block.meta.UnderFileSystemBlockMeta;
 
 import com.google.common.base.Preconditions;
+import com.google.common.io.Closer;
 import io.netty.buffer.ByteBuf;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,8 +73,6 @@ public final class UnderFileSystemBlockReader implements BlockReader {
   private boolean mClosed;
   /** The manager for different ufs. */
   private final UfsManager mUfsManager;
-  /** The manager for all ufs instream. */
-  private final UfsInputStreamManager mUfsInstreamManager;
 
   /**
    * The position of mUnderFileSystemInputStream (if not null) is blockStart + mInStreamPos.
@@ -91,14 +90,14 @@ public final class UnderFileSystemBlockReader implements BlockReader {
    * @param offset the position within the block to start the read
    * @param localBlockStore the Local block store
    * @param ufsManager the manager of ufs
-   * @param ufsInstreamManager the manager of ufs instreams
    * @return the block reader
+   * @throws BlockDoesNotExistException if the UFS block does not exist in the UFS block store
    */
   public static UnderFileSystemBlockReader create(UnderFileSystemBlockMeta blockMeta, long offset,
-      BlockStore localBlockStore, UfsManager ufsManager, UfsInputStreamManager ufsInstreamManager)
-      throws IOException {
+      BlockStore localBlockStore, UfsManager ufsManager)
+      throws BlockDoesNotExistException, IOException {
     UnderFileSystemBlockReader ufsBlockReader =
-        new UnderFileSystemBlockReader(blockMeta, localBlockStore, ufsManager, ufsInstreamManager);
+        new UnderFileSystemBlockReader(blockMeta, localBlockStore, ufsManager);
     ufsBlockReader.init(offset);
     return ufsBlockReader;
   }
@@ -109,27 +108,31 @@ public final class UnderFileSystemBlockReader implements BlockReader {
    * @param blockMeta the block meta
    * @param localBlockStore the Local block store
    * @param ufsManager the manager of ufs
-   * @param ufsInstreamManager the manager of ufs instreams
    */
   private UnderFileSystemBlockReader(UnderFileSystemBlockMeta blockMeta, BlockStore localBlockStore,
-      UfsManager ufsManager, UfsInputStreamManager ufsInstreamManager) {
+      UfsManager ufsManager) {
     mInitialBlockSize = Configuration.getBytes(PropertyKey.WORKER_FILE_BUFFER_SIZE);
     mBlockMeta = blockMeta;
     mLocalBlockStore = localBlockStore;
     mInStreamPos = -1;
     mUfsManager = ufsManager;
-    mUfsInstreamManager = ufsInstreamManager;
   }
 
   /**
    * Initializes the reader. This is only called in the factory method.
    *
    * @param offset the position within the block to start the read
+   * @throws BlockDoesNotExistException if the UFS block does not exist in the UFS block store
    */
-  private void init(long offset) throws IOException {
+  private void init(long offset) throws BlockDoesNotExistException, IOException {
     UnderFileSystem ufs = mUfsManager.get(mBlockMeta.getMountId()).getUfs();
     ufs.connectFromWorker(
         NetworkAddressUtils.getConnectHost(NetworkAddressUtils.ServiceType.WORKER_RPC));
+    if (!ufs.isFile(mBlockMeta.getUnderFileSystemPath())) {
+      throw new BlockDoesNotExistException(
+          ExceptionMessage.UFS_PATH_DOES_NOT_EXIST.getMessage(mBlockMeta.getUnderFileSystemPath()));
+    }
+
     updateUnderFileSystemInputStream(offset);
     updateBlockWriter(offset);
   }
@@ -214,7 +217,7 @@ public final class UnderFileSystemBlockReader implements BlockReader {
       bufCopy.readerIndex(bufCopy.writerIndex());
     }
     int bytesToRead =
-        (int) Math.min(buf.writableBytes(), mBlockMeta.getBlockSize() - mInStreamPos);
+        (int) Math.min((long) buf.writableBytes(), mBlockMeta.getBlockSize() - mInStreamPos);
     int bytesRead = buf.writeBytes(mUnderFileSystemInputStream, bytesToRead);
     if (bytesRead <= 0) {
       return bytesRead;
@@ -228,7 +231,7 @@ public final class UnderFileSystemBlockReader implements BlockReader {
         while (bufCopy.readableBytes() > 0) {
           mLocalBlockStore.requestSpace(mBlockMeta.getSessionId(), mBlockMeta.getBlockId(),
               mInStreamPos - mBlockWriter.getPosition());
-          mBlockWriter.append(bufCopy);
+          mBlockWriter.transferFrom(bufCopy);
         }
       } catch (Exception e) {
         LOG.warn("Failed to cache data read from UFS (on transferTo()): {}", e.getMessage());
@@ -254,15 +257,14 @@ public final class UnderFileSystemBlockReader implements BlockReader {
       // This aborts the block if the block is not fully read.
       updateBlockWriter(mBlockMeta.getBlockSize());
 
-      if (mUnderFileSystemInputStream != null) {
-        mUfsInstreamManager.release(mUnderFileSystemInputStream);
-        mUnderFileSystemInputStream = null;
-      }
-
+      Closer closer = Closer.create();
       if (mBlockWriter != null) {
-        mBlockWriter.close();
+        closer.register(mBlockWriter);
       }
-
+      if (mUnderFileSystemInputStream != null) {
+        closer.register(mUnderFileSystemInputStream);
+      }
+      closer.close();
     } finally {
       mClosed = true;
     }
@@ -287,7 +289,7 @@ public final class UnderFileSystemBlockReader implements BlockReader {
    */
   private void updateUnderFileSystemInputStream(long offset) throws IOException {
     if ((mUnderFileSystemInputStream != null) && offset != mInStreamPos) {
-      mUfsInstreamManager.release(mUnderFileSystemInputStream);
+      mUnderFileSystemInputStream.close();
       mUnderFileSystemInputStream = null;
       mInStreamPos = -1;
     }
@@ -296,8 +298,7 @@ public final class UnderFileSystemBlockReader implements BlockReader {
       UfsInfo ufsInfo = mUfsManager.get(mBlockMeta.getMountId());
       UnderFileSystem ufs = ufsInfo.getUfs();
       mUfsMountPointUri = ufsInfo.getUfsMountPointUri();
-      mUnderFileSystemInputStream = mUfsInstreamManager.acquire(ufs,
-          mBlockMeta.getUnderFileSystemPath(), IdUtils.fileIdFromBlockId(mBlockMeta.getBlockId()),
+      mUnderFileSystemInputStream = ufs.open(mBlockMeta.getUnderFileSystemPath(),
           OpenOptions.defaults().setOffset(mBlockMeta.getOffset() + offset));
       mInStreamPos = offset;
     }

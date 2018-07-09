@@ -11,15 +11,12 @@
 
 package alluxio.wire;
 
-import alluxio.Constants;
 import alluxio.annotation.PublicApi;
-import alluxio.wire.TieredIdentity.LocalityTier;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 
 import java.io.Serializable;
-import java.util.Arrays;
 
 import javax.annotation.concurrent.NotThreadSafe;
 
@@ -36,7 +33,6 @@ public final class WorkerNetAddress implements Serializable {
   private int mDataPort;
   private int mWebPort;
   private String mDomainSocketPath = "";
-  private TieredIdentity mTieredIdentity;
 
   /**
    * Creates a new instance of {@link WorkerNetAddress}.
@@ -54,13 +50,6 @@ public final class WorkerNetAddress implements Serializable {
     mDataPort = workerNetAddress.getDataPort();
     mWebPort = workerNetAddress.getWebPort();
     mDomainSocketPath = workerNetAddress.getDomainSocketPath();
-    mTieredIdentity = TieredIdentity.fromThrift(workerNetAddress.getTieredIdentity());
-    if (mTieredIdentity == null) {
-      // This means the worker is pre-1.7.0. We handle this in post-1.7.0 clients by filling out
-      // the tiered identity using the hostname field.
-      mTieredIdentity =
-          new TieredIdentity(Arrays.asList(new LocalityTier(Constants.LOCALITY_NODE, mHost)));
-    }
   }
 
   /**
@@ -96,16 +85,6 @@ public final class WorkerNetAddress implements Serializable {
    */
   public String getDomainSocketPath() {
     return mDomainSocketPath;
-  }
-
-  /**
-   * @return the tiered identity
-   */
-  public TieredIdentity getTieredIdentity() {
-    if (mTieredIdentity != null) {
-      return mTieredIdentity;
-    }
-    return new TieredIdentity(Arrays.asList(new LocalityTier(Constants.LOCALITY_NODE, mHost)));
   }
 
   /**
@@ -155,28 +134,11 @@ public final class WorkerNetAddress implements Serializable {
   }
 
   /**
-   * @param tieredIdentity the tiered identity
-   * @return the worker net address
-   */
-  public WorkerNetAddress setTieredIdentity(TieredIdentity tieredIdentity) {
-    mTieredIdentity = tieredIdentity;
-    return this;
-  }
-
-  /**
    * @return a net address of thrift construct
    */
   protected alluxio.thrift.WorkerNetAddress toThrift() {
-    alluxio.thrift.WorkerNetAddress address = new alluxio.thrift.WorkerNetAddress();
-    address.setHost(mHost);
-    address.setRpcPort(mRpcPort);
-    address.setDataPort(mDataPort);
-    address.setWebPort(mWebPort);
-    address.setDomainSocketPath(mDomainSocketPath);
-    if (mTieredIdentity != null) {
-      address.setTieredIdentity(mTieredIdentity.toThrift());
-    }
-    return address;
+    return new alluxio.thrift.WorkerNetAddress(mHost, mRpcPort, mDataPort, mWebPort,
+        mDomainSocketPath);
   }
 
   @Override
@@ -188,29 +150,19 @@ public final class WorkerNetAddress implements Serializable {
       return false;
     }
     WorkerNetAddress that = (WorkerNetAddress) o;
-    return mHost.equals(that.mHost)
-        && mRpcPort == that.mRpcPort
-        && mDataPort == that.mDataPort
-        && mWebPort == that.mWebPort
-        && mDomainSocketPath.equals(that.mDomainSocketPath)
-        && Objects.equal(mTieredIdentity, that.mTieredIdentity);
+    return mHost.equals(that.mHost) && mRpcPort == that.mRpcPort && mDataPort == that.mDataPort
+        && mWebPort == that.mWebPort && mDomainSocketPath.equals(that.mDomainSocketPath);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(mHost, mDataPort, mRpcPort, mWebPort, mDomainSocketPath,
-        mTieredIdentity);
+    return Objects.hashCode(mHost, mDataPort, mRpcPort, mWebPort, mDomainSocketPath);
   }
 
   @Override
   public String toString() {
-    return Objects.toStringHelper(this)
-        .add("host", mHost)
-        .add("rpcPort", mRpcPort)
-        .add("dataPort", mDataPort)
-        .add("webPort", mWebPort)
-        .add("domainSocketPath", mDomainSocketPath)
-        .add("tieredIdentity", mTieredIdentity)
-        .toString();
+    return Objects.toStringHelper(this).add("host", mHost).add("rpcPort", mRpcPort)
+        .add("dataPort", mDataPort).add("webPort", mWebPort)
+        .add("domainSocketPath", mDomainSocketPath).toString();
   }
 }

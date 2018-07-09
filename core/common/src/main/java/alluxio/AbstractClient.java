@@ -18,8 +18,8 @@ import alluxio.exception.status.FailedPreconditionException;
 import alluxio.exception.status.Status;
 import alluxio.exception.status.UnavailableException;
 import alluxio.exception.status.UnimplementedException;
+import alluxio.retry.ExponentialBackoffRetry;
 import alluxio.retry.RetryPolicy;
-import alluxio.retry.ExponentialTimeBoundedRetry;
 import alluxio.security.authentication.TransportProvider;
 import alluxio.thrift.AlluxioService;
 import alluxio.thrift.AlluxioTException;
@@ -36,7 +36,6 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.time.Duration;
 import java.util.regex.Pattern;
 
 import javax.annotation.concurrent.ThreadSafe;
@@ -54,12 +53,10 @@ public abstract class AbstractClient implements Client {
   private static final Pattern FRAME_SIZE_EXCEPTION_PATTERN =
       Pattern.compile("Frame size \\((\\d+)\\) larger than max length");
 
-  private static final Duration MAX_RETRY_DURATION =
-      Configuration.getDuration(PropertyKey.USER_RPC_RETRY_MAX_DURATION);
-  private static final Duration BASE_SLEEP_MS =
-      Configuration.getDuration(PropertyKey.USER_RPC_RETRY_BASE_SLEEP_MS);
-  private static final Duration MAX_SLEEP_MS =
-      Configuration.getDuration(PropertyKey.USER_RPC_RETRY_MAX_SLEEP_MS);
+  private static final int BASE_SLEEP_MS =
+      (int) Configuration.getMs(PropertyKey.USER_RPC_RETRY_BASE_SLEEP_MS);
+  private static final int MAX_SLEEP_MS =
+      (int) Configuration.getMs(PropertyKey.USER_RPC_RETRY_MAX_SLEEP_MS);
 
   /** The number of times to retry a particular RPC. */
   protected static final int RPC_MAX_NUM_RETRY =
@@ -162,7 +159,7 @@ public abstract class AbstractClient implements Client {
   /**
    * Connects with the remote.
    */
-  public synchronized void connect() throws AlluxioStatusException {
+  public synchronized void connect() throws IOException {
     if (mConnected) {
       return;
     }
@@ -170,26 +167,16 @@ public abstract class AbstractClient implements Client {
     Preconditions.checkState(!mClosed, "Client is closed, will not try to connect.");
 
     RetryPolicy retryPolicy =
-        ExponentialTimeBoundedRetry.builder().withMaxDuration(MAX_RETRY_DURATION)
-            .withInitialSleep(BASE_SLEEP_MS).withMaxSleep(MAX_SLEEP_MS).build();
+        new ExponentialBackoffRetry(BASE_SLEEP_MS, MAX_SLEEP_MS, RPC_MAX_NUM_RETRY);
     while (true) {
       if (mClosed) {
         throw new FailedPreconditionException("Failed to connect: client has been closed");
       }
-      // Re-query the address in each loop iteration in case it has changed (e.g. master
-      // failover).
-      try {
-        mAddress = getAddress();
-      } catch (UnavailableException e) {
-        if (!retryPolicy.attemptRetry()) {
-          break;
-        }
-        LOG.warn("Failed to determine master RPC address ({}), retrying: {}",
-            retryPolicy.getRetryCount(), e.toString());
-        continue;
-      }
+      // Re-query the address in each loop iteration in case it has changed (e.g. master failover).
+      mAddress = getAddress();
       LOG.info("Alluxio client (version {}) is trying to connect with {} @ {}",
           RuntimeConstants.VERSION, getServiceName(), mAddress);
+
       TProtocol binaryProtocol =
           new TBinaryProtocol(mTransportProvider.getClientTransport(mParentSubject, mAddress));
       mProtocol = new TMultiplexedProtocol(binaryProtocol, getServiceName());
@@ -293,10 +280,9 @@ public abstract class AbstractClient implements Client {
    * @param <V> type of return value of the RPC call
    * @return the return value of the RPC call
    */
-  protected synchronized <V> V retryRPC(RpcCallable<V> rpc) throws AlluxioStatusException {
+  protected synchronized <V> V retryRPC(RpcCallable<V> rpc) throws IOException {
     RetryPolicy retryPolicy =
-        ExponentialTimeBoundedRetry.builder().withMaxDuration(MAX_RETRY_DURATION)
-            .withInitialSleep(BASE_SLEEP_MS).withMaxSleep(MAX_SLEEP_MS).build();
+        new ExponentialBackoffRetry(BASE_SLEEP_MS, MAX_SLEEP_MS, RPC_MAX_NUM_RETRY);
     while (!mClosed) {
       Exception ex;
       connect();
@@ -312,10 +298,9 @@ public abstract class AbstractClient implements Client {
       } catch (TException e) {
         ex = e;
       }
+      LOG.warn(ex.toString());
       disconnect();
-      if (retryPolicy.attemptRetry()) {
-        LOG.warn("RPC failed with {}. Retrying.", ex.toString());
-      } else {
+      if (!retryPolicy.attemptRetry()) {
         throw new UnavailableException(
             "Failed after " + retryPolicy.getRetryCount() + " retries: " + ex.toString(), ex);
       }

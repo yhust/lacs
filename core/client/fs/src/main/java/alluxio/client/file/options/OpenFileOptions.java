@@ -17,7 +17,6 @@ import alluxio.annotation.PublicApi;
 import alluxio.client.ReadType;
 import alluxio.client.block.policy.BlockLocationPolicy;
 import alluxio.client.block.policy.options.CreateOptions;
-import alluxio.client.file.URIStatus;
 import alluxio.client.file.policy.FileWriteLocationPolicy;
 import alluxio.util.CommonUtils;
 
@@ -25,6 +24,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.google.common.base.Objects;
+import com.google.common.base.Throwables;
 
 import javax.annotation.concurrent.NotThreadSafe;
 
@@ -53,10 +53,15 @@ public final class OpenFileOptions {
    * Creates a new instance with defaults based on the configuration.
    */
   private OpenFileOptions() {
-    mReadType = Configuration.getEnum(PropertyKey.USER_FILE_READ_TYPE_DEFAULT, ReadType.class);
-    mCacheLocationPolicy =
-        CommonUtils.createNewClassInstance(Configuration.<FileWriteLocationPolicy>getClass(
-            PropertyKey.USER_FILE_WRITE_LOCATION_POLICY), new Class[] {}, new Object[] {});
+    mReadType =
+        Configuration.getEnum(PropertyKey.USER_FILE_READ_TYPE_DEFAULT, ReadType.class);
+    try {
+      mCacheLocationPolicy = CommonUtils.createNewClassInstance(
+          Configuration.<FileWriteLocationPolicy>getClass(
+              PropertyKey.USER_FILE_WRITE_LOCATION_POLICY), new Class[] {}, new Object[] {});
+    } catch (Exception e) {
+      throw Throwables.propagate(e);
+    }
 
     CreateOptions blockLocationPolicyCreateOptions = CreateOptions.defaults()
         .setLocationPolicyClassName(
@@ -179,7 +184,7 @@ public final class OpenFileOptions {
       mCacheLocationPolicy =
           CommonUtils.createNewClassInstance(clazz, new Class[] {}, new Object[] {});
       return this;
-    } catch (ClassNotFoundException e) {
+    } catch (Exception e) {
       throw new RuntimeException(e);
     }
   }
@@ -195,7 +200,7 @@ public final class OpenFileOptions {
       mCacheLocationPolicy =
           CommonUtils.createNewClassInstance(clazz, new Class[] {}, new Object[] {});
       return this;
-    } catch (ClassNotFoundException e) {
+    } catch (Exception e) {
       throw new RuntimeException(e);
     }
   }
@@ -229,11 +234,12 @@ public final class OpenFileOptions {
   }
 
   /**
-   * @param status the {@link URIStatus} which will be read
-   * @return the {@link InStreamOptions} representation of the read options applied to the file
+   * @return the {@link InStreamOptions} representation of this object
    */
-  public InStreamOptions toInStreamOptions(URIStatus status) {
-    return new InStreamOptions(status, this);
+  public InStreamOptions toInStreamOptions() {
+    return InStreamOptions.defaults().setReadType(mReadType).setLocationPolicy(mCacheLocationPolicy)
+        .setMaxUfsReadConcurrency(mMaxUfsReadConcurrency)
+        .setUfsReadLocationPolicy(mUfsReadLocationPolicy);
   }
 
   @Override
@@ -253,8 +259,7 @@ public final class OpenFileOptions {
 
   @Override
   public int hashCode() {
-    return Objects.hashCode(mCacheLocationPolicy, mReadType, mMaxUfsReadConcurrency,
-        mUfsReadLocationPolicy);
+    return Objects.hashCode(mCacheLocationPolicy, mReadType, mMaxUfsReadConcurrency);
   }
 
   @Override

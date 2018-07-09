@@ -16,12 +16,11 @@ import alluxio.util.network.NetworkAddressUtils.ServiceType;
 
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.util.Map;
 
 /**
  * Task for validating whether a specific port is available.
  */
-public final class PortAvailabilityValidationTask extends AbstractValidationTask {
+public final class PortAvailabilityValidationTask implements ValidationTask {
   private final ServiceType mServiceType;
   private final String mOwner;
 
@@ -37,17 +36,17 @@ public final class PortAvailabilityValidationTask extends AbstractValidationTask
   }
 
   @Override
-  public TaskResult validate(Map<String, String> optionsMap) {
+  public boolean validate() {
     if (Utils.isAlluxioRunning(mOwner)) {
       System.out.format("%s is already running. Skip validation.%n", mOwner);
-      return TaskResult.SKIPPED;
+      return true;
     }
     int port = NetworkAddressUtils.getPort(mServiceType);
     if (!isLocalPortAvailable(port)) {
       System.err.format("%s port %d is not available.%n", mServiceType.getServiceName(), port);
-      return TaskResult.FAILED;
+      return false;
     }
-    return TaskResult.OK;
+    return true;
   }
 
   private static boolean isLocalPortAvailable(int port) {

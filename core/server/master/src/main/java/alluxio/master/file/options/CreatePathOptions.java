@@ -12,7 +12,6 @@
 package alluxio.master.file.options;
 
 import alluxio.security.authorization.Mode;
-import alluxio.wire.CommonOptions;
 
 import com.google.common.base.Objects;
 
@@ -25,7 +24,6 @@ import javax.annotation.concurrent.NotThreadSafe;
  */
 @NotThreadSafe
 public abstract class CreatePathOptions<T> {
-  protected CommonOptions mCommonOptions;
   protected boolean mMountPoint;
   protected long mOperationTimeMs;
   protected String mOwner;
@@ -37,7 +35,6 @@ public abstract class CreatePathOptions<T> {
   protected boolean mMetadataLoad;
 
   protected CreatePathOptions() {
-    mCommonOptions = CommonOptions.defaults();
     mMountPoint = false;
     mOperationTimeMs = System.currentTimeMillis();
     mOwner = "";
@@ -49,13 +46,6 @@ public abstract class CreatePathOptions<T> {
   }
 
   protected abstract T getThis();
-
-  /**
-   * @return the common options
-   */
-  public CommonOptions getCommonOptions() {
-    return mCommonOptions;
-  }
 
   /**
    * @return the operation time
@@ -112,15 +102,6 @@ public abstract class CreatePathOptions<T> {
    */
   public boolean isMetadataLoad() {
     return mMetadataLoad;
-  }
-
-  /**
-   * @param options the common options
-   * @return the updated options object
-   */
-  public T setCommonOptions(CommonOptions options) {
-    mCommonOptions = options;
-    return getThis();
   }
 
   /**
@@ -209,7 +190,6 @@ public abstract class CreatePathOptions<T> {
     }
     CreatePathOptions<?> that = (CreatePathOptions<?>) o;
     return Objects.equal(mMountPoint, that.mMountPoint)
-        && Objects.equal(mCommonOptions, that.mCommonOptions)
         && Objects.equal(mOwner, that.mOwner)
         && Objects.equal(mGroup, that.mGroup)
         && Objects.equal(mMode, that.mMode)
@@ -223,12 +203,11 @@ public abstract class CreatePathOptions<T> {
   public int hashCode() {
     return Objects
         .hashCode(mMountPoint, mOwner, mGroup, mMode, mPersisted, mRecursive, mMetadataLoad,
-            mOperationTimeMs, mCommonOptions);
+            mOperationTimeMs);
   }
 
   protected Objects.ToStringHelper toStringHelper() {
     return Objects.toStringHelper(this)
-        .add("commonOptions", mCommonOptions)
         .add("mountPoint", mMountPoint)
         .add("operationTimeMs", mOperationTimeMs)
         .add("owner", mOwner)

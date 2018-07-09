@@ -14,17 +14,10 @@ package alluxio.master.journal.ufs;
 import alluxio.Configuration;
 import alluxio.PropertyKey;
 import alluxio.exception.InvalidJournalEntryException;
-import alluxio.exception.JournalClosedException;
-import alluxio.exception.status.UnavailableException;
-import alluxio.master.journal.AsyncJournalWriter;
 import alluxio.master.journal.Journal;
-import alluxio.master.journal.JournalContext;
 import alluxio.master.journal.JournalEntryStateMachine;
 import alluxio.master.journal.JournalReader;
-import alluxio.master.journal.MasterJournalContext;
 import alluxio.proto.journal.Journal.JournalEntry;
-import alluxio.retry.ExponentialTimeBoundedRetry;
-import alluxio.retry.RetryPolicy;
 import alluxio.underfs.UfsStatus;
 import alluxio.underfs.UnderFileSystem;
 import alluxio.underfs.UnderFileSystemConfiguration;
@@ -32,14 +25,12 @@ import alluxio.underfs.options.DeleteOptions;
 import alluxio.util.URIUtils;
 import alluxio.util.UnderFileSystemUtils;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.URI;
-import java.time.Duration;
 import java.util.Map;
 
 import javax.annotation.concurrent.ThreadSafe;
@@ -92,19 +83,11 @@ public class UfsJournal implements Journal {
   private final long mQuietPeriodMs;
   /** The current log writer. Null when in secondary mode. */
   private UfsJournalLogWriter mWriter;
-  /** Asynchronous journal writer. */
-  private AsyncJournalWriter mAsyncWriter;
   /**
    * Thread for tailing the journal, taking snapshots, and applying updates to the state machine.
    * Null when in primary mode.
    */
   private UfsJournalCheckpointThread mTailerThread;
-
-  private enum State {
-    SECONDARY, PRIMARY, CLOSED;
-  }
-
-  private State mState;
 
   /**
    * @return the ufs configuration to use for the journal operations
@@ -147,7 +130,6 @@ public class UfsJournal implements Journal {
     mLogDir = URIUtils.appendPathOrDie(mLocation, LOG_DIRNAME);
     mCheckpointDir = URIUtils.appendPathOrDie(mLocation, CHECKPOINT_DIRNAME);
     mTmpDir = URIUtils.appendPathOrDie(mLocation, TMP_DIRNAME);
-    mState = State.SECONDARY;
   }
 
   @Override
@@ -155,41 +137,27 @@ public class UfsJournal implements Journal {
     return mLocation;
   }
 
-  /**
-   * @param entry an entry to write to the journal
-   */
-  @VisibleForTesting
-  synchronized void write(JournalEntry entry) throws IOException, JournalClosedException {
+  @Override
+  public void write(JournalEntry entry) throws IOException {
     writer().write(entry);
   }
 
-  /**
-   * Flushes the journal.
-   */
-  @VisibleForTesting
-  synchronized void flush() throws IOException, JournalClosedException {
+  @Override
+  public void flush() throws IOException {
     writer().flush();
   }
 
-  @Override
-  public synchronized JournalContext createJournalContext() throws UnavailableException {
-    if (mState != State.PRIMARY) {
-      // We throw UnavailableException here so that clients will retry with the next primary master.
-      throw new UnavailableException("Failed to write to journal: journal is in state " + mState);
+  private UfsJournalLogWriter writer() throws IOException {
+    if (mWriter == null) {
+      throw new IllegalStateException("Cannot write to the journal in secondary mode");
     }
-    return new MasterJournalContext(mAsyncWriter);
-  }
-
-  private synchronized UfsJournalLogWriter writer() throws IOException {
-    Preconditions.checkState(mState == State.PRIMARY,
-        "Cannot write to the journal in state " + mState);
     return mWriter;
   }
 
   /**
    * Starts the journal in secondary mode.
    */
-  public synchronized void start() throws IOException {
+  public void start() throws IOException {
     mMaster.resetState();
     mTailerThread = new UfsJournalCheckpointThread(mMaster, this);
     mTailerThread.start();
@@ -199,7 +167,7 @@ public class UfsJournal implements Journal {
    * Transitions the journal from secondary to primary mode. The journal will apply the latest
    * journal entries to the state machine, then begin to allow writes.
    */
-  public synchronized void gainPrimacy() throws IOException {
+  public void gainPrimacy() throws IOException {
     Preconditions.checkState(mWriter == null, "writer must be null in secondary mode");
     Preconditions.checkState(mTailerThread != null,
         "tailer thread must not be null in secondary mode");
@@ -208,25 +176,20 @@ public class UfsJournal implements Journal {
     mTailerThread = null;
     nextSequenceNumber = catchUp(nextSequenceNumber);
     mWriter = new UfsJournalLogWriter(this, nextSequenceNumber);
-    mAsyncWriter = new AsyncJournalWriter(mWriter);
-    mState = State.PRIMARY;
   }
 
   /**
    * Transitions the journal from primary to secondary mode. The journal will no longer allow
    * writes, and the state machine is rebuilt from the journal and kept up to date.
    */
-  public synchronized void losePrimacy() throws IOException {
-    Preconditions.checkState(mState == State.PRIMARY, "unexpected state " + mState);
+  public void losePrimacy() throws IOException {
     Preconditions.checkState(mWriter != null, "writer thread must not be null in primary mode");
     Preconditions.checkState(mTailerThread == null, "tailer thread must be null in primary mode");
     mWriter.close();
     mWriter = null;
-    mAsyncWriter = null;
     mMaster.resetState();
     mTailerThread = new UfsJournalCheckpointThread(mMaster, this);
     mTailerThread.start();
-    mState = State.SECONDARY;
   }
 
   /**
@@ -337,49 +300,20 @@ public class UfsJournal implements Journal {
    * @param nextSequenceNumber the sequence number to continue catching up from
    * @return the next sequence number after the final sequence number read
    */
-  private synchronized long catchUp(long nextSequenceNumber) {
-    JournalReader journalReader = new UfsJournalReader(this, nextSequenceNumber, true);
-    try {
-      return catchUp(journalReader);
-    } finally {
-      try {
-        journalReader.close();
-      } catch (IOException e) {
-        LOG.warn("Failed to close journal reader: {}", e.toString());
-      }
-    }
-  }
-
-  private long catchUp(JournalReader journalReader) {
-    RetryPolicy retry =
-        ExponentialTimeBoundedRetry.builder()
-            .withInitialSleep(Duration.ofSeconds(1))
-            .withMaxSleep(Duration.ofSeconds(10))
-            .withMaxDuration(Duration.ofDays(365))
-            .build();
-    while (true) {
+  private long catchUp(long nextSequenceNumber) {
+    try (JournalReader journalReader = new UfsJournalReader(this, nextSequenceNumber, true)) {
       JournalEntry entry;
-      try {
-        entry = journalReader.read();
-      } catch (IOException e) {
-        LOG.warn("{}: Failed to read from journal: {}", mMaster.getName(), e);
-        if (retry.attemptRetry()) {
-          continue;
-        }
-        throw new RuntimeException(e);
-      } catch (InvalidJournalEntryException e) {
-        LOG.error("{}: Invalid journal entry detected.", mMaster.getName(), e);
-        // We found an invalid journal entry, nothing we can do but crash.
-        throw new RuntimeException(e);
-      }
-      if (entry == null) {
-        return journalReader.getNextSequenceNumber();
-      }
-      try {
+      while ((entry = journalReader.read()) != null) {
         mMaster.processJournalEntry(entry);
-      } catch (IOException e) {
-        throw new RuntimeException(String.format("Failed to process journal entry %s", entry), e);
       }
+      return journalReader.getNextSequenceNumber();
+    } catch (IOException e) {
+      LOG.error("{}: Failed to read from journal", mMaster.getName(), e);
+      throw new RuntimeException(e);
+    } catch (InvalidJournalEntryException e) {
+      LOG.error("{}: Invalid journal entry detected.", mMaster.getName(), e);
+      // We found an invalid journal entry, nothing we can do but crash.
+      throw new RuntimeException(e);
     }
   }
 
@@ -389,16 +323,14 @@ public class UfsJournal implements Journal {
   }
 
   @Override
-  public synchronized void close() throws IOException {
+  public void close() throws IOException {
     if (mWriter != null) {
       mWriter.close();
       mWriter = null;
-      mAsyncWriter = null;
     }
     if (mTailerThread != null) {
       mTailerThread.awaitTermination(false);
       mTailerThread = null;
     }
-    mState = State.CLOSED;
   }
 }

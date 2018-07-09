@@ -15,7 +15,7 @@
   <parent>
     <artifactId>alluxio-core-server</artifactId>
     <groupId>org.alluxio</groupId>
-    <version>1.7.1-SNAPSHOT</version>
+    <version>1.6.2-SNAPSHOT</version>
   </parent>
   <artifactId>alluxio-core-server-master</artifactId>
   <packaging>jar</packaging>
@@ -132,6 +132,11 @@
       <artifactId>alluxio-underfs-local</artifactId>
       <version>${project.version}</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>22.0</version>
     </dependency>
   </dependencies>
 

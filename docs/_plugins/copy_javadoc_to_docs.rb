@@ -10,11 +10,7 @@ dest = "api/java"
 puts "Making directory " + dest
 mkdir_p dest
 
-if !File.directory?(source)
-  puts "WARNING: " + source + " not found, continuing without javadoc"
-else
-  puts "cp -r " + source + "/. " + dest
-  cp_r(source + "/.", dest)
-end
+puts "cp -r " + source + "/. " + dest
+cp_r(source + "/.", dest)
 
 cd("..")

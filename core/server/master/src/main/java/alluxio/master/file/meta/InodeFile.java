@@ -87,7 +87,6 @@ public final class InodeFile extends Inode<InodeFile> {
     ret.setMode(getMode());
     ret.setPersistenceState(getPersistenceState().toString());
     ret.setMountPoint(false);
-    ret.setUfsFingerprint(getUfsFingerprint());
     return ret;
   }
 
@@ -179,7 +178,7 @@ public final class InodeFile extends Inode<InodeFile> {
    * @return the updated object
    */
   public InodeFile setBlockIds(List<Long> blockIds) {
-    mBlocks = new ArrayList<>(Preconditions.checkNotNull(blockIds, "blockIds"));
+    mBlocks = new ArrayList<>(Preconditions.checkNotNull(blockIds));
     return getThis();
   }
 
@@ -281,9 +280,7 @@ public final class InodeFile extends Inode<InodeFile> {
         .setTtlAction((ProtobufUtils.fromProtobuf(entry.getTtlAction())))
         .setOwner(entry.getOwner())
         .setGroup(entry.getGroup())
-        .setMode(mode)
-        .setUfsFingerprint(entry.hasUfsFingerprint() ? entry.getUfsFingerprint() :
-            Constants.INVALID_UFS_FINGERPRINT);
+        .setMode(mode);
   }
 
   /**
@@ -332,9 +329,7 @@ public final class InodeFile extends Inode<InodeFile> {
         .setPersistenceState(getPersistenceState().name())
         .setPinned(isPinned())
         .setTtl(getTtl())
-        .setTtlAction(ProtobufUtils.toProtobuf(getTtlAction()))
-        .setUfsFingerprint(getUfsFingerprint())
-        .build();
+        .setTtlAction(ProtobufUtils.toProtobuf(getTtlAction())).build();
     return JournalEntry.newBuilder().setInodeFile(inodeFile).build();
   }
 

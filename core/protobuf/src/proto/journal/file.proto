@@ -26,13 +26,12 @@ message AsyncPersistRequestEntry {
   optional int64 file_id = 1;
 }
 
-// next available id: 6
+// next available id: 5
 message CompleteFileEntry {
   repeated int64 block_ids = 1;
   optional int64 id = 2;
   optional int64 length = 3;
   optional int64 op_time_ms = 4;
-  optional string ufs_fingerprint = 5;
 }
 
 // next available id: 5
@@ -77,7 +76,7 @@ enum PTtlAction {
   FREE = 1;
 }
 
-// next available id: 19
+// next available id: 18
 message InodeFileEntry {
   optional int64 id = 1;
   optional int64 parent_id = 2;
@@ -96,7 +95,6 @@ message InodeFileEntry {
   optional string group = 15;
   optional int32 mode = 16;
   optional PTtlAction ttlAction = 17 [default = DELETE];
-  optional string ufs_fingerprint = 18;
 }
 
 // next available id: 3
@@ -132,7 +130,7 @@ message RenameEntry {
   optional int64 op_time_ms = 3;
 }
 
-// next available id: 11
+// next available id: 10
 message SetAttributeEntry {
   optional int64 id = 1;
   optional int64 op_time_ms = 2;
@@ -143,5 +141,4 @@ message SetAttributeEntry {
   optional string group = 7;
   optional int32 permission = 8;
   optional PTtlAction ttlAction = 9 [default = DELETE];
-  optional string ufs_fingerprint = 10;
 }

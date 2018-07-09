@@ -44,9 +44,8 @@ public final class MkdirsOptions {
   private MkdirsOptions() {
     // By default create parent is true.
     mCreateParent = true;
-    // default owner and group are null (unset)
-    mOwner = null;
-    mGroup = null;
+    mOwner = "";
+    mGroup = "";
     mMode = Mode.defaults().applyDirectoryUMask();
   }
 

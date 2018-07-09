@@ -15,7 +15,7 @@ import alluxio.Constants;
 import alluxio.util.CommonUtils;
 
 import com.google.common.net.HostAndPort;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import org.codehaus.jackson.map.ObjectMapper;
 import org.junit.Assert;
 import org.junit.Test;
 

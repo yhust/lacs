@@ -11,14 +11,12 @@
 
 package alluxio.client.file.options;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertEquals;
-
+import alluxio.CommonTestUtils;
 import alluxio.Configuration;
 import alluxio.PropertyKey;
-import alluxio.test.util.CommonUtils;
 import alluxio.thrift.DeleteTOptions;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Random;
@@ -34,9 +32,9 @@ public final class DeleteOptionsTest {
   public void defaults() {
     DeleteOptions options = DeleteOptions.defaults();
 
-    assertFalse(options.isRecursive());
-    assertFalse(options.isAlluxioOnly());
-    assertEquals(
+    Assert.assertFalse(options.isRecursive());
+    Assert.assertFalse(options.isAlluxioOnly());
+    Assert.assertEquals(
         Configuration.getBoolean(PropertyKey.USER_FILE_DELETE_UNCHECKED),
         options.isUnchecked());
   }
@@ -55,9 +53,9 @@ public final class DeleteOptionsTest {
     options.setRecursive(recursive);
     options.setAlluxioOnly(alluxioOnly);
     options.setUnchecked(unchecked);
-    assertEquals(recursive, options.isRecursive());
-    assertEquals(alluxioOnly, options.isAlluxioOnly());
-    assertEquals(unchecked, options.isUnchecked());
+    Assert.assertEquals(recursive, options.isRecursive());
+    Assert.assertEquals(alluxioOnly, options.isAlluxioOnly());
+    Assert.assertEquals(unchecked, options.isUnchecked());
   }
 
   /**
@@ -67,12 +65,12 @@ public final class DeleteOptionsTest {
   public void toThrift() {
     DeleteOptions options = DeleteOptions.defaults();
     DeleteTOptions thriftOptions = options.toThrift();
-    assertFalse(thriftOptions.isRecursive());
-    assertFalse(thriftOptions.isAlluxioOnly());
+    Assert.assertFalse(thriftOptions.isRecursive());
+    Assert.assertFalse(thriftOptions.isAlluxioOnly());
   }
 
   @Test
   public void equalsTest() throws Exception {
-    CommonUtils.testEquals(DeleteOptions.class);
+    CommonTestUtils.testEquals(DeleteOptions.class);
   }
 }

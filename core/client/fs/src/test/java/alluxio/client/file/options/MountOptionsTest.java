@@ -11,12 +11,10 @@
 
 package alluxio.client.file.options;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
-import alluxio.test.util.CommonUtils;
+import alluxio.CommonTestUtils;
 import alluxio.thrift.MountTOptions;
 
+import org.junit.Assert;
 import org.junit.Test;
 
 /**
@@ -29,20 +27,20 @@ public final class MountOptionsTest {
   @Test
   public void defaults() {
     MountOptions options = MountOptions.defaults();
-    assertFalse(options.isReadOnly());
-    assertFalse(options.isShared());
+    Assert.assertFalse(options.isReadOnly());
+    Assert.assertFalse(options.isShared());
   }
 
   @Test
   public void readOnlyField() {
-    assertTrue(MountOptions.defaults().setReadOnly(true).isReadOnly());
-    assertFalse(MountOptions.defaults().setReadOnly(false).isReadOnly());
+    Assert.assertTrue(MountOptions.defaults().setReadOnly(true).isReadOnly());
+    Assert.assertFalse(MountOptions.defaults().setReadOnly(false).isReadOnly());
   }
 
   @Test
   public void sharedField() {
-    assertTrue(MountOptions.defaults().setShared(true).isShared());
-    assertFalse(MountOptions.defaults().setShared(false).isShared());
+    Assert.assertTrue(MountOptions.defaults().setShared(true).isShared());
+    Assert.assertFalse(MountOptions.defaults().setShared(false).isShared());
   }
 
   /**
@@ -52,17 +50,17 @@ public final class MountOptionsTest {
   public void toThrift() {
     MountOptions options = MountOptions.defaults();
     MountTOptions thriftOptions = options.toThrift();
-    assertFalse(thriftOptions.isReadOnly());
+    Assert.assertFalse(thriftOptions.isReadOnly());
 
     options.setReadOnly(true);
     options.setShared(true);
     thriftOptions = options.toThrift();
-    assertTrue(thriftOptions.isReadOnly());
-    assertTrue(thriftOptions.isShared());
+    Assert.assertTrue(thriftOptions.isReadOnly());
+    Assert.assertTrue(thriftOptions.isShared());
   }
 
   @Test
   public void equalsTest() throws Exception {
-    CommonUtils.testEquals(MountOptions.class);
+    CommonTestUtils.testEquals(MountOptions.class);
   }
 }

@@ -11,10 +11,6 @@
 
 package alluxio.worker.block;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertTrue;
-
 import alluxio.Configuration;
 import alluxio.ConfigurationTestUtils;
 import alluxio.PropertyKey;
@@ -83,7 +79,7 @@ public final class BlockLockManagerTest {
     // Read-lock on can both get through
     long lockId1 = mLockManager.lockBlock(TEST_SESSION_ID, TEST_BLOCK_ID, BlockLockType.READ);
     long lockId2 = mLockManager.lockBlock(TEST_SESSION_ID, TEST_BLOCK_ID, BlockLockType.READ);
-    assertNotEquals(lockId1, lockId2);
+    Assert.assertNotEquals(lockId1, lockId2);
   }
 
   /**
@@ -94,7 +90,7 @@ public final class BlockLockManagerTest {
   public void unlockNonExistingLock() throws Exception {
     long badLockId = 1;
     // Unlock a non-existing lockId, expect to see IOException
-    assertFalse(mLockManager.unlockBlockNoException(badLockId));
+    Assert.assertFalse(mLockManager.unlockBlockNoException(badLockId));
   }
 
   /**
@@ -225,7 +221,7 @@ public final class BlockLockManagerTest {
     setMaxLocks(1);
     BlockLockManager manager = new BlockLockManager();
     long lockId1 = manager.lockBlock(TEST_SESSION_ID, 1, BlockLockType.WRITE);
-    assertTrue(
+    Assert.assertTrue(
         manager.unlockBlockNoException(lockId1)); // Without this line the next lock would hang.
     manager.lockBlock(TEST_SESSION_ID, 2, BlockLockType.WRITE);
   }
@@ -239,7 +235,7 @@ public final class BlockLockManagerTest {
     final BlockLockManager manager = new BlockLockManager();
     long lockId1 = manager.lockBlock(TEST_SESSION_ID, 1, BlockLockType.READ);
     manager.lockBlock(TEST_SESSION_ID, 1, BlockLockType.READ);
-    assertTrue(manager.unlockBlockNoException(lockId1));
+    Assert.assertTrue(manager.unlockBlockNoException(lockId1));
     lockExpectingHang(manager, 2);
   }
 
@@ -261,7 +257,7 @@ public final class BlockLockManagerTest {
     thread.start();
     thread.join(200);
     // Locking should not take 200ms unless there is a hang.
-    assertTrue(thread.isAlive());
+    Assert.assertTrue(thread.isAlive());
   }
 
   /**
@@ -301,7 +297,7 @@ public final class BlockLockManagerTest {
             // Lock and unlock the block lockUnlocksPerThread times.
             for (int j = 0; j < lockUnlocksPerThread; j++) {
               long lockId = manager.lockBlock(TEST_SESSION_ID, finalBlockId, BlockLockType.READ);
-              assertTrue(manager.unlockBlockNoException(lockId));
+              Assert.assertTrue(manager.unlockBlockNoException(lockId));
             }
             // Lock the block one last time.
             manager.lockBlock(TEST_SESSION_ID, finalBlockId, BlockLockType.READ);

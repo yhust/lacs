@@ -11,17 +11,12 @@
 
 package alluxio.client.file.options;
 
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
-
+import alluxio.CommonTestUtils;
 import alluxio.security.authorization.Mode;
-import alluxio.test.util.CommonUtils;
 import alluxio.thrift.SetAttributeTOptions;
 import alluxio.wire.TtlAction;
 
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.powermock.core.classloader.annotations.PrepareForTest;
@@ -39,14 +34,14 @@ public final class SetAttributeOptionsTest {
   @Test
   public void defaults() {
     SetAttributeOptions options = SetAttributeOptions.defaults();
-    assertNull(options.getPersisted());
-    assertNull(options.getPinned());
-    assertNull(options.getTtl());
-    assertEquals(TtlAction.DELETE, options.getTtlAction());
-    assertNull(options.getOwner());
-    assertNull(options.getGroup());
-    assertNull(options.getMode());
-    assertFalse(options.isRecursive());
+    Assert.assertNull(options.getPersisted());
+    Assert.assertNull(options.getPinned());
+    Assert.assertNull(options.getTtl());
+    Assert.assertEquals(TtlAction.DELETE, options.getTtlAction());
+    Assert.assertNull(options.getOwner());
+    Assert.assertNull(options.getGroup());
+    Assert.assertNull(options.getMode());
+    Assert.assertFalse(options.isRecursive());
   }
 
   /**
@@ -76,14 +71,14 @@ public final class SetAttributeOptionsTest {
     options.setMode(mode);
     options.setRecursive(recursive);
 
-    assertEquals(persisted, options.getPersisted());
-    assertEquals(pinned, options.getPinned());
-    assertEquals(ttl, options.getTtl().longValue());
-    assertEquals(TtlAction.FREE, options.getTtlAction());
-    assertEquals(owner, options.getOwner());
-    assertEquals(group, options.getGroup());
-    assertEquals(mode, options.getMode());
-    assertEquals(recursive, options.isRecursive());
+    Assert.assertEquals(persisted, options.getPersisted());
+    Assert.assertEquals(pinned, options.getPinned());
+    Assert.assertEquals(ttl, options.getTtl().longValue());
+    Assert.assertEquals(TtlAction.FREE, options.getTtlAction());
+    Assert.assertEquals(owner, options.getOwner());
+    Assert.assertEquals(group, options.getGroup());
+    Assert.assertEquals(mode, options.getMode());
+    Assert.assertEquals(recursive, options.isRecursive());
   }
 
   /**
@@ -102,18 +97,18 @@ public final class SetAttributeOptionsTest {
     options.setTtl(ttl);
     SetAttributeTOptions thriftOptions = options.toThrift();
 
-    assertTrue(thriftOptions.isSetPersisted());
-    assertEquals(persisted, thriftOptions.isPersisted());
-    assertTrue(thriftOptions.isSetPinned());
-    assertEquals(pinned, thriftOptions.isPinned());
-    assertTrue(thriftOptions.isSetTtl());
-    assertEquals(alluxio.thrift.TTtlAction.Delete, thriftOptions.getTtlAction());
-    assertEquals(ttl, thriftOptions.getTtl());
+    Assert.assertTrue(thriftOptions.isSetPersisted());
+    Assert.assertEquals(persisted, thriftOptions.isPersisted());
+    Assert.assertTrue(thriftOptions.isSetPinned());
+    Assert.assertEquals(pinned, thriftOptions.isPinned());
+    Assert.assertTrue(thriftOptions.isSetTtl());
+    Assert.assertEquals(alluxio.thrift.TTtlAction.Delete, thriftOptions.getTtlAction());
+    Assert.assertEquals(ttl, thriftOptions.getTtl());
   }
 
   @Test
   public void equalsTest() throws Exception {
-    CommonUtils.testEquals(SetAttributeOptions.class);
+    CommonTestUtils.testEquals(SetAttributeOptions.class);
   }
 
   @Test
@@ -121,7 +116,7 @@ public final class SetAttributeOptionsTest {
     SetAttributeOptions options = SetAttributeOptions.defaults();
     try {
       options.setOwner("");
-      fail("Expected setOwner to fail with empty owner field");
+      Assert.fail("Expected setOwner to fail with empty owner field");
     } catch (IllegalArgumentException e) {
       // Expected
     }
@@ -132,7 +127,7 @@ public final class SetAttributeOptionsTest {
     SetAttributeOptions options = SetAttributeOptions.defaults();
     try {
       options.setGroup("");
-      fail("Expected setGroup to fail with empty group field");
+      Assert.fail("Expected setGroup to fail with empty group field");
     } catch (IllegalArgumentException e) {
       // Expected
     }

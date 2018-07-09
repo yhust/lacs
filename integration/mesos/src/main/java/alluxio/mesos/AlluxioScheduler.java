@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 
 /**
@@ -169,7 +170,7 @@ public class AlluxioScheduler implements Scheduler {
                             .addVariables(
                                 Protos.Environment.Variable.newBuilder()
                                     .setName("ALLUXIO_MESOS_SITE_PROPERTIES_CONTENT")
-                                    .setValue(Configuration.getSitePropertiesFile())
+                                    .setValue(createAlluxioSiteProperties())
                                     .build())
                             .build()));
         // pre-build resource list here, then use it to build Protos.Task later.
@@ -214,7 +215,7 @@ public class AlluxioScheduler implements Scheduler {
                             .addVariables(
                                 Protos.Environment.Variable.newBuilder()
                                     .setName("ALLUXIO_MESOS_SITE_PROPERTIES_CONTENT")
-                                    .setValue(Configuration.getSitePropertiesFile())
+                                    .setValue(createAlluxioSiteProperties())
                                     .build())
                             .build()));
         // pre-build resource list here, then use it to build Protos.Task later.
@@ -257,6 +258,18 @@ public class AlluxioScheduler implements Scheduler {
       Protos.Filters filters = Protos.Filters.newBuilder().setRefuseSeconds(1).build();
       driver.acceptOffers(offerIds, operations, filters);
     }
+  }
+
+  /**
+   * @return the content that should be pasted into an alluxio-site.properties file to recreate the
+   *         current configuration
+   */
+  private String createAlluxioSiteProperties() {
+    StringBuilder siteProperties = new StringBuilder();
+    for (Entry<String, String> entry : Configuration.toMap().entrySet()) {
+      siteProperties.append(String.format("%s=%s%n", entry.getKey(), entry.getValue()));
+    }
+    return siteProperties.toString();
   }
 
   private static String createStartAlluxioCommand(String command) {

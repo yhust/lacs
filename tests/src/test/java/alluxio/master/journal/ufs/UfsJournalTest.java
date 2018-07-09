@@ -12,7 +12,6 @@
 package alluxio.master.journal.ufs;
 
 import alluxio.BaseIntegrationTest;
-import alluxio.exception.status.UnavailableException;
 import alluxio.master.NoopMaster;
 import alluxio.util.URIUtils;
 
@@ -20,7 +19,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.rules.TemporaryFolder;
 
 import java.net.URI;
@@ -31,9 +29,6 @@ import java.net.URI;
 public final class UfsJournalTest extends BaseIntegrationTest {
   @Rule
   public TemporaryFolder mFolder = new TemporaryFolder();
-
-  @Rule
-  public ExpectedException mThrown = ExpectedException.none();
 
   private UfsJournal mJournal;
 
@@ -76,13 +71,5 @@ public final class UfsJournalTest extends BaseIntegrationTest {
     Assert.assertTrue(snapshot.getCheckpoints().isEmpty());
     Assert.assertTrue(snapshot.getLogs().isEmpty());
     Assert.assertTrue(snapshot.getTemporaryCheckpoints().isEmpty());
-  }
-
-  @Test
-  public void unavailableAfterClose() throws Exception {
-    mJournal.start();
-    mJournal.close();
-    mThrown.expect(UnavailableException.class);
-    mJournal.createJournalContext();
   }
 }

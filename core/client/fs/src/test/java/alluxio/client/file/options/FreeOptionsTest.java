@@ -11,11 +11,9 @@
 
 package alluxio.client.file.options;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import alluxio.CommonTestUtils;
 
-import alluxio.test.util.CommonUtils;
-
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.Random;
@@ -31,7 +29,7 @@ public class FreeOptionsTest {
   public void defaults() {
     FreeOptions options = FreeOptions.defaults();
 
-    assertFalse(options.isRecursive());
+    Assert.assertFalse(options.isRecursive());
   }
 
   /**
@@ -45,11 +43,11 @@ public class FreeOptionsTest {
     FreeOptions options = FreeOptions.defaults();
     options.setRecursive(recursive);
 
-    assertEquals(recursive, options.isRecursive());
+    Assert.assertEquals(recursive, options.isRecursive());
   }
 
   @Test
   public void equalsTest() throws Exception {
-    CommonUtils.testEquals(FreeOptions.class);
+    CommonTestUtils.testEquals(FreeOptions.class);
   }
 }

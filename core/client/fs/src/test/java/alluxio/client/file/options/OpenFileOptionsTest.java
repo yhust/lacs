@@ -11,6 +11,7 @@
 
 package alluxio.client.file.options;
 
+import alluxio.CommonTestUtils;
 import alluxio.Configuration;
 import alluxio.PropertyKey;
 import alluxio.client.ReadType;
@@ -18,7 +19,6 @@ import alluxio.client.block.policy.BlockLocationPolicy;
 import alluxio.client.file.policy.FileWriteLocationPolicy;
 import alluxio.client.file.policy.LocalFirstPolicy;
 import alluxio.client.file.policy.RoundRobinPolicy;
-import alluxio.test.util.CommonUtils;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -58,8 +58,24 @@ public class OpenFileOptionsTest {
     Assert.assertEquals(policy, options.getUfsReadLocationPolicy());
   }
 
+  /**
+   * Tests conversion to {@link InStreamOptions}.
+   */
+  @Test
+  public void toInStreamOptions() {
+    OpenFileOptions options = OpenFileOptions.defaults();
+    InStreamOptions inStreamOptions = options.toInStreamOptions();
+    Assert.assertEquals(options.getReadType().getAlluxioStorageType(),
+        inStreamOptions.getAlluxioStorageType());
+    Assert.assertEquals(options.getCacheLocationPolicy(), inStreamOptions.getCacheLocationPolicy());
+    Assert.assertEquals(options.getUfsReadLocationPolicy(),
+        inStreamOptions.getUfsReadLocationPolicy());
+    Assert.assertEquals(options.getMaxUfsReadConcurrency(),
+        inStreamOptions.getMaxUfsReadConcurrency());
+  }
+
   @Test
   public void equalsTest() throws Exception {
-    CommonUtils.testEquals(OpenFileOptions.class);
+    CommonTestUtils.testEquals(OpenFileOptions.class);
   }
 }
