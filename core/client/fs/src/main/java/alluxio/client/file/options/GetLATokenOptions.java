@@ -24,7 +24,7 @@ import javax.annotation.concurrent.NotThreadSafe;
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 public final class GetLATokenOptions {
 
-    private int userId; // the user requesting a token
+    private int mUserId; // the user requesting a token
 
     /**
      * @return the default {@link GetLATokenOptions}
@@ -33,13 +33,24 @@ public final class GetLATokenOptions {
         return new GetLATokenOptions();
     }
 
+    public GetLATokenOptions() {}
+    public GetLATokenOptions(int userId) {mUserId =userId;}
+    /**
+     * Create an instance of {@link GetLATokenOptions} from a {@link GetLATokenTOptions}.
+     *
+     * @param options the thrift representation of getLAToken options
+     */
+    public GetLATokenOptions(GetLATokenTOptions options) {
+        GetLATokenOptions getLATokenOptions = new GetLATokenOptions();
+        getLATokenOptions.setUserId(options.getUserId());
+    }
 
     public int getUserId() {
-        return userId;
+        return mUserId;
     }
 
     public void setUserId(int id) {
-        userId = id;
+        mUserId = id;
     }
 
     @Override
@@ -51,18 +62,18 @@ public final class GetLATokenOptions {
             return false;
         }
         GetLATokenOptions that = (GetLATokenOptions) o;
-        return Objects.equal(userId, that.userId);
+        return Objects.equal(mUserId, that.mUserId);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(userId);
+        return Objects.hashCode(mUserId);
     }
 
     @Override
     public String toString() {
         return Objects.toStringHelper(this)
-                .add("userId", userId)
+                .add("mUserId", mUserId)
                 .toString();
     }
 
@@ -71,7 +82,7 @@ public final class GetLATokenOptions {
      */
     public GetLATokenTOptions toThrift() {
         GetLATokenTOptions options = new GetLATokenTOptions();
-        options.setUserId(userId);
+        options.setUserId(mUserId);
         return options;
     }
 }

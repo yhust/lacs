@@ -18,6 +18,11 @@
             <artifactId>alluxio-core-client-fs</artifactId>
             <version>1.6.2-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>org.alluxio</groupId>
+            <artifactId>alluxio-core-server-master</artifactId>
+            <version>1.6.2-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 
 

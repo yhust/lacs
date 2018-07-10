@@ -441,7 +441,7 @@ public interface FileSystemMaster extends Master {
       throws UnexpectedAlluxioException, FileDoesNotExistException, InvalidPathException,
       AccessControlException;
 
-  boolean getLAToken(AlluxioURI path, GetLATokenOptions option)throws FileDoesNotExistException, InvalidPathException,AccessControlException;
+  boolean getLAToken(String fileName, GetLATokenOptions option)throws FileDoesNotExistException, InvalidPathException,AccessControlException;
 
   /**
    * Sets the file attribute.

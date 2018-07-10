@@ -13,6 +13,7 @@ package alluxio.master.file.options;
 
 import alluxio.thrift.CompleteFileTOptions;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 
 import javax.annotation.concurrent.NotThreadSafe;
@@ -98,7 +99,7 @@ public final class CompleteFileOptions {
 
   @Override
   public String toString() {
-    return Objects.toStringHelper(this)
+    return MoreObjects.toStringHelper(this)
         .add("ufsLength", mUfsLength)
         .add("operationTimeMs", mOperationTimeMs)
         .toString();

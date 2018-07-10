@@ -14,6 +14,7 @@ package alluxio.master.file.options;
 import alluxio.thrift.ListStatusTOptions;
 import alluxio.wire.LoadMetadataType;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 
 import javax.annotation.concurrent.NotThreadSafe;
@@ -88,7 +89,7 @@ public final class ListStatusOptions {
 
   @Override
   public String toString() {
-    return Objects.toStringHelper(this)
+    return MoreObjects.toStringHelper(this)
         .add("loadMetadataType", mLoadMetadataType.toString())
         .toString();
   }

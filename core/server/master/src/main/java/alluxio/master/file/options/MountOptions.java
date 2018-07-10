@@ -14,6 +14,7 @@ package alluxio.master.file.options;
 import alluxio.proto.journal.File;
 import alluxio.thrift.MountTOptions;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 
 import java.util.Collections;
@@ -158,7 +159,7 @@ public final class MountOptions {
 
   @Override
   public String toString() {
-    return Objects.toStringHelper(this)
+    return MoreObjects.toStringHelper(this)
         .add("readOnly", mReadOnly)
         .add("properties", mProperties)
         .add("shared", mShared)

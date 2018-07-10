@@ -13,7 +13,7 @@ package alluxio.master.file.options;
 
 import alluxio.security.authorization.Mode;
 
-import com.google.common.base.Objects;
+import com.google.common.base.*;
 
 import javax.annotation.concurrent.NotThreadSafe;
 
@@ -206,8 +206,8 @@ public abstract class CreatePathOptions<T> {
             mOperationTimeMs);
   }
 
-  protected Objects.ToStringHelper toStringHelper() {
-    return Objects.toStringHelper(this)
+  protected MoreObjects.ToStringHelper toStringHelper() {
+    return MoreObjects.toStringHelper(this)
         .add("mountPoint", mMountPoint)
         .add("operationTimeMs", mOperationTimeMs)
         .add("owner", mOwner)

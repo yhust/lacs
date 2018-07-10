@@ -6,7 +6,9 @@ package alluxio.master.file.options;
 
 import alluxio.annotation.PublicApi;
 import alluxio.thrift.GetLATokenTOptions;
+import alluxio.master.file.options.GetLATokenOptions;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 
 import javax.annotation.concurrent.NotThreadSafe;
@@ -28,6 +30,16 @@ public final class GetLATokenOptions {
         return new GetLATokenOptions();
     }
 
+    public GetLATokenOptions(){}
+    /**
+     * Create an instance of {@link alluxio.client.file.options.GetLATokenOptions} from a {@link GetLATokenTOptions}.
+     *
+     * @param options the thrift representation of getLAToken options
+     */
+    public GetLATokenOptions(GetLATokenTOptions options) {
+        GetLATokenOptions getLATokenOptions = new GetLATokenOptions();
+        getLATokenOptions.setUserId(options.getUserId());
+    }
 
     public int getUserId() {
         return userId;
@@ -56,7 +68,7 @@ public final class GetLATokenOptions {
 
     @Override
     public String toString() {
-        return Objects.toStringHelper(this)
+        return MoreObjects.toStringHelper(this)
                 .add("userId", userId)
                 .toString();
     }

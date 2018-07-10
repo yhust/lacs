@@ -183,7 +183,7 @@ struct UfsInfo {
 }
 
 struct GetLATokenTOptions{
-  1: i64 userId
+  1: i32 userId
 }
 struct GetLATokenTResponse{
   1: bool token

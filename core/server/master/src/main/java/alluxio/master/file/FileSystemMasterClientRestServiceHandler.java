@@ -76,6 +76,7 @@ public final class FileSystemMasterClientRestServiceHandler {
   public static final String SCHEDULE_ASYNC_PERSIST = "schedule_async_persist";
   public static final String SET_ATTRIBUTE = "set_attribute";
   public static final String UNMOUNT = "unmount";
+  public static final String GET_LA_TOKEN = "get_la_token";
 
   private final FileSystemMaster mFileSystemMaster;
 
@@ -505,4 +506,23 @@ public final class FileSystemMasterClientRestServiceHandler {
       }
     });
   }
+  /**
+   * @summary get the access token for load-aware fair caching
+   * @param path the file name
+   * @return the response object
+   */
+  @POST
+  @Path(GET_LA_TOKEN)
+  @ReturnType("java.lang.Boolean")
+  public Response getLAToken(@QueryParam("path") final String path) {
+    return RestUtils.call(new RestUtils.RestCallable<Void>() {
+      @Override
+      public Void call() throws Exception {
+        Preconditions.checkNotNull(path, "required 'path' parameter is missing");
+        mFileSystemMaster.unmount(new AlluxioURI(path));
+        return null;
+      }
+    });
+  }
+
 }

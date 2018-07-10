@@ -17,54 +17,8 @@ import alluxio.RpcUtils;
 import alluxio.RpcUtils.RpcCallable;
 import alluxio.RpcUtils.RpcCallableThrowsIOException;
 import alluxio.exception.AlluxioException;
-import alluxio.master.file.options.CheckConsistencyOptions;
-import alluxio.master.file.options.CompleteFileOptions;
-import alluxio.master.file.options.CreateDirectoryOptions;
-import alluxio.master.file.options.CreateFileOptions;
-import alluxio.master.file.options.DeleteOptions;
-import alluxio.master.file.options.FreeOptions;
-import alluxio.master.file.options.GetStatusOptions;
-import alluxio.master.file.options.ListStatusOptions;
-import alluxio.master.file.options.LoadMetadataOptions;
-import alluxio.master.file.options.MountOptions;
-import alluxio.master.file.options.RenameOptions;
-import alluxio.master.file.options.SetAttributeOptions;
-import alluxio.thrift.AlluxioTException;
-import alluxio.thrift.CheckConsistencyTOptions;
-import alluxio.thrift.CheckConsistencyTResponse;
-import alluxio.thrift.CompleteFileTOptions;
-import alluxio.thrift.CompleteFileTResponse;
-import alluxio.thrift.CreateDirectoryTOptions;
-import alluxio.thrift.CreateDirectoryTResponse;
-import alluxio.thrift.CreateFileTOptions;
-import alluxio.thrift.CreateFileTResponse;
-import alluxio.thrift.DeleteTOptions;
-import alluxio.thrift.DeleteTResponse;
-import alluxio.thrift.FileInfo;
-import alluxio.thrift.FileSystemMasterClientService;
-import alluxio.thrift.FreeTOptions;
-import alluxio.thrift.FreeTResponse;
-import alluxio.thrift.GetMountTableTResponse;
-import alluxio.thrift.GetNewBlockIdForFileTOptions;
-import alluxio.thrift.GetNewBlockIdForFileTResponse;
-import alluxio.thrift.GetServiceVersionTOptions;
-import alluxio.thrift.GetServiceVersionTResponse;
-import alluxio.thrift.GetStatusTOptions;
-import alluxio.thrift.GetStatusTResponse;
-import alluxio.thrift.ListStatusTOptions;
-import alluxio.thrift.ListStatusTResponse;
-import alluxio.thrift.LoadMetadataTOptions;
-import alluxio.thrift.LoadMetadataTResponse;
-import alluxio.thrift.MountTOptions;
-import alluxio.thrift.MountTResponse;
-import alluxio.thrift.RenameTOptions;
-import alluxio.thrift.RenameTResponse;
-import alluxio.thrift.ScheduleAsyncPersistenceTOptions;
-import alluxio.thrift.ScheduleAsyncPersistenceTResponse;
-import alluxio.thrift.SetAttributeTOptions;
-import alluxio.thrift.SetAttributeTResponse;
-import alluxio.thrift.UnmountTOptions;
-import alluxio.thrift.UnmountTResponse;
+import alluxio.master.file.options.*;
+import alluxio.thrift.*;
 import alluxio.wire.ThriftUtils;
 
 import alluxio.wire.MountPointInfo;
@@ -421,4 +375,22 @@ public final class FileSystemMasterClientServiceHandler implements
       }
     });
   }
+
+  @Override
+  public GetLATokenTResponse getLAToken(final String fileName, final GetLATokenTOptions options)
+          throws AlluxioTException {
+    return RpcUtils.callAndLog(LOG, new RpcCallableThrowsIOException<GetLATokenTResponse>() {
+      @Override
+      public GetLATokenTResponse call() throws AlluxioException, IOException {
+        return new GetLATokenTResponse(mFileSystemMaster.getLAToken(fileName, new GetLATokenOptions(options)));
+      }
+
+      @Override
+      public String toString() {
+        return String.format("GetLAToken: path=%s, options=%s", fileName, options);
+      }
+    });
+  }
+
+
 }

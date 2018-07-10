@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 public class GetLATokenTOptions implements org.apache.thrift.TBase<GetLATokenTOptions, GetLATokenTOptions._Fields>, java.io.Serializable, Cloneable, Comparable<GetLATokenTOptions> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("GetLATokenTOptions");
 
-  private static final org.apache.thrift.protocol.TField USER_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("userId", org.apache.thrift.protocol.TType.I64, (short)1);
+  private static final org.apache.thrift.protocol.TField USER_ID_FIELD_DESC = new org.apache.thrift.protocol.TField("userId", org.apache.thrift.protocol.TType.I32, (short)1);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -46,7 +46,7 @@ public class GetLATokenTOptions implements org.apache.thrift.TBase<GetLATokenTOp
     schemes.put(TupleScheme.class, new GetLATokenTOptionsTupleSchemeFactory());
   }
 
-  private long userId; // required
+  private int userId; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -113,7 +113,7 @@ public class GetLATokenTOptions implements org.apache.thrift.TBase<GetLATokenTOp
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.USER_ID, new org.apache.thrift.meta_data.FieldMetaData("userId", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I64)));
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(GetLATokenTOptions.class, metaDataMap);
   }
@@ -122,7 +122,7 @@ public class GetLATokenTOptions implements org.apache.thrift.TBase<GetLATokenTOp
   }
 
   public GetLATokenTOptions(
-    long userId)
+    int userId)
   {
     this();
     this.userId = userId;
@@ -147,11 +147,11 @@ public class GetLATokenTOptions implements org.apache.thrift.TBase<GetLATokenTOp
     this.userId = 0;
   }
 
-  public long getUserId() {
+  public int getUserId() {
     return this.userId;
   }
 
-  public GetLATokenTOptions setUserId(long userId) {
+  public GetLATokenTOptions setUserId(int userId) {
     this.userId = userId;
     setUserIdIsSet(true);
     return this;
@@ -176,7 +176,7 @@ public class GetLATokenTOptions implements org.apache.thrift.TBase<GetLATokenTOp
       if (value == null) {
         unsetUserId();
       } else {
-        setUserId((Long)value);
+        setUserId((Integer)value);
       }
       break;
 
@@ -329,8 +329,8 @@ public class GetLATokenTOptions implements org.apache.thrift.TBase<GetLATokenTOp
         }
         switch (schemeField.id) {
           case 1: // USER_ID
-            if (schemeField.type == org.apache.thrift.protocol.TType.I64) {
-              struct.userId = iprot.readI64();
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.userId = iprot.readI32();
               struct.setUserIdIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -352,7 +352,7 @@ public class GetLATokenTOptions implements org.apache.thrift.TBase<GetLATokenTOp
 
       oprot.writeStructBegin(STRUCT_DESC);
       oprot.writeFieldBegin(USER_ID_FIELD_DESC);
-      oprot.writeI64(struct.userId);
+      oprot.writeI32(struct.userId);
       oprot.writeFieldEnd();
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -377,7 +377,7 @@ public class GetLATokenTOptions implements org.apache.thrift.TBase<GetLATokenTOp
       }
       oprot.writeBitSet(optionals, 1);
       if (struct.isSetUserId()) {
-        oprot.writeI64(struct.userId);
+        oprot.writeI32(struct.userId);
       }
     }
 
@@ -386,7 +386,7 @@ public class GetLATokenTOptions implements org.apache.thrift.TBase<GetLATokenTOp
       TTupleProtocol iprot = (TTupleProtocol) prot;
       BitSet incoming = iprot.readBitSet(1);
       if (incoming.get(0)) {
-        struct.userId = iprot.readI64();
+        struct.userId = iprot.readI32();
         struct.setUserIdIsSet(true);
       }
     }

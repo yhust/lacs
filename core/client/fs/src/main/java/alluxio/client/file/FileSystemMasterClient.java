@@ -181,5 +181,5 @@ public interface FileSystemMasterClient extends Client {
    */
   void unmount(AlluxioURI alluxioPath) throws IOException;
 
-  boolean getLAToken(AlluxioURI path, GetLATokenOptions options) throws IOException;
+  boolean getLAToken(String fileName, GetLATokenOptions options) throws IOException;
 }

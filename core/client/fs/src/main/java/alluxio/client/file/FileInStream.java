@@ -70,7 +70,7 @@ public class FileInStream extends InputStream
   /** Standard block size in bytes of the file, guaranteed for all but the last block. */
   protected final long mBlockSize;
   /** Total length of the file in bytes. */
-  protected final long mFileLength;
+  public final long mFileLength;
   /** File system context containing the {@link FileSystemMasterClient} pool. */
   protected final FileSystemContext mContext;
   private final AlluxioBlockStore mBlockStore;

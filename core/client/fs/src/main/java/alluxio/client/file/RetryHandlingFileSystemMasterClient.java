@@ -295,11 +295,11 @@ public final class RetryHandlingFileSystemMasterClient extends AbstractMasterCli
   }
 
   @Override
-  public synchronized boolean getLAToken(final AlluxioURI alluxioPath, final GetLATokenOptions options) throws IOException {
+  public synchronized boolean getLAToken(final String fileName, final GetLATokenOptions options) throws IOException {
     return retryRPC(new RpcCallable<Boolean>() {
       @Override
       public Boolean call() throws TException {
-        return mClient.getLAToken(alluxioPath.toString(), options.toThrift()).isToken();
+        return mClient.getLAToken(fileName, options.toThrift()).isToken();
 
         //return token;
       }

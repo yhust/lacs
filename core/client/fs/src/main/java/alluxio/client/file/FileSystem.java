@@ -357,6 +357,6 @@ public interface FileSystem {
   void unmount(AlluxioURI path, UnmountOptions options) throws IOException, AlluxioException;
 
  // get the token from the client to read a file
-  boolean getLAToken(AlluxioURI path, GetLATokenOptions options) throws IOException, AlluxioException;
+  boolean getLAToken(String fileName, GetLATokenOptions options) throws IOException, AlluxioException;
 
 }

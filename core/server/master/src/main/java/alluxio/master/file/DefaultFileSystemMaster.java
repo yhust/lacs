@@ -44,6 +44,7 @@ import alluxio.master.audit.AuditContext;
 import alluxio.master.block.BlockId;
 import alluxio.master.block.BlockMaster;
 import alluxio.master.file.async.AsyncPersistHandler;
+import alluxio.master.la_master.LoadAwareMaster;
 import alluxio.master.file.meta.FileSystemMasterView;
 import alluxio.master.file.meta.Inode;
 import alluxio.master.file.meta.InodeDirectory;
@@ -120,7 +121,6 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterators;
 import com.google.common.util.concurrent.RateLimiter;
-import com.google.common.util.concurrent.RateLimiter.*;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.exception.ExceptionUtils;
@@ -295,6 +295,10 @@ public final class DefaultFileSystemMaster extends AbstractMaster implements Fil
   /** This caches absent paths in the UFS. */
   private final UfsAbsentPathCache mUfsAbsentPathCache;
 
+
+  /** For the logic of load-aware fair cache manager */
+  //private final LoadAwareMaster mLAMaster;
+
   /**
    * The service that checks for inode files with ttl set. We store it here so that it can be
    * accessed from tests.
@@ -353,6 +357,10 @@ public final class DefaultFileSystemMaster extends AbstractMaster implements Fil
 
     resetState();
     Metrics.registerGauges(this, mUfsManager);
+
+
+    //mLAMaster = new LoadAwareMaster(mBlockMaster.getWorkerCount());
+    LoadAwareMaster.setWorkerCount(mBlockMaster.getWorkerCount());
   }
 
   @Override
@@ -2685,34 +2693,10 @@ public final class DefaultFileSystemMaster extends AbstractMaster implements Fil
   }
 
   @Override
-  public boolean getLAToken(AlluxioURI alluxioPath, GetLATokenOptions options) throws FileDoesNotExistException,
+  public boolean getLAToken(String fileName, GetLATokenOptions options) throws FileDoesNotExistException,
           InvalidPathException, AccessControlException {
-    // implement the control algorithm of LA here
-    RateLimiter limiter = RateLimiter.create(2);
-    Metrics.GET_FILE_INFO_OPS.inc();
-    try (JournalContext journalContext = createJournalContext();
-         LockedInodePath inodePath = mInodeTree.lockInodePath(alluxioPath, InodeTree.LockMode.READ);
-         FileSystemMasterAuditContext auditContext =
-                 createAuditContext("getFileInfo", alluxioPath, null, inodePath.getInodeOrNull())) {
-      try {
-        mPermissionChecker.checkPermission(Mode.Bits.READ, inodePath);
-      } catch (AccessControlException e) {
-        auditContext.setAllowed(false);
-        throw e;
-      }
-      // If the file already exists, then metadata does not need to be loaded,
-      // otherwise load metadata.
-      if (!inodePath.fullPathExists()) {
-        // checkLoadMetadataOptions(options.getLoadMetadataType(), inodePath.getUri());
-        loadMetadataIfNotExistAndJournal(inodePath,
-                LoadMetadataOptions.defaults().setCreateAncestors(true), journalContext);
-        ensureFullPathAndUpdateCache(inodePath);
-      }
-      FileInfo fileInfo = getFileInfoInternal(inodePath);
-      fileInfo.getPath();
-      auditContext.setSrcInode(inodePath.getInode()).setSucceeded(true);
-      return true;
-    }
+    return LoadAwareMaster.access(fileName, options.getUserId());
+
   }
 
   /**

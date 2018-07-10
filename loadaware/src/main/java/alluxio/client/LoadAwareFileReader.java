@@ -1,33 +1,85 @@
 package alluxio.client;
 
 import alluxio.AlluxioURI;
+import alluxio.client.file.FileInStream;
 import alluxio.client.file.FileSystem;
 import alluxio.client.file.options.CreateFileOptions;
+import alluxio.client.file.options.GetLATokenOptions;
 import alluxio.client.file.options.OpenFileOptions;
-import alluxio.master.LoadAwareFileWriter;
+import alluxio.exception.AlluxioException;
+import alluxio.util.CommonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.concurrent.Callable;
 
 /**
  * Created by yuyinghao on 30/6/2018.
  */
-public class LoadAwareFileReader {
+public class LoadAwareFileReader{
 
-    //protected int mWorkerId;
+    private static final Logger LOG = LoggerFactory.getLogger(LoadAwareFileReader.class);
+
     protected int mUserId;
-    //protected float mCacheRatio;
-    //protected int mFileSize;
-    private FileSystem mFileSystem;
+    private static FileSystem mFileSystem = FileSystem.Factory.get(); // todo: will using a static fs slow down the performance?
     private OpenFileOptions mReadOptions;
     private AlluxioURI mDiskURI; // the cached part and on-disk part as two different files
     private AlluxioURI mCacheURI;
-    private String mLocalFile;
-    private static final Logger LOG = LoggerFactory.getLogger(LoadAwareFileWriter.class);
-    public LoadAwareFileReader(String alluxioPath, int userId){ //
-        mReadOptions = OpenFileOptions.defaults().setReadType(ReadType.NO_CACHE);
-        mCacheURI = new AlluxioURI(String.format("%s-1", alluxioPath));
-        mDiskURI = new AlluxioURI(String.format("%s-2", alluxioPath));
-        mUserId = userId;
+
+    private static FileWriter mTimeLog;
+    //private static FileWriter mBlockLog;
+
+    public LoadAwareFileReader(){ //
+    }
+
+    public static void main(String[] args){
+        String fileName = args[0];
+        int userId = Integer.parseInt(args[1]);
+
+        OpenFileOptions readOptions = OpenFileOptions.defaults().setReadType(ReadType.NO_CACHE);
+        AlluxioURI cacheURI = new AlluxioURI(String.format("%s-0", fileName));
+        AlluxioURI diskURI = new AlluxioURI(String.format("%s-1", fileName));
+
+
+        try {
+            mTimeLog= new FileWriter("logs/readLatency.txt", true); //append
+            //mBlockLog = new FileWriter("logs/accessBlock.txt", true); //append
+            boolean token = mFileSystem.getLAToken(fileName, new GetLATokenOptions(userId));
+            synchronized (mTimeLog) {
+                if (token) { // get the token
+                    final long startTimeMs = CommonUtils.getCurrentMs();
+                    int cacheBytes = 0;
+                    int diskBytes = 0;
+                    int totalBytes = 0;
+                    FileInStream isCache = null;
+                    FileInStream isDisk = null;
+                    if(mFileSystem.exists(cacheURI)){
+                        isCache = mFileSystem.openFile(cacheURI, readOptions);
+                        totalBytes += isCache.mFileLength;
+                    }
+                    if(mFileSystem.exists(diskURI)){
+                        isDisk = mFileSystem.openFile(diskURI, readOptions);
+                        totalBytes += isDisk.mFileLength;
+                    }
+                    byte[] buf = new byte[totalBytes];
+                    if(mFileSystem.exists(cacheURI)){
+                        cacheBytes = isCache.read(buf);
+                    }
+                    if(mFileSystem.exists(diskURI)){
+                        cacheBytes = isDisk.read(buf);
+                    }
+                    final long endTimeMs = CommonUtils.getCurrentMs();
+                    long latency =  endTimeMs - startTimeMs;
+                    mTimeLog.write("" + latency + "\n");
+                } else {
+                    mTimeLog.write("-1\n");
+                }
+            }
+        } catch (IOException | AlluxioException e){
+            e.printStackTrace();
+        }
     }
 
 }

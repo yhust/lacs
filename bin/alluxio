@@ -322,6 +322,20 @@ function main {
       ALLUXIO_SHELL_JAVA_OPTS+=" -Dalluxio.logger.type=Console"
       runJavaClass "$@"
     ;;
+   "runLAAlloc")
+        CLASS="latests.runAlloc"
+        LB_JAR="${ALLUXIO_HOME}/loadaware/target/loadaware-1.0-SNAPSHOT.jar"
+        CLASSPATH="${ALLUXIO_CLIENT_CLASSPATH}:${LB_JAR}"
+        ALLUXIO_SHELL_JAVA_OPTS+=" -Dalluxio.logger.type=Console"
+        runJavaClass "$@"
+       ;;
+    "runLAWrite")
+         CLASS="latests.writeFiles"
+         LB_JAR="${ALLUXIO_HOME}/loadaware/target/loadaware-1.0-SNAPSHOT.jar"
+         CLASSPATH="${ALLUXIO_CLIENT_CLASSPATH}:${LB_JAR}"
+         ALLUXIO_SHELL_JAVA_OPTS+=" -Dalluxio.logger.type=Console"
+         runJavaClass "$@"
+       ;;
 
 
 
