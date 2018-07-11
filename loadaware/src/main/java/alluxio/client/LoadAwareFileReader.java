@@ -68,10 +68,11 @@ public class LoadAwareFileReader{
                         cacheBytes = isCache.read(buf);
                     }
                     if(mFileSystem.exists(diskURI)){
-                        cacheBytes = isDisk.read(buf);
+                        diskBytes = isDisk.read(buf);
                     }
                     final long endTimeMs = CommonUtils.getCurrentMs();
                     long latency =  endTimeMs - startTimeMs;
+                    LOG.info("");
                     mTimeLog.write("" + latency + "\n");
                 } else {
                     mTimeLog.write("-1\n");

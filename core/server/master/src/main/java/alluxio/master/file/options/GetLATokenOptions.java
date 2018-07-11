@@ -8,7 +8,7 @@ import alluxio.annotation.PublicApi;
 import alluxio.thrift.GetLATokenTOptions;
 import alluxio.master.file.options.GetLATokenOptions;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.google.common.base.MoreObjects;
+import com.google.common.base.Objects;
 import com.google.common.base.Objects;
 
 import javax.annotation.concurrent.NotThreadSafe;
@@ -68,7 +68,7 @@ public final class GetLATokenOptions {
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper(this)
+        return Objects.toStringHelper(this)
                 .add("userId", userId)
                 .toString();
     }

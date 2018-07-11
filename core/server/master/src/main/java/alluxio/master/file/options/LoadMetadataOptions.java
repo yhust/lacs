@@ -13,7 +13,7 @@ package alluxio.master.file.options;
 
 import alluxio.underfs.UfsStatus;
 
-import com.google.common.base.MoreObjects;
+import com.google.common.base.Objects;
 import com.google.common.base.Objects;
 
 import javax.annotation.concurrent.NotThreadSafe;
@@ -121,7 +121,7 @@ public final class LoadMetadataOptions {
 
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(this).add("createAncestors", mCreateAncestors)
+    return Objects.toStringHelper(this).add("createAncestors", mCreateAncestors)
         .add("loadDirectChildren", mLoadDirectChildren)
         .add("ufsStatus", mUfsStatus).toString();
   }

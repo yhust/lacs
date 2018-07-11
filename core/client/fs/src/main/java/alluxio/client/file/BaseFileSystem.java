@@ -430,13 +430,13 @@ public class BaseFileSystem implements FileSystem {
   }
 
   @Override
-  public boolean getLAToken(AlluxioURI path, GetLATokenOptions options)
+  public boolean getLAToken(String fileName, GetLATokenOptions options)
           throws FileDoesNotExistException, IOException, AlluxioException {
     FileSystemMasterClient masterClient = mFileSystemContext.acquireMasterClient();
     try {
-      return masterClient.getLAToken(path, options);
+      return masterClient.getLAToken(fileName, options);
     } catch (NotFoundException e) {
-      throw new FileDoesNotExistException(ExceptionMessage.PATH_DOES_NOT_EXIST.getMessage(path));
+      throw new FileDoesNotExistException(ExceptionMessage.PATH_DOES_NOT_EXIST.getMessage(fileName));
     } catch (UnavailableException e) {
       throw e;
     } catch (AlluxioStatusException e) {

@@ -1,7 +1,7 @@
 package latests;
 import alluxio.AlluxioURI;
 import alluxio.client.file.FileSystem;
-import alluxio.master.LoadAwareFileWriter;
+import alluxio.master.la_master.LoadAwareFileWriter;
 
 /**
  * Created by yyuau on 28/6/2018.
@@ -15,14 +15,18 @@ public class WriterTest {
 
     FileSystem fileSystem = FileSystem.Factory.get();
     LoadAwareFileWriter writer;
+    String localFile;
     if(args.length >=4){
-      writer = new LoadAwareFileWriter(args[0], String.format("%s/%s", TEST_PATH, args[1]),
-              Integer.parseInt(args[2]), Float.parseFloat(args[3]), fileSystem);
+      writer = new LoadAwareFileWriter(fileSystem);
+      localFile= args[0];
+      writer.setmDstFile(String.format("%s/%s", TEST_PATH, args[1]));
+      writer.setmWorkerId(Integer.parseInt(args[2]));
+      writer.setmCacheRatio(Double.parseDouble(args[3]));
     }else {
       System.out.println("Usage: localFilePath, AlluxioPath, workerId, cacheRatio.");
       return;
     }
-    writer.writeFile();
+    writer.writeFile(localFile);
     System.exit(0);
   }
 

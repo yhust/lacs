@@ -206,8 +206,8 @@ public abstract class CreatePathOptions<T> {
             mOperationTimeMs);
   }
 
-  protected MoreObjects.ToStringHelper toStringHelper() {
-    return MoreObjects.toStringHelper(this)
+  protected Objects.ToStringHelper toStringHelper() {
+    return Objects.toStringHelper(this)
         .add("mountPoint", mMountPoint)
         .add("operationTimeMs", mOperationTimeMs)
         .add("owner", mOwner)

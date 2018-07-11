@@ -133,11 +133,11 @@
       <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
-    <dependency>
+    <!--dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
       <version>22.0</version>
-    </dependency>
+    </dependency-->
     <dependency>
       <groupId>org.isomorphism</groupId>
       <artifactId>token-bucket</artifactId>

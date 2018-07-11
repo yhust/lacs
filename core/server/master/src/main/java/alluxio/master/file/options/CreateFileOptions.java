@@ -20,7 +20,7 @@ import alluxio.util.SecurityUtils;
 import alluxio.wire.ThriftUtils;
 import alluxio.wire.TtlAction;
 
-import com.google.common.base.MoreObjects;
+import com.google.common.base.Objects;
 import com.google.common.base.Objects;
 
 import javax.annotation.concurrent.NotThreadSafe;
@@ -169,7 +169,7 @@ public final class CreateFileOptions extends CreatePathOptions<CreateFileOptions
 
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(this).add("blockSizeBytes", mBlockSizeBytes).add("ttl", mTtl)
+    return Objects.toStringHelper(this).add("blockSizeBytes", mBlockSizeBytes).add("ttl", mTtl)
         .add("ttlAction", mTtlAction).add("cacheable", mCacheable).toString();
   }
 }

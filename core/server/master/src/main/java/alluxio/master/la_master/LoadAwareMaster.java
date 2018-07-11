@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
 
 
 import org.isomorphism.util.*;
-import com.google.common.util.concurrent.RateLimiter.*;
+//import com.google.common.util.concurrent.RateLimiter.*;
 
 
 /**
@@ -29,6 +29,8 @@ public class LoadAwareMaster {
   private static final Logger LOG = LoggerFactory.getLogger(LoadAwareMaster.class);
   private static final String CONF = "config/config.txt"; //  the file to store the config statistics: "bandwidth \n filesize \n cachesize of each worker \n mode"
   private static final String  ALLOC= "python/alloc.txt"; // the file to store the output of the python algorithm
+  private static final String  ALLUXIODIR = "/tests"; // where to put test files in Alluxio
+  private static final String LOCALPATH = "/test_files/local_file"; // local file for copying
 
 
   //public enum MODE {
@@ -46,7 +48,7 @@ public class LoadAwareMaster {
   private static Double mBandwidth; // of each worker
   private static Double mFileSize;
   private static Double mCacheSize; // of each worker
-  public static int mWorkerCount;
+  private static int mWorkerCount;
   private static int mFileCount;
   private static Double mIsolateRate; // allowed TOTAL access rate per second, if a user is isolated // todo: per-worker throttling
 
@@ -80,6 +82,8 @@ public class LoadAwareMaster {
    * Run the python algorithm to get the cache allocation and block list.
    *
    * The output of the python program should be written to python/alloc.txt
+   *
+   * The access counts (frequency of the previous period) should be logged to config/pop.txt
    */
 
   public static void getAlloction() {
@@ -88,6 +92,7 @@ public class LoadAwareMaster {
       mFileSize = Double.parseDouble(br.readLine());
       mCacheSize = Double.parseDouble(br.readLine());
       mMode = br.readLine();
+      br.close();
     } catch (IOException e) {
       LOG.info("Four parameters in config/config.txt are required: bandwidth, filesize, cachesize, and mode, separated in lines.");
       e.printStackTrace();
@@ -98,14 +103,15 @@ public class LoadAwareMaster {
     cmd.add("python");
     String currentDirectory = System.getProperty("user.dir");
     System.out.println("Current dir: " + currentDirectory);
-    if(mMode.equals(ModeConstants.LoadAware))
-      cmd.add(currentDirectory + "/python/la_fair_allocator.py");
-    else if(mMode.equals(ModeConstants.FairRide))
-      cmd.add(currentDirectory + "/python/fairRide_allocator.py");
-    else if(mMode.equals(ModeConstants.Isolation))
-      cmd.add(currentDirectory + "/python/isolation_allocator.py");
-    cmd.add(mCacheSize.toString());
+    switch(mMode){
+      case ModeConstants.LoadAware: cmd.add(currentDirectory + "/python/la_fair_allocator.py");break;
+      case ModeConstants.FairRide: cmd.add(currentDirectory + "/python/fairRide_allocator.py");break;
+      case ModeConstants.Isolation: cmd.add(currentDirectory + "/python/isolation_allocator.py");break;
+      default: cmd.add(currentDirectory + "/python/la_fair_allocator.py");break;
+    }
     cmd.add(mBandwidth.toString());
+    cmd.add(mFileSize.toString());
+    cmd.add(mCacheSize.toString());
 
     // The python algorithm will read the log file of user access frequencies and output the cache allocation (position+ratio)
     // and the block list, all separated by commas. The path of the output file should be python/alloc.txt
@@ -128,6 +134,7 @@ public class LoadAwareMaster {
       mCacheRatio = Arrays.stream(ratioArray).mapToDouble(Double::parseDouble).toArray();
       String[] blockArray = br.readLine().split(",");
       mBlockList = Arrays.stream(blockArray).mapToInt(Integer::parseInt).toArray();
+      br.close();
 
       // log the results for debugging
       LOG.info("################Allocation results################");
@@ -155,17 +162,17 @@ public class LoadAwareMaster {
 
     FileSystem fs = FileSystem.Factory.get();
     LoadAwareFileWriter fw = new LoadAwareFileWriter(fs);
-    String writePath = "/tests";
-    String localPath = "/test_files/local_file";
-    AlluxioURI writeDir = new AlluxioURI(writePath);
+
+    AlluxioURI writeDir = new AlluxioURI(ALLUXIODIR);
     try {
       if (fs.exists(writeDir)) { // delete existing dir
         fs.delete(writeDir, DeleteOptions.defaults().setRecursive(true).setUnchecked(true));
       }
-      FileInputStream is = new FileInputStream(localPath);
-      int fileLength =  (int) new File(localPath).length();
+      FileInputStream is = new FileInputStream(LOCALPATH);
+      int fileLength =  (int) new File(LOCALPATH).length();
       byte[] buf = new byte[fileLength];
       is.read(buf);
+      is.close();
 
       // AlluxioURI[] shortcuts = new AlluxioURI[mWorkerCount]; // shortcuts for local copy!
       for (int fileId = 0; fileId < mFileCount; fileId++) {
@@ -173,7 +180,7 @@ public class LoadAwareMaster {
         double cacheRatio = mCacheRatio[fileId];
         fw.setmCacheRatio(cacheRatio);
         fw.setmWorkerId(workerId);
-        String dstFile = String.format("%s/%s", writePath, fileId);
+        String dstFile = String.format("%s/%s", ALLUXIODIR, fileId);
         fw.setmDstFile(dstFile);
         fw.writeFile(buf);
         mLocationMap.put(dstFile,workerId);
