@@ -35,12 +35,13 @@ public class LoadAwareMaster {
 
   //public enum MODE {
     //LoadAware,
-    //FairRide,
+    //MaxMin,
     //Isolation,
   //}
   public interface ModeConstants {
+       String MaxMinDefault = "MaxMinDefault";
        String LoadAware = "LoadAware";
-       String FairRide = "FairRide";
+       String MaxMinOptLatency = "MaxMinOptLatency";
        String Isolation = "Isolation";
   }
   private static String mMode;
@@ -83,7 +84,7 @@ public class LoadAwareMaster {
    *
    * The output of the python program should be written to python/alloc.txt
    *
-   * The access counts (frequency of the previous period) should be logged to config/pop.txt
+   *
    */
 
   public static void getAlloction() {
@@ -94,7 +95,7 @@ public class LoadAwareMaster {
       mMode = br.readLine();
       br.close();
     } catch (IOException e) {
-      LOG.info("Four parameters in config/config.txt are required: bandwidth, filesize, cachesize, and mode, separated in lines.");
+      LOG.info("Five parameters in config/config.txt are required: bandwidth, filesize, cachesize, delta(speed difference of memory and disk), and mode, separated in lines.");
       e.printStackTrace();
     }
     mIsolateRate = mBandwidth / mFileSize * mWorkerCount;// ; //total rate per second
@@ -104,12 +105,14 @@ public class LoadAwareMaster {
     String currentDirectory = System.getProperty("user.dir");
     System.out.println("Current dir: " + currentDirectory);
     switch(mMode){
-      case ModeConstants.LoadAware: cmd.add(currentDirectory + "/python/la_fair_allocator.py");break;
-      case ModeConstants.FairRide: cmd.add(currentDirectory + "/python/fairRide_allocator.py");break;
-      case ModeConstants.Isolation: cmd.add(currentDirectory + "/python/isolation_allocator.py");break;
+      case ModeConstants.MaxMinDefault: cmd.add(currentDirectory + "/python/mm_default.py");break;
+      case ModeConstants.LoadAware: cmd.add(currentDirectory + "/python/la_fair.py");break;
+      case ModeConstants.MaxMinOptLatency: cmd.add(currentDirectory + "/python/mm_opt.py");break;
+      case ModeConstants.Isolation: cmd.add(currentDirectory + "/python/isolation.py");break;
       default: cmd.add(currentDirectory + "/python/la_fair_allocator.py");break;
     }
     cmd.add(mBandwidth.toString());
+    cmd.add(Integer.toString(mWorkerCount)); // Note: this is not read from the config
     cmd.add(mFileSize.toString());
     cmd.add(mCacheSize.toString());
 
@@ -198,9 +201,14 @@ public class LoadAwareMaster {
    * @param fileName intended for per-machine access control, together with the locationmap.
    * @return
    */
+  //todo The access counts (frequency of the previous period) should be logged to python/pop.txt
   public static boolean access(String fileName, int userId) {
-    if(!Arrays.asList(mBlockList).contains(userId))
+    System.out.println("Block list: " + Arrays.toString(mBlockList));
+    if(!(Arrays.asList(mBlockList)).contains(userId)){
+      System.out.println("User " + userId + " not in the block list");
       return true;
+    }
+
     else{
       if(mWaitRequestPool.get(userId) > mMaxWaitRequestNumber) // too many requests waiting
         return false;
