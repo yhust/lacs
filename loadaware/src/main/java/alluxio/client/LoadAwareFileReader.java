@@ -45,11 +45,10 @@ public class LoadAwareFileReader{
 
         try {
             mTimeLog= new FileWriter("logs/readLatency.txt", true); //append
-            //mBlockLog = new FileWriter("logs/accessBlock.txt", true); //append
             boolean token = mFileSystem.getLAToken(fileName, new GetLATokenOptions(userId));
             synchronized (mTimeLog) {
                 if (token) { // get the token
-                    final long startTimeMs = CommonUtils.getCurrentMs();
+                    long startTimeMs = CommonUtils.getCurrentMs();
                     int cacheBytes = 0;
                     int diskBytes = 0;
                     int totalBytes = 0;
@@ -70,7 +69,7 @@ public class LoadAwareFileReader{
                     if(mFileSystem.exists(diskURI)){
                         diskBytes = isDisk.read(buf);
                     }
-                    final long endTimeMs = CommonUtils.getCurrentMs();
+                    long endTimeMs = CommonUtils.getCurrentMs();
                     long latency =  endTimeMs - startTimeMs;
                     LOG.info("");
                     mTimeLog.write("" + latency + "\n");
@@ -78,7 +77,7 @@ public class LoadAwareFileReader{
                     mTimeLog.write("-1\n");
                 }
             }
-        } catch (IOException | AlluxioException e){
+        } catch (Exception e){
             e.printStackTrace();
         }
     }
