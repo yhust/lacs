@@ -330,18 +330,33 @@ function main {
     runJavaClass "$@"
   ;;
   "runLAWrite")
-     CLASS="latests.writeFiles"
-     LB_JAR="${ALLUXIO_HOME}/loadaware/target/loadaware-1.0-SNAPSHOT.jar"
-     CLASSPATH="${ALLUXIO_CLIENT_CLASSPATH}:${LB_JAR}"
-     ALLUXIO_SHELL_JAVA_OPTS+=" -Dalluxio.logger.type=Console"
-     runJavaClass "$@"
+    CLASS="latests.writeFiles"
+    LB_JAR="${ALLUXIO_HOME}/loadaware/target/loadaware-1.0-SNAPSHOT.jar"
+    CLASSPATH="${ALLUXIO_CLIENT_CLASSPATH}:${LB_JAR}"
+    ALLUXIO_SHELL_JAVA_OPTS+=" -Dalluxio.logger.type=Console"
+    runJavaClass "$@"
   ;;
   "runLARead")
-      CLASS="latests.runRead"
-      LB_JAR="${ALLUXIO_HOME}/loadaware/target/loadaware-1.0-SNAPSHOT.jar"
-      CLASSPATH="${ALLUXIO_CLIENT_CLASSPATH}:${LB_JAR}"
-      ALLUXIO_SHELL_JAVA_OPTS+=" -Dalluxio.logger.type=Console"
-      runJavaClass "$@"
+    CLASS="latests.runRead"
+    LB_JAR="${ALLUXIO_HOME}/loadaware/target/loadaware-1.0-SNAPSHOT.jar"
+    CLASSPATH="${ALLUXIO_CLIENT_CLASSPATH}:${LB_JAR}"
+    ALLUXIO_SHELL_JAVA_OPTS+=" -Dalluxio.logger.type=Console"
+    runJavaClass "$@"
+  ;;
+
+  "runDelta")
+    CLASS="latests.getDelta"
+    LB_JAR="${ALLUXIO_HOME}/loadaware/target/loadaware-1.0-SNAPSHOT.jar"
+    CLASSPATH="${ALLUXIO_CLIENT_CLASSPATH}:${LB_JAR}"
+    ALLUXIO_SHELL_JAVA_OPTS+=" -Dalluxio.logger.type=Console"
+    runJavaClass "$@"
+  ;;
+  "repeatDelta")
+    CLASS="latests.repeatDelta"
+    LB_JAR="${ALLUXIO_HOME}/loadaware/target/loadaware-1.0-SNAPSHOT.jar"
+    CLASSPATH="${ALLUXIO_CLIENT_CLASSPATH}:${LB_JAR}"
+    ALLUXIO_SHELL_JAVA_OPTS+=" -Dalluxio.logger.type=Console"
+    runJavaClass "$@"
   ;;
 
 
