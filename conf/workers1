@@ -10,4 +10,13 @@
 #
 
 # An Alluxio Worker will be started on each of the machines listed below.
-local
+ec2-54-236-59-128.compute-1.amazonaws.com 
+ec2-34-201-48-224.compute-1.amazonaws.com 
+ec2-34-200-213-107.compute-1.amazonaws.com 
+ec2-18-208-196-253.compute-1.amazonaws.com 
+ec2-34-236-245-129.compute-1.amazonaws.com 
+ec2-18-207-104-58.compute-1.amazonaws.com 
+ec2-54-80-242-81.compute-1.amazonaws.com 
+ec2-18-207-183-55.compute-1.amazonaws.com 
+ec2-18-204-42-248.compute-1.amazonaws.com
+ec2-34-237-1-182.compute-1.amazonaws.com

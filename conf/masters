@@ -17,5 +17,5 @@
 # will be used to start a secondary; which are responsible for journal compaction.
 #
 # In either case, multi-master deployments require that the masters can all access
-# the same journal through a shared medium (e.g. HDFS or NFS).
-localhost
+#ec2-34-206-64-100.compute-1.amazonaws.com
+local
