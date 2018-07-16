@@ -360,7 +360,10 @@ public final class DefaultFileSystemMaster extends AbstractMaster implements Fil
 
 
     //mLAMaster = new LoadAwareMaster(mBlockMaster.getWorkerCount());
+    System.out.print("worker count set in lamaster: ");
+    System.out.println(mBlockMaster.getWorkerCount());
     LoadAwareMaster.setWorkerCount(mBlockMaster.getWorkerCount());
+
   }
 
   @Override

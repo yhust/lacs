@@ -77,6 +77,7 @@ public class LoadAwareMaster {
 
   public static void setWorkerCount(int workerCount){
     mWorkerCount = workerCount;
+    System.out.println("worker count set in lamaster: "+ workerCount);
   }
 
   /**
