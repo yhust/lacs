@@ -122,7 +122,8 @@ public class LoadAwareMaster {
 
     LOG.info("cmd: " + cmd);
     // convert cmd to string[]
-    String[] cmdArray = cmd.stream().toArray(String[]::new);
+    //String[] cmdArray = cmd.stream().toArray(String[]::new); // for java 1.8+
+    String[] cmdArray = cmd.toArray(new String[cmd.size()]);
 
     // Run la_fair_allocator.py and parse the results
     try {
@@ -133,11 +134,26 @@ public class LoadAwareMaster {
 
       BufferedReader br = new BufferedReader(new FileReader(ALLOC)); //todo: check whether the path is correct. //we may need to launch the LoadAwareMaster in the alluxio root folder
       String[] locationArray = br.readLine().split(",");
-      mLocation = Arrays.stream(locationArray).mapToInt(Integer::parseInt).toArray();
+      // mLocation = Arrays.stream(locationArray).mapToInt(Integer::parseInt).toArray(); // for jave 1.8+
+      int i=0;
+      for(String loc:locationArray){
+        mLocation[i]=Integer.parseInt(loc);//Exception in this line
+        i++;
+      }
       String[] ratioArray = br.readLine().split(",");
-      mCacheRatio = Arrays.stream(ratioArray).mapToDouble(Double::parseDouble).toArray();
+      //mCacheRatio = Arrays.stream(ratioArray).mapToDouble(Double::parseDouble).toArray();
+      i=0;
+      for(String ratio:ratioArray){
+        mCacheRatio[i]=Double.parseDouble(ratio);//Exception in this line
+        i++;
+      }
       String[] blockArray = br.readLine().split(",");
-      mBlockList = Arrays.stream(blockArray).mapToInt(Integer::parseInt).toArray();
+      //mBlockList = Arrays.stream(blockArray).mapToInt(Integer::parseInt).toArray();
+      i=0;
+      for(String id:blockArray){
+        mBlockList[i]=Integer.parseInt(id);//Exception in this line
+        i++;
+      }
       br.close();
 
       // log the results for debugging
