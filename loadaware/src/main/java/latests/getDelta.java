@@ -53,6 +53,8 @@ public class getDelta {
       CreateFileOptions writeOptions = CreateFileOptions.defaults().setWriteTier(0);
       FileOutStream os = mFS.createFile(memory, writeOptions);
       os.write(buf);
+      os.close();
+
 
       writeOptions.setWriteTier(1);
       os = mFS.createFile(disk, writeOptions);
@@ -65,12 +67,12 @@ public class getDelta {
 
     //delete the dummy test file
 
-    try{
-      File f = new File(LOCALPATH);
-      f.delete();
-    } catch (Exception e ){
-      e.printStackTrace();
-    }
+//    try{
+//      File f = new File(LOCALPATH);
+//      f.delete();
+//    } catch (Exception e ){
+//      e.printStackTrace();
+//    }
 
   }
 
@@ -99,7 +101,7 @@ public class getDelta {
         System.out.println("Read from disk ("+ i + "): " + latency);
       }
 
-      double delta = (diskTime - memoryTime) / (trial * mFileSize);
+      double delta = (double)(diskTime - memoryTime) / (trial * mFileSize);
       System.out.println("### Delta = " + String.format("(%s - %s) / (%s x %s) = ", diskTime, memoryTime, trial, mFileSize) + delta);
 
 
