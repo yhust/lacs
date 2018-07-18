@@ -28,10 +28,19 @@ public class LoadAwareFileReader{
     private AlluxioURI mDiskURI; // the cached part and on-disk part as two different files
     private AlluxioURI mCacheURI;
 
-    private static FileWriter mTimeLog;
-    //private static FileWriter mBlockLog;
+    private final static FileWriter mTimeLog = createLogWriter("logs/readLatency.txt"); // user_id \t latency (-1 if rejected)\n
+    private final static FileWriter mCacheHitLog = createLogWriter("logs/cacheHit.txt"); // user_id \t cache bytes \t disk bytes \n
 
-    public LoadAwareFileReader(){ //
+
+    public LoadAwareFileReader() throws IOException{ //
+    }
+
+    private static FileWriter createLogWriter(final String name) {
+        try {
+            return new FileWriter(name, true); //append);
+        } catch (final IOException exc) {
+            throw new Error(exc);
+        }
     }
 
     public static void main(String[] args){
@@ -44,39 +53,44 @@ public class LoadAwareFileReader{
 
 
         try {
-            mTimeLog= new FileWriter("logs/readLatency.txt", true); //append
             boolean token = mFileSystem.getLAToken(fileName, new GetLATokenOptions(userId));
-            synchronized (mTimeLog) {
-                if (token) { // get the token
-                    long startTimeMs = CommonUtils.getCurrentMs();
-                    int cacheBytes = 0;
-                    int diskBytes = 0;
-                    int totalBytes = 0;
-                    FileInStream isCache = null;
-                    FileInStream isDisk = null;
-                    if(mFileSystem.exists(cacheURI)){
+            if (token) { // get the token
+                long startTimeMs = CommonUtils.getCurrentMs();
+                int cacheBytes = 0;
+                int diskBytes = 0;
+                int totalBytes = 0;
+                FileInStream isCache = null;
+                FileInStream isDisk = null;
+                synchronized (mCacheHitLog) {
+                    mCacheHitLog.write(String.format("%s\t", userId));
+                    if (mFileSystem.exists(cacheURI)) {
                         isCache = mFileSystem.openFile(cacheURI, readOptions);
                         totalBytes += isCache.mFileLength;
+                        mCacheHitLog.write(String.format("%s\t", isCache.mFileLength));
+                    } else {
+                        mCacheHitLog.write("0\t");
                     }
-                    if(mFileSystem.exists(diskURI)){
+                    if (mFileSystem.exists(diskURI)) {
                         isDisk = mFileSystem.openFile(diskURI, readOptions);
                         totalBytes += isDisk.mFileLength;
+                        Thread.sleep(isDisk.mFileLength);// 1ms per MB
                     }
-                    byte[] buf = new byte[totalBytes];
-                    if(mFileSystem.exists(cacheURI)){
-                        cacheBytes = isCache.read(buf);
-                    }
-                    if(mFileSystem.exists(diskURI)){
-                        diskBytes = isDisk.read(buf);
-                    }
-                    long endTimeMs = CommonUtils.getCurrentMs();
-                    long latency =  endTimeMs - startTimeMs;
-                    LOG.info("");
-                    mTimeLog.write("" + latency + "\n");
-                } else {
-                    mTimeLog.write("-1\n");
                 }
+                byte[] buf = new byte[totalBytes];
+                if(mFileSystem.exists(cacheURI)){
+                    cacheBytes = isCache.read(buf);
+                }
+                if(mFileSystem.exists(diskURI)){
+                    diskBytes = isDisk.read(buf);
+                }
+                long endTimeMs = CommonUtils.getCurrentMs();
+                long latency =  endTimeMs - startTimeMs;
+                LOG.info("");
+                synchronized (mTimeLog) {mTimeLog.write("" + userId + "\t" + latency + "\n");}
+            } else {
+                synchronized (mTimeLog) {mTimeLog.write("" + userId + "\t" + "-1\n");}
             }
+
         } catch (Exception e){
             e.printStackTrace();
         }
