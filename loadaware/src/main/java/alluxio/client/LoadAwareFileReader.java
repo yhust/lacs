@@ -73,7 +73,7 @@ public class LoadAwareFileReader{
                     if (mFileSystem.exists(diskURI)) {
                         isDisk = mFileSystem.openFile(diskURI, readOptions);
                         totalBytes += isDisk.mFileLength;
-                        Thread.sleep(isDisk.mFileLength);// 1ms per MB
+                        Thread.sleep(isDisk.mFileLength/1024/1024);// 1ms per MB
                     }
                 }
                 byte[] buf = new byte[totalBytes];
