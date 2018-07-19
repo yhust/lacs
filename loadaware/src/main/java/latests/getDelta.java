@@ -96,9 +96,10 @@ public class getDelta {
         System.out.println("Read from memory ("+ i + "): " + latency);
         start = CommonUtils.getCurrentMs();
         isD.read(buf);
+        Thread.sleep(isD.mFileLength/1024/1024);// 1ms per MB
         latency = CommonUtils.getCurrentMs() - start;
         diskTime +=latency;
-        Thread.sleep(isD.mFileLength/1024/1024);// 1ms per MB
+        System.out.println("Slept for "+isD.mFileLength/1024/1024 + " ms.");
         System.out.println("Read from disk ("+ i + "): " + latency);
       }
 
