@@ -446,4 +446,16 @@ public class BaseFileSystem implements FileSystem {
     }
   }
 
+  @Override
+  public void runLAWrite() throws Exception {
+    FileSystemMasterClient masterClient = mFileSystemContext.acquireMasterClient();
+    try {
+      masterClient.runLAWrite();
+    } catch (Exception e) {
+      throw e;
+    } finally {
+      mFileSystemContext.releaseMasterClient(masterClient);
+    }
+  }
+
 }

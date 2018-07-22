@@ -9,6 +9,8 @@ import alluxio.client.file.options.DeleteOptions;
 import alluxio.client.file.options.OpenFileOptions;
 import alluxio.exception.AlluxioException;
 import alluxio.util.CommonUtils;
+import alluxio.master.la_master.LoadAwareMaster;
+import latests.PrepareTests;
 
 import java.io.*;
 
@@ -105,7 +107,12 @@ public class getDelta {
 
       double delta = (double)(diskTime - memoryTime) / (trial * mFileSize);
       System.out.println("### Delta = " + String.format("(%s - %s) / (%s x %s) = ", diskTime, memoryTime, trial, mFileSize) + delta);
-
+      //LoadAwareMaster t = new LoadAwareMaster();
+      //LoadAwareMaster.setmDelta(delta);
+      PrepareTests.setmDelta(delta);
+      FileWriter fw = new FileWriter("delta.txt");
+      fw.write(String.format("%s",delta));
+      fw.close();
 
     } catch(Exception e){
       e.printStackTrace();

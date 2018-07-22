@@ -27,14 +27,7 @@ import alluxio.client.file.options.MountOptions;
 import alluxio.client.file.options.SetAttributeOptions;
 import alluxio.client.file.options.GetLATokenOptions;
 import alluxio.master.MasterClientConfig;
-import alluxio.thrift.AlluxioService;
-import alluxio.thrift.FileSystemMasterClientService;
-import alluxio.thrift.GetMountTableTResponse;
-import alluxio.thrift.GetNewBlockIdForFileTOptions;
-import alluxio.thrift.LoadMetadataTOptions;
-import alluxio.thrift.RenameTOptions;
-import alluxio.thrift.ScheduleAsyncPersistenceTOptions;
-import alluxio.thrift.UnmountTOptions;
+import alluxio.thrift.*;
 import alluxio.wire.MountPointInfo;
 import alluxio.wire.ThriftUtils;
 
@@ -46,6 +39,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.OverridingMethodsMustInvokeSuper;
 import javax.annotation.concurrent.ThreadSafe;
 
 /**
@@ -302,6 +296,18 @@ public final class RetryHandlingFileSystemMasterClient extends AbstractMasterCli
         return mClient.getLAToken(fileName, options.toThrift()).isToken();
 
         //return token;
+      }
+    });
+  }
+
+  @Override
+  public synchronized void runLAWrite() throws Exception{
+    retryRPC(new RpcCallable<Boolean>() {
+      @Override
+      public Boolean call() throws TException {
+        mClient.runLAWrite(new RunLAWriteTOptions());
+
+        return null;
       }
     });
   }

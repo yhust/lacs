@@ -4,16 +4,14 @@ import alluxio.AlluxioURI;
 import alluxio.client.file.FileSystem;
 import alluxio.client.file.options.DeleteOptions;
 import alluxio.exception.AlluxioException;
+import alluxio.master.file.DefaultFileSystemMaster;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.Arrays;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
@@ -28,9 +26,9 @@ import org.isomorphism.util.*;
 public class LoadAwareMaster {
   private static final Logger LOG = LoggerFactory.getLogger(LoadAwareMaster.class);
   private static final String CONF = "config/config.txt"; //  the file to store the config statistics: "bandwidth \n filesize \n cachesize of each worker \n mode"
-  private static final String  ALLOC= "python/alloc.txt"; // the file to store the output of the python algorithm
+  private static final String  ALLOC= "alloc.txt"; // the file to store the output of the python algorithm
   private static final String  ALLUXIODIR = "/tests"; // where to put test files in Alluxio
-  private static final String LOCALPATH = "/test_files/local_file"; // local file for copying
+  private static final String LOCALPATH = System.getProperty("user.dir") + "/test_files/local_file"; // local file for copying
 
 
   //public enum MODE {
@@ -51,22 +49,25 @@ public class LoadAwareMaster {
   private static Double mCacheSize; // of each worker
   private static int mWorkerCount;
   private static int mFileCount;
+  private static Double mDelta; // disk delay
+
   private static Double mIsolateRate; // allowed TOTAL access rate per second, if a user is isolated // todo: per-worker throttling
 
-  private static int[] mBlockList;
-  private static int[] mLocation; // location of each file. Files are identified by integer ids.
-  private static double[] mCacheRatio; // of each file
+  private static List<Integer> mBlockList = new ArrayList<Integer>();
+  private static List<Integer> mLocation = new ArrayList<Integer>(); // location of each file. Files are identified by integer ids.
+  private static List<Double> mCacheRatio = new ArrayList<Double>(); // of each file
   private static Map<Integer, TokenBucket> mTokenPool= new ConcurrentHashMap<>(); //todo: Bucket4j might provide a more efficient implementation of the token bucket algorithm
   private static int mBucketSize = 1000; // the size of the 'leaky' token bucket
 
   private static Map<Integer, Integer> mWaitRequestPool = new ConcurrentHashMap<>(); // Record the number of waiting request of each user (after its tokens are used up). Need to be thread-safe.
   private static int mMaxWaitRequestNumber = 20; // The maximum waiting requests for a BLOCKED user.
+  private static DefaultFileSystemMaster mFSMaster;
 
 
   private static Map<String, Integer> mLocationMap = new ConcurrentHashMap<>(); // The map storing the actual locations of Alluxio files.
 
-  public LoadAwareMaster(int workerCount){
-
+  public LoadAwareMaster(DefaultFileSystemMaster master){
+    mFSMaster = master;
     // Get the allocation, and initialize the token buckets and waiting numbers.
     // getAlloction();
 
@@ -80,6 +81,33 @@ public class LoadAwareMaster {
     System.out.println("worker count set in lamaster: "+ workerCount);
   }
 
+  public static void setmDelta(Double delta){
+    mDelta = delta;
+    System.out.println("Delta is set in lamaster: "+ delta);
+  }
+
+  public static void getDelta() {
+    try{
+      BufferedReader br = new BufferedReader(new FileReader("delta.txt"));
+      mDelta = Double.parseDouble(br.readLine());
+      br.close();
+    } catch(Exception e){
+      e.printStackTrace();
+    }
+
+    System.out.println("Delta is profiled: " + mDelta);
+  }
+
+  /**
+   * Get allocation and write files.
+   */
+
+  public static void runWrite(){
+    getAllocation();
+    writeFile();
+  }
+
+
   /**
    * Run the python algorithm to get the cache allocation and block list.
    *
@@ -88,7 +116,7 @@ public class LoadAwareMaster {
    *
    */
 
-  public static void getAlloction() {
+  public static void getAllocation() {
     try (BufferedReader br = new BufferedReader(new FileReader(CONF))) { //todo: check whether the path is correct. //we may need to launch the LoadAwareMaster in the alluxio root folder
       mBandwidth = Double.parseDouble(br.readLine());
       mFileSize = Double.parseDouble(br.readLine());
@@ -116,6 +144,8 @@ public class LoadAwareMaster {
     cmd.add(Integer.toString(mWorkerCount)); // Note: this is not read from the config
     cmd.add(mFileSize.toString());
     cmd.add(mCacheSize.toString());
+    getDelta();
+    cmd.add(mDelta.toString());
 
     // The python algorithm will read the log file of user access frequencies and output the cache allocation (position+ratio)
     // and the block list, all separated by commas. The path of the output file should be python/alloc.txt
@@ -137,36 +167,41 @@ public class LoadAwareMaster {
       // mLocation = Arrays.stream(locationArray).mapToInt(Integer::parseInt).toArray(); // for jave 1.8+
       int i=0;
       for(String loc:locationArray){
-        mLocation[i]=Integer.parseInt(loc);//Exception in this line
+        mLocation.add(Integer.parseInt(loc));//Exception in this line
         i++;
       }
       String[] ratioArray = br.readLine().split(",");
       //mCacheRatio = Arrays.stream(ratioArray).mapToDouble(Double::parseDouble).toArray();
       i=0;
       for(String ratio:ratioArray){
-        mCacheRatio[i]=Double.parseDouble(ratio);//Exception in this line
+        mCacheRatio.add(Double.parseDouble(ratio));//Exception in this line
         i++;
       }
-      String[] blockArray = br.readLine().split(",");
-      //mBlockList = Arrays.stream(blockArray).mapToInt(Integer::parseInt).toArray();
-      i=0;
-      for(String id:blockArray){
-        mBlockList[i]=Integer.parseInt(id);//Exception in this line
-        i++;
+      String blockList = br.readLine();
+      System.out.println(blockList);
+      if(!blockList.equals("")) {
+        String[] blockArray = blockList.split(",");
+        //mBlockList = Arrays.stream(blockArray).mapToInt(Integer::parseInt).toArray();
+        i = 0;
+        // blockArray could be empty.
+        for (String id : blockArray) {
+          mBlockList.add(Integer.parseInt(id));//Exception in this line
+          i++;
+        }
+        LOG.info("BlockList" + Arrays.toString(mBlockList.toArray()));
       }
       br.close();
 
       // log the results for debugging
       LOG.info("################Allocation results################");
-      LOG.info("1. Locations" + Arrays.toString(mLocation));
-      LOG.info("2 Ratios" + Arrays.toString(mCacheRatio));
-      LOG.info("3. BlockList" + Arrays.toString(mBlockList));
+      LOG.info("Locations" + Arrays.toString(mLocation.toArray()));
+      LOG.info("Ratios" + Arrays.toString(mCacheRatio.toArray()));
 
     } catch (Exception e) {
       LOG.info("Wrong Message received: " + e);
       return;
     }
-    mFileCount=mLocation.length;
+    mFileCount=mLocation.size();
 
     for(Integer useId: mBlockList){
       TokenBucket tokenBucket = TokenBuckets.builder()
@@ -196,8 +231,8 @@ public class LoadAwareMaster {
 
       // AlluxioURI[] shortcuts = new AlluxioURI[mWorkerCount]; // shortcuts for local copy!
       for (int fileId = 0; fileId < mFileCount; fileId++) {
-        int workerId = mLocation[fileId];
-        double cacheRatio = mCacheRatio[fileId];
+        int workerId = mLocation.get(fileId);
+        double cacheRatio = mCacheRatio.get(fileId);
         fw.setmCacheRatio(cacheRatio);
         fw.setmWorkerId(workerId);
         String dstFile = String.format("%s/%s", ALLUXIODIR, fileId);
@@ -220,7 +255,7 @@ public class LoadAwareMaster {
    */
   //todo The access counts (frequency of the previous period) should be logged to python/pop.txt
   public static boolean access(String fileName, int userId) {
-    System.out.println("Block list: " + Arrays.toString(mBlockList));
+    System.out.println("Block list: " + Arrays.toString(mBlockList.toArray()));
     if(!(Arrays.asList(mBlockList)).contains(userId)){
       System.out.println("User " + userId + " not in the block list");
       return true;

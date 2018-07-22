@@ -297,7 +297,7 @@ public final class DefaultFileSystemMaster extends AbstractMaster implements Fil
 
 
   /** For the logic of load-aware fair cache manager */
-  //private final LoadAwareMaster mLAMaster;
+  private final LoadAwareMaster mLAMaster;
 
   /**
    * The service that checks for inode files with ttl set. We store it here so that it can be
@@ -359,7 +359,7 @@ public final class DefaultFileSystemMaster extends AbstractMaster implements Fil
     Metrics.registerGauges(this, mUfsManager);
 
 
-    //mLAMaster = new LoadAwareMaster(mBlockMaster.getWorkerCount());
+    mLAMaster = new LoadAwareMaster(this);
     System.out.print("worker count set in lamaster: ");
     System.out.println(mBlockMaster.getWorkerCount());
     LoadAwareMaster.setWorkerCount(mBlockMaster.getWorkerCount());
@@ -2701,7 +2701,11 @@ public final class DefaultFileSystemMaster extends AbstractMaster implements Fil
     return LoadAwareMaster.access(fileName, options.getUserId());
 
   }
+  @Override
+  public void runLAWrite() throws AlluxioException, IOException {
+    LoadAwareMaster.runWrite();
 
+  }
   /**
    * Unmounts a UFS path previously mounted onto an Alluxio path.
    * <p>

@@ -1,0 +1,10 @@
+100
+100
+1000
+MaxMinDefault
+1
+
+Usage: the first four lines:
+bandwidth \n filesize \n cachesize of each worker \n mode
+
+mode: MaxMinDefault, LoadAware, MaxMinOptLatency, Isolation

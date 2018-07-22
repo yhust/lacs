@@ -359,4 +359,7 @@ public interface FileSystem {
  // get the token from the client to read a file
   boolean getLAToken(String fileName, GetLATokenOptions options) throws IOException, AlluxioException;
 
+  // get the token from the client to read a file
+  void runLAWrite() throws Exception; //throws IOException, AlluxioException;
+
 }

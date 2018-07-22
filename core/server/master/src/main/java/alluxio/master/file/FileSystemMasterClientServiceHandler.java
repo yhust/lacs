@@ -393,4 +393,21 @@ public final class FileSystemMasterClientServiceHandler implements
   }
 
 
+  @Override
+  public RunLAWriteTResponse runLAWrite(final RunLAWriteTOptions options)
+          throws AlluxioTException {
+    return RpcUtils.callAndLog(LOG, new RpcCallableThrowsIOException<RunLAWriteTResponse>() {
+      @Override
+      public RunLAWriteTResponse call() throws AlluxioException, IOException {
+        mFileSystemMaster.runLAWrite();
+        return new RunLAWriteTResponse();
+      }
+
+      @Override
+      public String toString() {
+        return String.format("RunLAWrite: options=%s", options);
+      }
+    });
+  }
+
 }

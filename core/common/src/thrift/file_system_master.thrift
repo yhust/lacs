@@ -188,6 +188,9 @@ struct GetLATokenTOptions{
 struct GetLATokenTResponse{
   1: bool token
 }
+struct RunLAWriteTOptions {}
+struct RunLAWriteTResponse {}
+
 
 /**
  * This interface contains file system master service endpoints for Alluxio clients.
@@ -352,6 +355,9 @@ service FileSystemMasterClientService extends common.AlluxioService {
 
   GetLATokenTResponse getLAToken(1: string alluxioPath, 2: GetLATokenTOptions option)
     throws (1: exception.AlluxioTException e)
+
+  RunLAWriteTResponse runLAWrite(1: RunLAWriteTOptions option)
+      throws (1: exception.AlluxioTException e)
 }
 
 struct FileSystemHeartbeatTOptions {}
