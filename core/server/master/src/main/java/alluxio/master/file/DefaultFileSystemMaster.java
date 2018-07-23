@@ -360,9 +360,9 @@ public final class DefaultFileSystemMaster extends AbstractMaster implements Fil
 
 
     mLAMaster = new LoadAwareMaster(this);
-    System.out.print("worker count set in lamaster: ");
-    System.out.println(mBlockMaster.getWorkerCount());
-    LoadAwareMaster.setWorkerCount(mBlockMaster.getWorkerCount());
+    //System.out.print("worker count set in lamaster: ");
+    //System.out.println(mBlockMaster.getWorkerCount());
+    LoadAwareMaster.setWorkerCount(mBlockMaster.getWorkerCount()); // does not work. workers are not registered yet.
 
   }
 
@@ -3110,6 +3110,10 @@ public final class DefaultFileSystemMaster extends AbstractMaster implements Fil
   @Override
   public List<WorkerInfo> getWorkerInfoList() {
     return mBlockMaster.getWorkerInfoList();
+  }
+
+  public int getWorkerCount(){
+    return mBlockMaster.getWorkerCount();
   }
 
   /**

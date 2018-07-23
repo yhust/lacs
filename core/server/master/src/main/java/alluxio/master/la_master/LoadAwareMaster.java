@@ -25,6 +25,7 @@ import org.isomorphism.util.*;
  */
 public class LoadAwareMaster {
   private static final Logger LOG = LoggerFactory.getLogger(LoadAwareMaster.class);
+  //private final static FileWriter mCacheHitLog = createLogWriter("logs/cacheHit_master.txt"); // user_id \t cache bytes \t disk bytes \n
   private static final String CONF = "config/config.txt"; //  the file to store the config statistics: "bandwidth \n filesize \n cachesize of each worker \n mode"
   private static final String  ALLOC= "alloc.txt"; // the file to store the output of the python algorithm
   private static final String  ALLUXIODIR = "/tests"; // where to put test files in Alluxio
@@ -76,11 +77,21 @@ public class LoadAwareMaster {
     // writeFile();
   }
 
+//  private static FileWriter createLogWriter(final String name) {
+//    try {
+//      return new FileWriter(name, true); //append);
+//    } catch (final IOException exc) {
+//      throw new Error(exc);
+//    }
+//  }
   public static void setWorkerCount(int workerCount){
     mWorkerCount = workerCount;
     System.out.println("worker count set in lamaster: "+ workerCount);
   }
-
+  public static void getWorkerCount(){
+    mWorkerCount = mFSMaster.getWorkerCount();
+    System.out.println("worker count get from fs master: "+ mWorkerCount);
+  }
   public static void setmDelta(Double delta){
     mDelta = delta;
     System.out.println("Delta is set in lamaster: "+ delta);
@@ -141,7 +152,8 @@ public class LoadAwareMaster {
       default: cmd.add(currentDirectory + "/python/la_fair_allocator.py");break;
     }
     cmd.add(mBandwidth.toString());
-    cmd.add(Integer.toString(mWorkerCount)); // Note: this is not read from the config
+    getWorkerCount();
+    cmd.add(Integer.toString(mWorkerCount)); //get worker count
     cmd.add(mFileSize.toString());
     cmd.add(mCacheSize.toString());
     getDelta();

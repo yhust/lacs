@@ -72,8 +72,8 @@ public class LoadAwareFileWriter {
       int tDiskBytes = is.read(tDiskBuf);
 
       // Write the file into Alluxio; store the cached part and on-disk part as two different files
-      AlluxioURI cacheURI = new AlluxioURI(String.format("%s-1", mDstFile));
-      AlluxioURI diskURI = new AlluxioURI(String.format("%s-2", mDstFile));
+      AlluxioURI cacheURI = new AlluxioURI(String.format("%s-0", mDstFile));
+      AlluxioURI diskURI = new AlluxioURI(String.format("%s-1", mDstFile));
 
       long tStartTimeMs = CommonUtils.getCurrentMs();
       if(tCacheBytes >0) {
