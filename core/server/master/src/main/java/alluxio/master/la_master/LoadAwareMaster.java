@@ -26,8 +26,8 @@ import org.isomorphism.util.*;
 public class LoadAwareMaster {
   private static final Logger LOG = LoggerFactory.getLogger(LoadAwareMaster.class);
   //private final static FileWriter mCacheHitLog = createLogWriter("logs/cacheHit_master.txt"); // user_id \t cache bytes \t disk bytes \n
-  private static final String CONF = "config/config.txt"; //  the file to store the config statistics: "bandwidth \n filesize \n cachesize of each worker \n mode"
-  private static final String  ALLOC= "alloc.txt"; // the file to store the output of the python algorithm
+  private static final String CONF = System.getProperty("user.dir")+"config/config.txt"; //  the file to store the config statistics: "bandwidth \n filesize \n cachesize of each worker \n mode"
+  private static final String  ALLOC= System.getProperty("user.dir")+"alloc.txt"; // the file to store the output of the python algorithm
   private static final String  ALLUXIODIR = "/tests"; // where to put test files in Alluxio
   private static final String LOCALPATH = System.getProperty("user.dir") + "/test_files/local_file"; // local file for copying
 
