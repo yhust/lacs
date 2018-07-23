@@ -100,7 +100,11 @@ public class LoadAwareMaster {
 
   public static void getDelta() {
     try{
-      BufferedReader br = new BufferedReader(new FileReader("delta.txt"));
+      BufferedReader br;
+      if(mWorkerCount > 1)
+        br = new BufferedReader(new FileReader(curDir + "/alluxio-la/delta.txt"));
+      else
+        br = new BufferedReader(new FileReader(curDir + "delta.txt"));
       mDelta = Double.parseDouble(br.readLine());
       br.close();
     } catch(Exception e){
