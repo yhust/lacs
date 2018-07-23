@@ -128,6 +128,7 @@ public class LoadAwareMaster {
    */
 
   public static void getAllocation() {
+    getWorkerCount();
     try (BufferedReader br = new BufferedReader(new FileReader(CONF))) { //todo: check whether the path is correct. //we may need to launch the LoadAwareMaster in the alluxio root folder
       mBandwidth = Double.parseDouble(br.readLine());
       mFileSize = Double.parseDouble(br.readLine());
@@ -152,7 +153,6 @@ public class LoadAwareMaster {
       default: cmd.add(currentDirectory + "/python/la_fair_allocator.py");break;
     }
     cmd.add(mBandwidth.toString());
-    getWorkerCount();
     cmd.add(Integer.toString(mWorkerCount)); //get worker count
     cmd.add(mFileSize.toString());
     cmd.add(mCacheSize.toString());
