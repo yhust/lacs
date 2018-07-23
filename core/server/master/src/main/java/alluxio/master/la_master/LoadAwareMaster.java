@@ -27,10 +27,10 @@ public class LoadAwareMaster {
   private static final Logger LOG = LoggerFactory.getLogger(LoadAwareMaster.class);
   //private final static FileWriter mCacheHitLog = createLogWriter("logs/cacheHit_master.txt"); // user_id \t cache bytes \t disk bytes \n
   private static final String curDir = System.getProperty("user.dir");
-  private static final String CONF = curDir+"/config/config.txt"; //  the file to store the config statistics: "bandwidth \n filesize \n cachesize of each worker \n mode"
-  private static final String  ALLOC= curDir+"/alloc.txt"; // the file to store the output of the python algorithm
+  private static String CONF = curDir+"/config/config.txt"; //  the file to store the config statistics: "bandwidth \n filesize \n cachesize of each worker \n mode"
+  private static String  ALLOC= curDir+"/alloc.txt"; // the file to store the output of the python algorithm
   private static final String  ALLUXIODIR = "/tests"; // where to put test files in Alluxio
-  private static final String LOCALPATH = curDir + "/test_files/local_file"; // local file for copying
+  private static String LOCALPATH = curDir + "/test_files/local_file"; // local file for copying
 
 
   //public enum MODE {
@@ -131,6 +131,14 @@ public class LoadAwareMaster {
   public static void getAllocation() {
     LOG.info("Current dir: " + curDir);
     getWorkerCount();
+    if(mWorkerCount>1) {
+      // cluster mode
+      CONF = curDir+"/alluxio-la/config/config.txt"; //  the file to store the config statistics: "bandwidth \n filesize \n cachesize of each worker \n mode"
+      ALLOC= curDir+"/alluxio-la/alloc.txt"; // the file to store the output of the python algorithm
+      LOCALPATH = curDir + "/alluxio-la/test_files/local_file"; // local file for copying
+    }
+
+
     try (BufferedReader br = new BufferedReader(new FileReader(CONF))) { //todo: check whether the path is correct. //we may need to launch the LoadAwareMaster in the alluxio root folder
       mBandwidth = Double.parseDouble(br.readLine());
       mFileSize = Double.parseDouble(br.readLine());
