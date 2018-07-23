@@ -129,6 +129,7 @@ public class LoadAwareMaster {
    */
 
   public static void getAllocation() {
+    LOG.info("Current dir: " + curDir);
     getWorkerCount();
     try (BufferedReader br = new BufferedReader(new FileReader(CONF))) { //todo: check whether the path is correct. //we may need to launch the LoadAwareMaster in the alluxio root folder
       mBandwidth = Double.parseDouble(br.readLine());
