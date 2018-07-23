@@ -6,22 +6,22 @@
 read -ra slave_arr -d '' <<<"$SLAVES"
 rm results/*.txt
 touch results/all_latency.txt
-touch results/all_fileHit.txt
-touch results/all_workerLoads.txt
+touch results/all_cacheHit.txt
+#touch results/all_workerLoads.txt
 
-#SCRIPT="cd alluxio-load-balancing; ./bin/alluxio readTest &>/dev/null &"
-for ((i = 30; i < $1 + 30; i++))
+#SCRIPT="cd alluxio-la; ./bin/alluxio readTest &>/dev/null &"
+for ((i = 5; i < $1 + 4; i++))
 do
     echo $i
     slave="${slave_arr[$i]}"
     echo $slave
-    #scp root@${slave_arr[$i]}:/root/alluxio-load-balancing/test_files/readTimes.txt test_files/$i.txt
-    scp root@${slave_arr[$i]}:/root/alluxio-load-balancing/logs/readLatency.txt /root/alluxio-load-balancing/results/${i}_latency.txt
+    #scp root@${slave_arr[$i]}:/root/alluxio-la/test_files/readTimes.txt test_files/$i.txt
+    scp root@${slave_arr[$i]}:/root/alluxio-la/logs/readLatency.txt /root/alluxio-la/results/${i}_latency.txt
     cat results/${i}_latency.txt >> results/all_latency.txt
-    scp root@${slave_arr[$i]}:/root/alluxio-load-balancing/logs/fileHit.txt /root/alluxio-load-balancing/results/${i}_fileHit.txt
-    cat results/${i}_fileHit.txt >> results/all_fileHit.txt
-    scp root@${slave_arr[$i]}:/root/alluxio-load-balancing/logs/workerLoads.txt /root/alluxio-load-balancing/results/${i}_workerLoads.txt
-    cat results/${i}_workerLoads.txt >> results/all_workerLoads.txt
+    scp root@${slave_arr[$i]}:/root/alluxio-la/logs/cacheHit.txt /root/alluxio-la/results/${i}_cacheHit.txt
+    cat results/${i}_cacheHit.txt >> results/all_cacheHit.txt
+    #scp root@${slave_arr[$i]}:/root/alluxio-la/logs/workerLoads.txt /root/alluxio-la/results/${i}_workerLoads.txt
+    #cat results/${i}_workerLoads.txt >> results/all_workerLoads.txt
 done
 
 # Collect all the results into a single file for the convience

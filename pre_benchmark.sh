@@ -2,12 +2,20 @@
 
 
 
-# Prepare test files
-# $1: filesize in MB, $2: blockSize, $3: zipfFactor
-python python/SPTestSetUp.py $1 $2 $3
+$k=$1   # number of users
+$n=$2 # number of files
+$arrival_rate=$3 #  request rate of normal users(as Poisson)
+$zipf_factor=$4 # distribution
+$factor=$5 # ratio of request rates (aggressive to normal)
 
-# Synchronize the test fold
-rm /root/test_files/test_local_file
-/root/spark-ec2/copy-dir /root/test_files
+# Generate preference
+python python/generate_rates $k $n $arrival_rate $zipf_factor $factor
+
+
+# Write test files
+bin/alluxio runLAWrite
+
+# Synchronize the pop file
+/root/spark-ec2/copy-dir /root/alluxio-la/python/pop.txt
 
 echo Done

@@ -29,8 +29,8 @@ done
 echo 'conf/workers set.'
 
 # copy alluxio conf to all slaves in the cluster
-/root/spark-ec2/copy-dir /root/alluxio-load-balancing/conf
-./bin/alluxio format
+/root/spark-ec2/copy-dir /root/alluxio-la/conf
+#./bin/alluxio format
 # start alluxio
 ./bin/alluxio-start.sh all
 
