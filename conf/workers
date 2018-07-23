@@ -1,13 +1,6 @@
-#
-# The Alluxio Open Foundation licenses this work under the Apache License, version 2.0
-# (the "License"). You may not use this work except in compliance with the License, which is
-# available at www.apache.org/licenses/LICENSE-2.0
-#
-# This software is distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
-# either express or implied, as more fully set forth in the License.
-#
-# See the NOTICE file distributed with this work for information regarding copyright ownership.
-#
-
-# An Alluxio Worker will be started on each of the machines listed below.
-local
+#workers are listed below
+ec2-34-201-18-55.compute-1.amazonaws.com
+ec2-35-153-213-32.compute-1.amazonaws.com
+ec2-34-201-20-87.compute-1.amazonaws.com
+ec2-34-234-215-138.compute-1.amazonaws.com
+ec2-18-209-248-166.compute-1.amazonaws.com

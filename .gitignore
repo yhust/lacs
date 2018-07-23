@@ -45,3 +45,4 @@
 dependency-reduced-pom.xml
 target/
 tests.log*
+test_files/*
