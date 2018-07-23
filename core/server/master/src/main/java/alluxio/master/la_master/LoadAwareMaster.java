@@ -26,10 +26,10 @@ import org.isomorphism.util.*;
 public class LoadAwareMaster {
   private static final Logger LOG = LoggerFactory.getLogger(LoadAwareMaster.class);
   //private final static FileWriter mCacheHitLog = createLogWriter("logs/cacheHit_master.txt"); // user_id \t cache bytes \t disk bytes \n
-  private static final String curDir = System.getProperty("user.dir");
+  private static final String  ALLUXIODIR = "/tests"; // where to put test files in Alluxio
+  private static String curDir = System.getProperty("user.dir");
   private static String CONF = curDir+"/config/config.txt"; //  the file to store the config statistics: "bandwidth \n filesize \n cachesize of each worker \n mode"
   private static String  ALLOC= curDir+"/alloc.txt"; // the file to store the output of the python algorithm
-  private static final String  ALLUXIODIR = "/tests"; // where to put test files in Alluxio
   private static String LOCALPATH = curDir + "/test_files/local_file"; // local file for copying
 
 
@@ -104,7 +104,7 @@ public class LoadAwareMaster {
       if(mWorkerCount > 1)
         br = new BufferedReader(new FileReader(curDir + "/alluxio-la/delta.txt"));
       else
-        br = new BufferedReader(new FileReader(curDir + "delta.txt"));
+        br = new BufferedReader(new FileReader(curDir + "/delta.txt"));
       mDelta = Double.parseDouble(br.readLine());
       br.close();
     } catch(Exception e){
@@ -137,13 +137,13 @@ public class LoadAwareMaster {
     getWorkerCount();
     if(mWorkerCount>1) {
       // cluster mode
-      CONF = curDir+"/alluxio-la/config/config.txt"; //  the file to store the config statistics: "bandwidth \n filesize \n cachesize of each worker \n mode"
-      ALLOC= curDir+"/alluxio-la/alloc.txt"; // the file to store the output of the python algorithm
-      LOCALPATH = curDir + "/alluxio-la/test_files/local_file"; // local file for copying
+      curDir += "/alluxio-la";
     }
+    CONF = curDir+"/config/config.txt"; //  the file to store the config statistics: "bandwidth \n filesize \n cachesize of each worker \n mode"
+    ALLOC= curDir+"/alloc.txt"; // the file to store the output of the python algorithm
+    LOCALPATH = curDir + "/test_files/local_file"; // local file for copying
 
-
-    try (BufferedReader br = new BufferedReader(new FileReader(CONF))) { //todo: check whether the path is correct. //we may need to launch the LoadAwareMaster in the alluxio root folder
+    try (BufferedReader br = new BufferedReader(new FileReader(CONF))) {
       mBandwidth = Double.parseDouble(br.readLine());
       mFileSize = Double.parseDouble(br.readLine());
       mCacheSize = Double.parseDouble(br.readLine());
@@ -157,14 +157,12 @@ public class LoadAwareMaster {
 
     ArrayList<String> cmd = new ArrayList<String>();
     cmd.add("python");
-    String currentDirectory = System.getProperty("user.dir");
-    System.out.println("Current dir: " + currentDirectory);
     switch(mMode){
-      case ModeConstants.MaxMinDefault: cmd.add(currentDirectory + "/python/mm_default.py");break;
-      case ModeConstants.LoadAware: cmd.add(currentDirectory + "/python/la_fair.py");break;
-      case ModeConstants.MaxMinOptLatency: cmd.add(currentDirectory + "/python/mm_opt.py");break;
-      case ModeConstants.Isolation: cmd.add(currentDirectory + "/python/isolation.py");break;
-      default: cmd.add(currentDirectory + "/python/la_fair_allocator.py");break;
+      case ModeConstants.MaxMinDefault: cmd.add(curDir + "/python/mm_default.py");break;
+      case ModeConstants.LoadAware: cmd.add(curDir + "/python/la_fair.py");break;
+      case ModeConstants.MaxMinOptLatency: cmd.add(curDir + "/python/mm_opt.py");break;
+      case ModeConstants.Isolation: cmd.add(curDir + "/python/isolation.py");break;
+      default: cmd.add(curDir + "/python/la_fair_allocator.py");break;
     }
     cmd.add(mBandwidth.toString());
     cmd.add(Integer.toString(mWorkerCount)); //get worker count
@@ -188,10 +186,11 @@ public class LoadAwareMaster {
               //InputStreamReader(p.getInputStream()));
       //String[] locationArray = stdInput.readLine().split(",");
 
-      BufferedReader br = new BufferedReader(new FileReader(ALLOC)); //todo: check whether the path is correct. //we may need to launch the LoadAwareMaster in the alluxio root folder
+      BufferedReader br = new BufferedReader(new FileReader(ALLOC));
       String[] locationArray = br.readLine().split(",");
       // mLocation = Arrays.stream(locationArray).mapToInt(Integer::parseInt).toArray(); // for jave 1.8+
       int i=0;
+      mLocation.clear();
       for(String loc:locationArray){
         mLocation.add(Integer.parseInt(loc));//Exception in this line
         i++;
@@ -199,12 +198,14 @@ public class LoadAwareMaster {
       String[] ratioArray = br.readLine().split(",");
       //mCacheRatio = Arrays.stream(ratioArray).mapToDouble(Double::parseDouble).toArray();
       i=0;
+      mCacheRatio.clear();
       for(String ratio:ratioArray){
         mCacheRatio.add(Double.parseDouble(ratio));//Exception in this line
         i++;
       }
       String blockList = br.readLine();
       System.out.println(blockList);
+      mBlockList.clear();
       if(!blockList.equals("")) {
         String[] blockArray = blockList.split(",");
         //mBlockList = Arrays.stream(blockArray).mapToInt(Integer::parseInt).toArray();
