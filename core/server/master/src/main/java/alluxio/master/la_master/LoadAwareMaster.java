@@ -133,7 +133,7 @@ public class LoadAwareMaster {
     getWorkerCount();
     if(mWorkerCount>1) {
       // cluster mode
-      curDir += "/alluxio-la";
+      curDir = System.getProperty("user.dir") + "/alluxio-la";
     }
     CONF = curDir+"/config/config.txt"; //  the file to store the config statistics: "bandwidth \n filesize \n cachesize of each worker \n mode"
     ALLOC= curDir+"/alloc.txt"; // the file to store the output of the python algorithm
