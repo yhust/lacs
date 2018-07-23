@@ -28,9 +28,9 @@ public class LoadAwareMaster {
   //private final static FileWriter mCacheHitLog = createLogWriter("logs/cacheHit_master.txt"); // user_id \t cache bytes \t disk bytes \n
   private static final String  ALLUXIODIR = "/tests"; // where to put test files in Alluxio
   private static String curDir = System.getProperty("user.dir");
-  private static String CONF = curDir+"/config/config.txt"; //  the file to store the config statistics: "bandwidth \n filesize \n cachesize of each worker \n mode"
-  private static String  ALLOC= curDir+"/alloc.txt"; // the file to store the output of the python algorithm
-  private static String LOCALPATH = curDir + "/test_files/local_file"; // local file for copying
+  private static String CONF ; //  the file to store the config statistics: "bandwidth \n filesize \n cachesize of each worker \n mode"
+  private static String  ALLOC; // the file to store the output of the python algorithm
+  private static String LOCALPATH; // local file for copying
 
 
   //public enum MODE {
@@ -100,11 +100,7 @@ public class LoadAwareMaster {
 
   public static void getDelta() {
     try{
-      BufferedReader br;
-      if(mWorkerCount > 1)
-        br = new BufferedReader(new FileReader(curDir + "/alluxio-la/delta.txt"));
-      else
-        br = new BufferedReader(new FileReader(curDir + "/delta.txt"));
+      BufferedReader br=new BufferedReader(new FileReader(curDir + "/delta.txt"));
       mDelta = Double.parseDouble(br.readLine());
       br.close();
     } catch(Exception e){
