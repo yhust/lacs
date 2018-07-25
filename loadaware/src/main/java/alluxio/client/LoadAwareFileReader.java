@@ -52,37 +52,33 @@ public class LoadAwareFileReader{
         int userId = Integer.parseInt(args[1]);
 
         OpenFileOptions readOptions = OpenFileOptions.defaults().setReadType(ReadType.NO_CACHE);
-        AlluxioURI cacheURI = new AlluxioURI(String.format("/tests/%s-1", fileName));
-        AlluxioURI diskURI = new AlluxioURI(String.format("/tests/s-2", fileName));
+        AlluxioURI cacheURI = new AlluxioURI(String.format("/tests/%s-0", fileName));
+        AlluxioURI diskURI = new AlluxioURI(String.format("/tests/s-1", fileName));
 
 
         try {
             boolean token = mFileSystem.getLAToken(fileName, new GetLATokenOptions(userId));
             if (token) { // get the token
                 long startTimeMs = CommonUtils.getCurrentMs();
-                int cacheBytes = 0;
-                int diskBytes = 0;
+                long cacheBytes = 0;
+                long diskBytes = 0;
                 int totalBytes = 0;
                 FileInStream isCache = null;
                 FileInStream isDisk = null;
-                synchronized (mCacheHitLog) {
-                    mCacheHitLog.write(String.format("%s\t", userId));
-                    if (mFileSystem.exists(cacheURI)) {
-                        isCache = mFileSystem.openFile(cacheURI, readOptions);
-                        totalBytes += isCache.mFileLength;
-                        System.out.println("Cached bytes: " + isCache.mFileLength);
-                        mCacheHitLog.write(String.format("%s\t", isCache.mFileLength));
-                    } else {
-                        mCacheHitLog.write("0\t");
-                    }
-                    if (mFileSystem.exists(diskURI)) {
-                        isDisk = mFileSystem.openFile(diskURI, readOptions);
-                        totalBytes += isDisk.mFileLength;
-                        Thread.sleep(isDisk.mFileLength/1024/1024);// 1ms per MB
-                        mCacheHitLog.write(String.format("%s\n", isDisk.mFileLength));
-                    }else{
-                        mCacheHitLog.write("0\t");
-                    }
+                if (mFileSystem.exists(cacheURI)) {
+                    isCache = mFileSystem.openFile(cacheURI, readOptions);
+                    totalBytes += isCache.mFileLength;
+                    System.out.println("Cached bytes: " + isCache.mFileLength);
+                    cacheBytes = isCache.mFileLength;
+                }
+                if (mFileSystem.exists(diskURI)) {
+                    isDisk = mFileSystem.openFile(diskURI, readOptions);
+                    totalBytes += isDisk.mFileLength;
+                    Thread.sleep(isDisk.mFileLength/1024/1024);// 1ms per MB
+                    diskBytes = isDisk.mFileLength;
+                }
+                synchronized (mCacheHitLog){
+                    mCacheHitLog.write(String.format("%s:\t %s\t %s \n", userId, cacheBytes, diskBytes));
                     mCacheHitLog.close();
                 }
                 byte[] buf = new byte[totalBytes];
