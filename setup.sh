@@ -22,7 +22,7 @@ echo 'conf/masters set.'
 # set the first 30 slaves as the alluxio workers
 read -ra slave_arr -d '' <<<"$SLAVES"
 echo "#workers are listed below" > 'conf/workers'
-for i in {0..9}
+for i in {0..5}
 do
     echo ${slave_arr[$i]} >> 'conf/workers'
 done

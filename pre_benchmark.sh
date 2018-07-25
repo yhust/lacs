@@ -10,6 +10,8 @@ factor=$5 # ratio of request rates (aggressive to normal)
 
 # Generate preference
 python python/generate_rates.py $k $n $arrival_rate $zipf_factor $factor
+#PATH=$PATH python python/mm_default.py 76 10 10 1000 2.4
+
 
 
 # Write test files

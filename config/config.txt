@@ -1,5 +1,5 @@
 76
-100
+10
 1000
 MaxMinDefault
 

@@ -10,7 +10,7 @@ touch results/all_cacheHit.txt
 #touch results/all_workerLoads.txt
 
 #SCRIPT="cd alluxio-la; ./bin/alluxio readTest &>/dev/null &"
-for ((i = 10; i < $1 + 10; i++))
+for ((i = 10; i < 11; i++))
 do
     echo $i
     slave="${slave_arr[$i]}"

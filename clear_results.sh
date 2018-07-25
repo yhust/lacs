@@ -5,7 +5,7 @@
 # clear the readTimes.txt on the last 20 slaves
 read -ra slave_arr -d '' <<<"$SLAVES"
 SCRIPT="rm alluxio-la/logs/*.txt"
-for i in {10..49} # {30..49}
+for i in {10..11} # {30..49}
 do
     echo $i
     slave="${slave_arr[$i]}"
