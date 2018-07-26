@@ -2696,7 +2696,7 @@ public final class DefaultFileSystemMaster extends AbstractMaster implements Fil
   }
 
   @Override
-  public boolean getLAToken(String fileName, GetLATokenOptions options) throws FileDoesNotExistException,
+  public int getLAToken(String fileName, GetLATokenOptions options) throws FileDoesNotExistException,
           InvalidPathException, AccessControlException {
     return LoadAwareMaster.access(fileName, options.getUserId());
 

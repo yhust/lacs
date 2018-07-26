@@ -30,6 +30,7 @@ public class LoadAwareFileReader{
 
     private final static FileWriter mTimeLog = createLogWriter("logs/readLatency.txt"); // user_id \t latency (-1 if rejected)\n
     private final static FileWriter mCacheHitLog = createLogWriter("logs/cacheHit.txt"); // user_id \t cache bytes \t disk bytes \n
+    private final static FileWriter mLoadLog = createLogWriter("logs/workerLoad.txt"); // worker_id \t read bytes \n
 
 
     public LoadAwareFileReader() throws IOException{ //
@@ -53,12 +54,12 @@ public class LoadAwareFileReader{
 
         OpenFileOptions readOptions = OpenFileOptions.defaults().setReadType(ReadType.NO_CACHE);
         AlluxioURI cacheURI = new AlluxioURI(String.format("/tests/%s-0", fileName));
-        AlluxioURI diskURI = new AlluxioURI(String.format("/tests/s-1", fileName));
+        AlluxioURI diskURI = new AlluxioURI(String.format("/tests/%s-1", fileName));
 
 
         try {
-            boolean token = mFileSystem.getLAToken(fileName, new GetLATokenOptions(userId));
-            if (token) { // get the token
+            int token = mFileSystem.getLAToken(fileName, new GetLATokenOptions(userId));
+            if (token >=0) { // get the token. The token is the machine id, used for load tracking
                 long startTimeMs = CommonUtils.getCurrentMs();
                 long cacheBytes = 0;
                 long diskBytes = 0;
@@ -92,6 +93,7 @@ public class LoadAwareFileReader{
                 long latency =  endTimeMs - startTimeMs;
                 //LOG.info("");
                 synchronized (mTimeLog) {mTimeLog.write("" + userId + "\t" + latency + "\n");mTimeLog.close();}
+                synchronized (mLoadLog) {mLoadLog.write("" + token + "\t" + totalBytes + "\n");mLoadLog.close();}
             } else {
                 synchronized (mTimeLog) {mTimeLog.write("" + userId + "\t" + "-1\n");mTimeLog.close();}
             }

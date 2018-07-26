@@ -441,7 +441,7 @@ public interface FileSystemMaster extends Master {
       throws UnexpectedAlluxioException, FileDoesNotExistException, InvalidPathException,
       AccessControlException;
 
-  boolean getLAToken(String fileName, GetLATokenOptions option)throws FileDoesNotExistException, InvalidPathException,AccessControlException;
+  int getLAToken(String fileName, GetLATokenOptions option)throws FileDoesNotExistException, InvalidPathException,AccessControlException;
   void runLAWrite() throws AlluxioException, IOException;
 
   /**

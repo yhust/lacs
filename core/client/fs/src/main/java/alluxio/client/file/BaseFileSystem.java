@@ -430,7 +430,7 @@ public class BaseFileSystem implements FileSystem {
   }
 
   @Override
-  public boolean getLAToken(String fileName, GetLATokenOptions options)
+  public Integer getLAToken(String fileName, GetLATokenOptions options)
           throws FileDoesNotExistException, IOException, AlluxioException {
     FileSystemMasterClient masterClient = mFileSystemContext.acquireMasterClient();
     try {

@@ -62,7 +62,7 @@ public class LoadAwareMaster {
   private static List<Integer> mLocation = new ArrayList<Integer>(); // location of each file. Files are identified by integer ids.
   private static List<Double> mCacheRatio = new ArrayList<Double>(); // of each file
   private static Map<Integer, TokenBucket> mTokenPool= new ConcurrentHashMap<>(); //todo: Bucket4j might provide a more efficient implementation of the token bucket algorithm
-  private static int mBucketSize = 1000; // the size of the 'leaky' token bucket
+  private static int mBucketSize; // the size of the 'leaky' token bucket
 
   private static Map<Integer, Integer> mWaitRequestPool = new ConcurrentHashMap<>(); // Record the number of waiting request of each user (after its tokens are used up). Need to be thread-safe.
   private static int mMaxWaitRequestNumber = 20; // The maximum waiting requests for a BLOCKED user.
@@ -147,6 +147,9 @@ public class LoadAwareMaster {
       mFileSize = Double.parseDouble(br.readLine());
       mCacheSize = Double.parseDouble(br.readLine());
       mMode = br.readLine();
+      try{
+        mMaxWaitRequestNumber = Integer.parseInt(br.readLine());
+      }catch(Exception e){}
       br.close();
     } catch (IOException e) {
       LOG.info("Five parameters in config/config.txt are required: bandwidth, filesize, cachesize, delta(speed difference of memory and disk), and mode, separated in lines.");
@@ -223,12 +226,14 @@ public class LoadAwareMaster {
       LOG.info("Locations" + Arrays.toString(mLocation.toArray()));
       LOG.info("Ratios" + Arrays.toString(mCacheRatio.toArray()));
 
-    } catch (Exception e) {
+    } catch (IOException e) {
       LOG.info("Wrong Message received: " + e);
       return;
     }
     mFileCount=mLocation.size();
 
+    mBucketSize=mIsolateRate.intValue();
+    mTokenPool.clear();
     for(Integer useId: mBlockList){
       TokenBucket tokenBucket = TokenBuckets.builder()
               .withCapacity(mBucketSize)
@@ -277,16 +282,16 @@ public class LoadAwareMaster {
    *  To issue tokens.
    * @param userId
    * @param fileName intended for per-machine access control, together with the locationmap.
-   * @return
+   * @return the worker id. If the request is rejected, return -1
    */
   //todo The access counts (frequency of the previous period) should be logged to python/pop.txt
-  public static boolean access(String fileName, int userId){
+  public static int access(String fileName, int userId){
     System.out.println("Block list: " + Arrays.toString(mBlockList.toArray()));
     if(mMode.equals(ModeConstants.Isolation)){
       System.out.println("Isolation mode");
       if(mWaitRequestPool.get(userId) > mMaxWaitRequestNumber) { // too many requests waiting
         LOG.info("Isolation mode -- More than" + mMaxWaitRequestNumber + "waiting requests: Reject");
-        return false;
+        return -1;
       }
       else{ // ask for a token
         TokenBucket tokenBucket = mTokenPool.get(userId);
@@ -295,48 +300,52 @@ public class LoadAwareMaster {
         tokenBucket.consume(1); // block
         LOG.info("Isolation mode --  Token get " + CommonUtils.getCurrentMs());
         mWaitRequestPool.put(userId, mWaitRequestPool.get(userId)-1); // one finishes waiting
-        try {
-          synchronized (WorkerLoads){
-            WorkerLoads.write(String.format("%s:\t%s\n",fileName, mLocation.get(Integer.parseInt(fileName))));
-          }
-        }catch(IOException e){
-          e.printStackTrace();
-        }
-        return true;
+//        try {
+//          synchronized (WorkerLoads){
+//            WorkerLoads.write(String.format("%s:\t%s\n",fileName, mLocation.get(Integer.parseInt(fileName))));
+//            WorkerLoads.flush();
+//          }
+//        }catch(IOException e){
+//          e.printStackTrace();
+//        }
+        return mLocation.get(Integer.parseInt(fileName));
       }
     }
 
     if(!(Arrays.asList(mBlockList)).contains(userId)){
       System.out.println("User " + userId + " not in the block list");
-      try {
-        synchronized (WorkerLoads) {
-          WorkerLoads.write(String.format("%s:\t%s\n", fileName, mLocation.get(Integer.parseInt(fileName))));
-        }
-      }catch(IOException e){
-        e.printStackTrace();
-      }
-      return true;
+//      try {
+//        synchronized (WorkerLoads) {
+//          WorkerLoads.write(String.format("%s:\t%s\n", fileName, mLocation.get(Integer.parseInt(fileName))));
+//          WorkerLoads.flush();
+//        }
+//      }catch(IOException e){
+//        e.printStackTrace();
+//      }
+      return mLocation.get(Integer.parseInt(fileName));
     }
 
     else{
       if(mWaitRequestPool.get(userId) > mMaxWaitRequestNumber) // too many requests waiting
-        return false;
+        return -1;
       else{ // ask for a token
         TokenBucket tokenBucket = mTokenPool.get(userId);
         mWaitRequestPool.put(userId, mWaitRequestPool.get(userId)+1); // one more waiting
         tokenBucket.consume(1); // block
         mWaitRequestPool.put(userId, mWaitRequestPool.get(userId)-1); // one finishes waiting
-        try {
-          synchronized (WorkerLoads){
-            WorkerLoads.write(String.format("%s:\t%s\n",fileName, mLocation.get(Integer.parseInt(fileName))));
-          }
-        }catch(IOException e){
-          e.printStackTrace();
-        }
-        return true;
+//        try {
+//          synchronized (WorkerLoads){
+//            WorkerLoads.write(String.format("%s:\t%s\n",fileName, mLocation.get(Integer.parseInt(fileName))));
+//            WorkerLoads.flush();
+//          }
+//        }catch(IOException e){
+//          e.printStackTrace();
+//        }
+        return mLocation.get(Integer.parseInt(fileName));
       }
     }
   }
+
 }
 
 

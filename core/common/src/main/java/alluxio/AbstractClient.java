@@ -289,6 +289,7 @@ public abstract class AbstractClient implements Client {
       try {
         return rpc.call();
       } catch (AlluxioTException e) {
+        //e.printStackTrace();
         AlluxioStatusException se = AlluxioStatusException.fromThrift(e);
         if (se.getStatus() == Status.UNAVAILABLE) {
           ex = se;

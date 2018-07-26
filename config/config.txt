@@ -1,7 +1,7 @@
 76
 10
 1000
-MaxMinDefault
+Isolation
 
 
 Usage: the first four lines:

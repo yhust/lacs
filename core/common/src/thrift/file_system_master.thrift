@@ -186,7 +186,7 @@ struct GetLATokenTOptions{
   1: i32 userId
 }
 struct GetLATokenTResponse{
-  1: bool token
+  1: i32 token
 }
 struct RunLAWriteTOptions {}
 struct RunLAWriteTResponse {}

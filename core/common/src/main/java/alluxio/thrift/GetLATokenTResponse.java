@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 public class GetLATokenTResponse implements org.apache.thrift.TBase<GetLATokenTResponse, GetLATokenTResponse._Fields>, java.io.Serializable, Cloneable, Comparable<GetLATokenTResponse> {
   private static final org.apache.thrift.protocol.TStruct STRUCT_DESC = new org.apache.thrift.protocol.TStruct("GetLATokenTResponse");
 
-  private static final org.apache.thrift.protocol.TField TOKEN_FIELD_DESC = new org.apache.thrift.protocol.TField("token", org.apache.thrift.protocol.TType.BOOL, (short)1);
+  private static final org.apache.thrift.protocol.TField TOKEN_FIELD_DESC = new org.apache.thrift.protocol.TField("token", org.apache.thrift.protocol.TType.I32, (short)1);
 
   private static final Map<Class<? extends IScheme>, SchemeFactory> schemes = new HashMap<Class<? extends IScheme>, SchemeFactory>();
   static {
@@ -46,7 +46,7 @@ public class GetLATokenTResponse implements org.apache.thrift.TBase<GetLATokenTR
     schemes.put(TupleScheme.class, new GetLATokenTResponseTupleSchemeFactory());
   }
 
-  private boolean token; // required
+  private int token; // required
 
   /** The set of fields this struct contains, along with convenience methods for finding and manipulating them. */
   public enum _Fields implements org.apache.thrift.TFieldIdEnum {
@@ -113,7 +113,7 @@ public class GetLATokenTResponse implements org.apache.thrift.TBase<GetLATokenTR
   static {
     Map<_Fields, org.apache.thrift.meta_data.FieldMetaData> tmpMap = new EnumMap<_Fields, org.apache.thrift.meta_data.FieldMetaData>(_Fields.class);
     tmpMap.put(_Fields.TOKEN, new org.apache.thrift.meta_data.FieldMetaData("token", org.apache.thrift.TFieldRequirementType.DEFAULT, 
-        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.BOOL)));
+        new org.apache.thrift.meta_data.FieldValueMetaData(org.apache.thrift.protocol.TType.I32)));
     metaDataMap = Collections.unmodifiableMap(tmpMap);
     org.apache.thrift.meta_data.FieldMetaData.addStructMetaDataMap(GetLATokenTResponse.class, metaDataMap);
   }
@@ -122,7 +122,7 @@ public class GetLATokenTResponse implements org.apache.thrift.TBase<GetLATokenTR
   }
 
   public GetLATokenTResponse(
-    boolean token)
+    int token)
   {
     this();
     this.token = token;
@@ -144,14 +144,14 @@ public class GetLATokenTResponse implements org.apache.thrift.TBase<GetLATokenTR
   @Override
   public void clear() {
     setTokenIsSet(false);
-    this.token = false;
+    this.token = 0;
   }
 
-  public boolean isToken() {
+  public int getToken() {
     return this.token;
   }
 
-  public GetLATokenTResponse setToken(boolean token) {
+  public GetLATokenTResponse setToken(int token) {
     this.token = token;
     setTokenIsSet(true);
     return this;
@@ -176,7 +176,7 @@ public class GetLATokenTResponse implements org.apache.thrift.TBase<GetLATokenTR
       if (value == null) {
         unsetToken();
       } else {
-        setToken((Boolean)value);
+        setToken((Integer)value);
       }
       break;
 
@@ -186,7 +186,7 @@ public class GetLATokenTResponse implements org.apache.thrift.TBase<GetLATokenTR
   public Object getFieldValue(_Fields field) {
     switch (field) {
     case TOKEN:
-      return isToken();
+      return getToken();
 
     }
     throw new IllegalStateException();
@@ -329,8 +329,8 @@ public class GetLATokenTResponse implements org.apache.thrift.TBase<GetLATokenTR
         }
         switch (schemeField.id) {
           case 1: // TOKEN
-            if (schemeField.type == org.apache.thrift.protocol.TType.BOOL) {
-              struct.token = iprot.readBool();
+            if (schemeField.type == org.apache.thrift.protocol.TType.I32) {
+              struct.token = iprot.readI32();
               struct.setTokenIsSet(true);
             } else { 
               org.apache.thrift.protocol.TProtocolUtil.skip(iprot, schemeField.type);
@@ -352,7 +352,7 @@ public class GetLATokenTResponse implements org.apache.thrift.TBase<GetLATokenTR
 
       oprot.writeStructBegin(STRUCT_DESC);
       oprot.writeFieldBegin(TOKEN_FIELD_DESC);
-      oprot.writeBool(struct.token);
+      oprot.writeI32(struct.token);
       oprot.writeFieldEnd();
       oprot.writeFieldStop();
       oprot.writeStructEnd();
@@ -377,7 +377,7 @@ public class GetLATokenTResponse implements org.apache.thrift.TBase<GetLATokenTR
       }
       oprot.writeBitSet(optionals, 1);
       if (struct.isSetToken()) {
-        oprot.writeBool(struct.token);
+        oprot.writeI32(struct.token);
       }
     }
 
@@ -386,7 +386,7 @@ public class GetLATokenTResponse implements org.apache.thrift.TBase<GetLATokenTR
       TTupleProtocol iprot = (TTupleProtocol) prot;
       BitSet incoming = iprot.readBitSet(1);
       if (incoming.get(0)) {
-        struct.token = iprot.readBool();
+        struct.token = iprot.readI32();
         struct.setTokenIsSet(true);
       }
     }

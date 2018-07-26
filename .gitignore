@@ -37,6 +37,7 @@
 /docs/api/
 /docs/serve/
 /extensions/
+historical-data/*
 /journal/
 /lib/
 /logs/*.log*
