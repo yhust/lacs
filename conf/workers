@@ -1,7 +1,6 @@
 #workers are listed below
-ec2-34-234-236-172.compute-1.amazonaws.com
-ec2-34-200-249-107.compute-1.amazonaws.com
-ec2-54-236-59-99.compute-1.amazonaws.com
-ec2-34-201-22-210.compute-1.amazonaws.com
-ec2-34-237-144-60.compute-1.amazonaws.com
-ec2-18-208-208-117.compute-1.amazonaws.com
+ec2-18-232-168-7.compute-1.amazonaws.com
+ec2-18-209-245-93.compute-1.amazonaws.com
+ec2-34-200-229-182.compute-1.amazonaws.com
+ec2-34-205-203-149.compute-1.amazonaws.com
+ec2-34-205-246-11.compute-1.amazonaws.com
