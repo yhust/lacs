@@ -5,6 +5,7 @@ import alluxio.client.file.FileSystem;
 import alluxio.client.file.options.DeleteOptions;
 import alluxio.exception.AlluxioException;
 import alluxio.master.file.DefaultFileSystemMaster;
+import alluxio.util.CommonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +32,8 @@ public class LoadAwareMaster {
   private static String CONF ; //  the file to store the config statistics: "bandwidth \n filesize \n cachesize of each worker \n mode"
   private static String  ALLOC; // the file to store the output of the python algorithm
   private static String LOCALPATH; // local file for copying
+
+  private static final FileWriter WorkerLoads = createLogWriter("logs/workerloads.txt");
 
 
   //public enum MODE {
@@ -78,13 +81,13 @@ public class LoadAwareMaster {
     // writeFile();
   }
 
-//  private static FileWriter createLogWriter(final String name) {
-//    try {
-//      return new FileWriter(name, true); //append);
-//    } catch (final IOException exc) {
-//      throw new Error(exc);
-//    }
-//  }
+  private static FileWriter createLogWriter(final String name) {
+    try {
+      return new FileWriter(name, true); //append;
+    } catch (final IOException exc) {
+      throw new Error(exc);
+    }
+  }
   public static void setWorkerCount(int workerCount){
     mWorkerCount = workerCount;
     System.out.println("worker count set in lamaster: "+ workerCount);
@@ -123,7 +126,7 @@ public class LoadAwareMaster {
   /**
    * Run the python algorithm to get the cache allocation and block list.
    *
-   * The output of the python program should be written to python/alloc.txt
+   * The output of the python program should be written to alloc.txt
    *
    *
    */
@@ -277,10 +280,41 @@ public class LoadAwareMaster {
    * @return
    */
   //todo The access counts (frequency of the previous period) should be logged to python/pop.txt
-  public static boolean access(String fileName, int userId) {
+  public static boolean access(String fileName, int userId){
     System.out.println("Block list: " + Arrays.toString(mBlockList.toArray()));
+    if(mMode.equals(ModeConstants.Isolation)){
+      System.out.println("Isolation mode");
+      if(mWaitRequestPool.get(userId) > mMaxWaitRequestNumber) { // too many requests waiting
+        LOG.info("Isolation mode -- More than" + mMaxWaitRequestNumber + "waiting requests: Reject");
+        return false;
+      }
+      else{ // ask for a token
+        TokenBucket tokenBucket = mTokenPool.get(userId);
+        mWaitRequestPool.put(userId, mWaitRequestPool.get(userId)+1); // one more waiting
+        LOG.info("Isolation mode --  Asking for token");
+        tokenBucket.consume(1); // block
+        LOG.info("Isolation mode --  Token get " + CommonUtils.getCurrentMs());
+        mWaitRequestPool.put(userId, mWaitRequestPool.get(userId)-1); // one finishes waiting
+        try {
+          synchronized (WorkerLoads){
+            WorkerLoads.write(String.format("%s:\t%s\n",fileName, mLocation.get(Integer.parseInt(fileName))));
+          }
+        }catch(IOException e){
+          e.printStackTrace();
+        }
+        return true;
+      }
+    }
+
     if(!(Arrays.asList(mBlockList)).contains(userId)){
       System.out.println("User " + userId + " not in the block list");
+      try {
+        synchronized (WorkerLoads) {
+          WorkerLoads.write(String.format("%s:\t%s\n", fileName, mLocation.get(Integer.parseInt(fileName))));
+        }
+      }catch(IOException e){
+        e.printStackTrace();
+      }
       return true;
     }
 
@@ -292,6 +326,13 @@ public class LoadAwareMaster {
         mWaitRequestPool.put(userId, mWaitRequestPool.get(userId)+1); // one more waiting
         tokenBucket.consume(1); // block
         mWaitRequestPool.put(userId, mWaitRequestPool.get(userId)-1); // one finishes waiting
+        try {
+          synchronized (WorkerLoads){
+            WorkerLoads.write(String.format("%s:\t%s\n",fileName, mLocation.get(Integer.parseInt(fileName))));
+          }
+        }catch(IOException e){
+          e.printStackTrace();
+        }
         return true;
       }
     }
