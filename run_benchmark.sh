@@ -12,17 +12,19 @@ read -ra slave_arr -d '' <<<"$SLAVES"
 
 #one slow user
 slave="${slave_arr[10]}"
-SCRIPT="cd alluxio-la;PATH=$PATH python python/LABenchmark.py 0 $total_count $rate > /tmp/pythonlog &"
+#SCRIPT="cd alluxio-la;PATH=$PATH python python/LABenchmark.py 0 $total_count $rate > /tmp/pythonlog &"
+SCRIPT="cd alluxio-la;PATH=$PATH python python/LABenchmark.py 0 $total_count $rate > /tmp/pythonlog0 &"
 ssh -l "root" "${slave}" "${SCRIPT}"
-
-
-SCRIPT="cd alluxio-la;PATH=$PATH python python/LABenchmark.py 1 $total_count $rate > /tmp/pythonlog &"
-for ((i = 11; i < $factor + 11; i++))
-do
-  echo $i
-  slave="${slave_arr[$i]}"  
-  ssh -l "root" "${slave}" "${SCRIPT}" # error of alluxio: unknown command
-done
+SCRIPT="cd alluxio-la; PATH=$PATH python python/LABenchmark.py 1 $(expr $total_count*$factor | bc) $(expr $rate*$factor | bc) > /tmp/pythonlog1 &"
+ssh -l "root" "${slave}" "${SCRIPT}"
+echo $SCRIPT
+#SCRIPT="cd alluxio-la;PATH=$PATH python python/LABenchmark.py 1 $total_count $rate > /tmp/pythonlog &"
+#for ((i = 11; i < $factor + 11; i++))
+#do
+ # echo $i
+ # slave="${slave_arr[$i]}"  
+ # ssh -l "root" "${slave}" "${SCRIPT}" # error of alluxio: unknown command
+#done
 
 
 #one fast user
