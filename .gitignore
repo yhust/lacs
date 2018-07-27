@@ -42,6 +42,7 @@ historical-data/*
 /lib/
 /logs/*.log*
 /logs/*.out*
+/logs/*
 /underFSStorage/
 dependency-reduced-pom.xml
 target/
