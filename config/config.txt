@@ -1,8 +1,7 @@
 76
-10
-1000
-Isolation
-
+100
+2000
+LoadAware
 
 Usage: the first four lines:
 bandwidth \n filesize \n cachesize of each worker \n mode
