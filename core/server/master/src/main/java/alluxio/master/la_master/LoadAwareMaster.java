@@ -33,7 +33,7 @@ public class LoadAwareMaster {
   private static String  ALLOC; // the file to store the output of the python algorithm
   private static String LOCALPATH; // local file for copying
 
-  private static final FileWriter WorkerLoads = createLogWriter("logs/workerloads.txt");
+  //private static final FileWriter WorkerLoads = createLogWriter("logs/workerloads.txt");
 
 
   //public enum MODE {
