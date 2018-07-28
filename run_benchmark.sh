@@ -10,38 +10,35 @@ read -ra slave_arr -d '' <<<"$SLAVES"
 #SCRIPT="cd alluxio-la;PATH=$PATH python python/LABenchmark.py $2 $3 > /tmp/pythonlog &"
 #echo $SCRIPT
 
-#one slow user
-slave="${slave_arr[10]}"
-#SCRIPT="cd alluxio-la;PATH=$PATH python python/LABenchmark.py 0 $total_count $rate > /tmp/pythonlog &"
-SCRIPT="cd alluxio-la;PATH=$PATH python python/LABenchmark.py 0 $total_count $rate > /tmp/pythonlog0 &"
-ssh -l "root" "${slave}" "${SCRIPT}"
-SCRIPT="cd alluxio-la; PATH=$PATH python python/LABenchmark.py 1 $(expr $total_count*$factor | bc) $(expr $rate*$factor | bc) > /tmp/pythonlog1 &"
-ssh -l "root" "${slave}" "${SCRIPT}"
-echo $SCRIPT
-#SCRIPT="cd alluxio-la;PATH=$PATH python python/LABenchmark.py 1 $total_count $rate > /tmp/pythonlog &"
-#for ((i = 11; i < $factor + 11; i++))
-#do
- # echo $i
- # slave="${slave_arr[$i]}"  
- # ssh -l "root" "${slave}" "${SCRIPT}" # error of alluxio: unknown command
-#done
+for ((i = 0; i < 5; i++))
+do
+ echo $i
+ slave="${slave_arr[$((i + 10))]}"
+ echo $slave
+ SCRIPT="cd alluxio-la;PATH=$PATH python python/LABenchmark.py $i $total_count $rate > /tmp/pythonlog &"
+ echo $SCRIPT
+ ssh -l "root" "${slave}" "${SCRIPT}" # error of alluxio: unknown command
+done
+
+for ((i = 5; i < 10; i++))
+do
+ echo $i
+ slave="${slave_arr[$((i + 10))]}"
+ echo $slave
+ SCRIPT="cd alluxio-la;PATH=$PATH python python/LABenchmark.py $i $(expr $total_count*$factor | bc) $(expr $rate*$factor | bc) > /tmp/pythonlog &"
+ echo $SCRIPT
+ ssh -l "root" "${slave}" "${SCRIPT}" # error of alluxio: unknown command
+done
+
+for ((i = 10; i < 15; i++))
+do
+ echo $i
+ slave="${slave_arr[$((i + 10))]}" 
+ SCRIPT="cd alluxio-la;PATH=$PATH python python/LABenchmark.py $i $(expr $total_count*$factor*$factor | bc) $(expr $rate*$factor*$factor | bc) > /tmp/pythonlog &"
+ echo $slave
+ echo $SCRIPT
+ ssh -l "root" "${slave}" "${SCRIPT}" # error of alluxio: unknown command
+done
 
 
-#one fast user
-#slave="${slave_arr[11]}"
-#echo slave
-#SCRIPT="cd alluxio-la;PATH=$PATH python python/LABenchmark.py 1 $(expr $total_count*$factor | bc) $(expr $rate*$factor | bc) > /tmp/pythonlog &" #$(($rate * $factor))
-#echo $SCRIPT
-#ssh -l "root" "${slave}" "${SCRIPT}"
 
-
-
-#for ((i = 30; i < $1 + 30; i++))
-#do
- #   echo $i
- #   slave="${slave_arr[$i]}"
- #   echo $slave
- #   ssh -l "root" "${slave_arr[$i]}" "${SCRIPT}" # error of alluxio: unknown command
-   
-#done
-echo Done

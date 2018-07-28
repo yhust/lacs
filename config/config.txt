@@ -1,6 +1,11 @@
 76
+<<<<<<< HEAD
 10
 1000
+=======
+100
+2000
+>>>>>>> 234c5f3657dab5c654096ea3229fd714f5f45faa
 LoadAware
 
 Usage: the first four lines:
