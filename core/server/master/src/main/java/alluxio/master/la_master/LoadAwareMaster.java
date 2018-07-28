@@ -158,7 +158,12 @@ public class LoadAwareMaster {
     mIsolateRate = mBandwidth / mFileSize * mWorkerCount;// ; //total rate per second
 
     ArrayList<String> cmd = new ArrayList<String>();
-    cmd.add("python");
+    if(mWorkerCount>1) {
+      cmd.add("/usr/bin/python2.7");
+    }
+    else{
+      cmd.add("python");
+    }
     switch(mMode){
       case ModeConstants.MaxMinDefault: cmd.add(curDir + "/python/mm_default.py");break;
       case ModeConstants.LoadAware: cmd.add(curDir + "/python/la_fair.py");break;
@@ -313,7 +318,7 @@ public class LoadAwareMaster {
       }
     }
 
-    if(!(Arrays.asList(mBlockList)).contains(userId)){
+    if(mBlockList.contains(userId)){
       System.out.println("User " + userId + " not in the block list");
 //      try {
 //        synchronized (WorkerLoads) {

@@ -105,7 +105,7 @@ public class getDelta {
         System.out.println("Read from disk ("+ i + "): " + latency);
       }
 
-      double delta = (double)(diskTime - memoryTime) / (trial * mFileSize);
+      double delta = (double)(diskTime - memoryTime) / (trial * 1000);
       System.out.println("### Delta = " + String.format("(%s - %s) / (%s x %s) = ", diskTime, memoryTime, trial, mFileSize) + delta);
       //LoadAwareMaster t = new LoadAwareMaster();
       //LoadAwareMaster.setmDelta(delta);
