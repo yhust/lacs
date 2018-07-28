@@ -382,6 +382,7 @@ public final class FileSystemMasterClientServiceHandler implements
     return RpcUtils.callAndLog(LOG, new RpcCallableThrowsIOException<GetLATokenTResponse>() {
       @Override
       public GetLATokenTResponse call() throws AlluxioException, IOException {
+        //System.out.println("User id at fs master client service handler" + options.getUserId());
         return new GetLATokenTResponse(mFileSystemMaster.getLAToken(fileName, new GetLATokenOptions(options)));
       }
 

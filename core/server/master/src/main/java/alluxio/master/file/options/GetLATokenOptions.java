@@ -37,8 +37,10 @@ public final class GetLATokenOptions {
      * @param options the thrift representation of getLAToken options
      */
     public GetLATokenOptions(GetLATokenTOptions options) {
-        GetLATokenOptions getLATokenOptions = new GetLATokenOptions();
-        getLATokenOptions.setUserId(options.getUserId());
+        //GetLATokenOptions getLATokenOptions = new GetLATokenOptions();
+        //getLATokenOptions.setUserId(options.getUserId());
+        userId = options.getUserId();
+        //System.out.println("User id at la token option (master): "+ getUserId());
     }
 
     public int getUserId() {

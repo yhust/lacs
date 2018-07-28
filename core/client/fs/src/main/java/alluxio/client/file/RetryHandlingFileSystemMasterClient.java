@@ -293,6 +293,7 @@ public final class RetryHandlingFileSystemMasterClient extends AbstractMasterCli
     return retryRPC(new RpcCallable<Integer>() {
       @Override
       public Integer call() throws TException {
+        //System.out.println("User id at fs master client" + options.getUserId());
         return Integer.valueOf(mClient.getLAToken(fileName, options.toThrift()).getToken());
 
         //return token;

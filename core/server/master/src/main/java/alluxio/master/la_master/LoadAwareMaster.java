@@ -286,6 +286,7 @@ public class LoadAwareMaster {
    */
   //todo The access counts (frequency of the previous period) should be logged to python/pop.txt
   public static int access(String fileName, int userId){
+    //LOG.info("User id received at the lacs master " + userId);
     System.out.println("Block list: " + Arrays.toString(mBlockList.toArray()));
     if(mMode.equals(ModeConstants.Isolation)){
       System.out.println("Isolation mode");

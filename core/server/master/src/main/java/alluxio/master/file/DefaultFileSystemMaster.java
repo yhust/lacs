@@ -2698,6 +2698,7 @@ public final class DefaultFileSystemMaster extends AbstractMaster implements Fil
   @Override
   public int getLAToken(String fileName, GetLATokenOptions options) throws FileDoesNotExistException,
           InvalidPathException, AccessControlException {
+    //LOG.info("User id received at the fs master " + options.getUserId());
     return LoadAwareMaster.access(fileName, options.getUserId());
 
   }
