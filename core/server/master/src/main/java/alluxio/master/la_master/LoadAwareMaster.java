@@ -319,7 +319,7 @@ public class LoadAwareMaster {
       }
     }
 
-    if(mBlockList.contains(userId)){
+    if(!mBlockList.contains(userId)){ // not in the list
       System.out.println("User " + userId + " not in the block list");
 //      try {
 //        synchronized (WorkerLoads) {
