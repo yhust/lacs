@@ -158,6 +158,7 @@ public class LoadAwareMaster {
     mIsolateRate = mBandwidth / mFileSize * mWorkerCount;// ; //total rate per second
 
     ArrayList<String> cmd = new ArrayList<String>();
+    System.out.println("Worker count : " + mWorkerCount);
     if(mWorkerCount>1) {
       cmd.add("/usr/bin/python2.7");
     }
