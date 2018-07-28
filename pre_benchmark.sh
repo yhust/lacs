@@ -3,15 +3,15 @@
 
 
 k=$1   # number of users
-n=$2 # number of files
-arrival_rate=$3 #  request rate of normal users(as Poisson)
-zipf_factor=$4 # distribution
-factor=$5 # ratio of request rates (aggressive to normal)
+n=400 # number of files
+arrival_rate=$2 #  request rate of normal users(as Poisson)
+zipf_factor=1.05 # distribution
+factor=$3 # ratio of request rates (aggressive to normal)
 
 # Generate preference
 python python/generate_rates.py $k $n $arrival_rate $zipf_factor $factor
-#PATH=$PATH python python/mm_default.py 76 10 10 1000 2.4
-python python/lacs.py 76 10 100 2000 2.15
+#PATH=$PATH python python/mm_default.py 76 10 10 1000 2.12
+#/usr/bin/python2.7 python/lacs.py 120 10 100 2000 0.215
 
 
 
