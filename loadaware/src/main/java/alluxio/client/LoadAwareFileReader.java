@@ -58,9 +58,9 @@ public class LoadAwareFileReader{
 
 
         try {
+            long startTimeMs = CommonUtils.getCurrentMs();
             int token = mFileSystem.getLAToken(fileName, new GetLATokenOptions(userId));
             if (token >=0) { // get the token. The token is the machine id, used for load tracking
-                long startTimeMs = CommonUtils.getCurrentMs();
                 long cacheBytes = 0;
                 long diskBytes = 0;
                 int totalBytes = 0;
