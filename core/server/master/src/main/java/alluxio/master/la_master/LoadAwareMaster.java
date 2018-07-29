@@ -119,16 +119,20 @@ public class LoadAwareMaster {
    */
 
   public static void runWrite(){
-    getConfig();
     getAllocation();
     writeFile();
   }
 
 
   /**
-   * Read the configurations
+   * Run the python algorithm to get the cache allocation and block list.
+   *
+   * The output of the python program should be written to alloc.txt
+   *
+   *
    */
-  public static void getConfig(){
+
+  public static void getAllocation() {
     getWorkerCount();
     if(mWorkerCount>1) {
       // cluster mode
@@ -144,9 +148,9 @@ public class LoadAwareMaster {
       mCacheSize = Double.parseDouble(br.readLine());
       mUserCount = Integer.parseInt(br.readLine());
       mMode = br.readLine();
-      try{
-        mMaxWaitRequestNumber = Integer.parseInt(br.readLine());
-      }catch(Exception e){}
+//      try{
+//        mMaxWaitRequestNumber = Integer.parseInt(br.readLine());
+//      }catch(Exception e){}
       br.close();
     } catch (IOException e) {
       LOG.info("Five parameters in config/config.txt are required: bandwidth, filesize, cachesize, usercount, and mode, separated in lines.");
@@ -154,20 +158,6 @@ public class LoadAwareMaster {
     }
     mIsolateRate = mBandwidth / mUserCount / mFileSize * mWorkerCount ;// ; //total rate per second
     System.out.println("Isolate rate: " + mIsolateRate);
-
-  }
-
-
-  /**
-   * Run the python algorithm to get the cache allocation and block list.
-   *
-   * The output of the python program should be written to alloc.txt
-   *
-   *
-   */
-
-  public static void getAllocation() {
-    //LOG.info("Current dir: " + curDir);
     ArrayList<String> cmd = new ArrayList<String>();
     System.out.println("Worker count : " + mWorkerCount);
     if(mWorkerCount>1) {
@@ -201,10 +191,25 @@ public class LoadAwareMaster {
     // Run la_fair_allocator.py and parse the results
     try {
       Process p = Runtime.getRuntime().exec(cmdArray);
-      //BufferedReader stdInput = new BufferedReader(new
-              //InputStreamReader(p.getInputStream()));
-      //String[] locationArray = stdInput.readLine().split(",");
+    } catch (IOException e) {
+      LOG.info("Wrong Message received: " + e);
+      return;
+    }
+    updateAlloc();
+    
+  }
+  /**
+   * Read the configurations
+   */
+  public static void getConfig(){
+    updateAlloc();
+  }
 
+  /**
+   * Update the mLocation, mCacheRatio and mBlockList from alloc.txt
+   */
+  public static void updateAlloc(){
+    try{
       BufferedReader br = new BufferedReader(new FileReader(ALLOC));
       String[] locationArray = br.readLine().split(",");
       // mLocation = Arrays.stream(locationArray).mapToInt(Integer::parseInt).toArray(); // for jave 1.8+
@@ -248,18 +253,19 @@ public class LoadAwareMaster {
       return;
     }
     mFileCount=mLocation.size();
-
+    mIsolateRate = mBandwidth / mUserCount / mFileSize * mWorkerCount ;// ; //total rate per second
     mBucketSize= 1; //mIsolateRate.intValue();
     mTokenPool.clear();
     for(Integer useId: mBlockList){
       TokenBucket tokenBucket = TokenBuckets.builder()
               .withCapacity(mBucketSize)
-              .withFixedIntervalRefillStrategy(mIsolateRate.longValue(), 1, TimeUnit.SECONDS) // the isolate rate must be larger than 1/60 accesses per second.
+              .withFixedIntervalRefillStrategy((long)(mIsolateRate*3), 3, TimeUnit.SECONDS) // the isolate rate must be larger than 1/60 accesses per second.
               .build();
       mTokenPool.put(useId, tokenBucket);
       mWaitRequestPool.put(useId, 0);
     }
   }
+
 
   public static void writeFile(){
 
