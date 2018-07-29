@@ -254,7 +254,7 @@ public class LoadAwareMaster {
     }
     mFileCount=mLocation.size();
     mIsolateRate = mBandwidth / mUserCount / mFileSize * mWorkerCount ;// ; //total rate per second
-    mBucketSize= 1; //mIsolateRate.intValue();
+    mBucketSize= (int)(mIsolateRate*3); //mIsolateRate.intValue();
     System.out.print("Refill rate: " +(long)(mIsolateRate*3) + " tokens every 3 seconds");
     mTokenPool.clear();
     for(Integer useId: mBlockList){
