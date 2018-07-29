@@ -21,7 +21,7 @@ import java.io.IOException;
  *
  * This class is the writer that writes files into Alluxio, given cache fraction and location to write.
  */
-public class LoadAwareFileWriter {
+public class LoadAwareFileWriter implements Runnable{
 
   protected int mWorkerId;
   protected double mCacheRatio;
@@ -31,11 +31,11 @@ public class LoadAwareFileWriter {
   private String mDstFile;
   private String mSrcFile; // intended for inside-Alluxio file-copy.
   private static final Logger LOG = LoggerFactory.getLogger(LoadAwareFileWriter.class);
+  private byte[] buf;
 
   public LoadAwareFileWriter(FileSystem fileSystem) {
     mFileSystem = fileSystem;
     mWriteOptions = CreateFileOptions.defaults().setWriteType(WriteType.MUST_CACHE);
-
   }
 //  public void setmDstPath(String dstPath){
 //    mDstPath = dstPath ;
@@ -56,7 +56,7 @@ public class LoadAwareFileWriter {
   public void setmCacheRatio(double cacheRatio){
     mCacheRatio = cacheRatio;
   }
-
+  public void setBuf(byte[] b){buf = b;}
   public void writeFile(String localFile) { // write the local file
     try {
 
@@ -100,7 +100,7 @@ public class LoadAwareFileWriter {
     }
 
   }
-  public void writeFile(byte[] buf) { // write the buf
+  public void run() { // write the buf
     try {
 
 

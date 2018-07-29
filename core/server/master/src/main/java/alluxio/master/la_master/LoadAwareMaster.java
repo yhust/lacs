@@ -269,9 +269,7 @@ public class LoadAwareMaster {
 
 
   public static void writeFile(){
-
     FileSystem fs = FileSystem.Factory.get();
-    LoadAwareFileWriter fw = new LoadAwareFileWriter(fs);
 
     AlluxioURI writeDir = new AlluxioURI(ALLUXIODIR);
     try {
@@ -286,13 +284,16 @@ public class LoadAwareMaster {
 
       // AlluxioURI[] shortcuts = new AlluxioURI[mWorkerCount]; // shortcuts for local copy!
       for (int fileId = 0; fileId < mFileCount; fileId++) {
+        LoadAwareFileWriter fw= new LoadAwareFileWriter(fs);
+        Thread t = new Thread(fw);
         int workerId = mLocation.get(fileId);
         double cacheRatio = mCacheRatio.get(fileId);
         fw.setmCacheRatio(cacheRatio);
         fw.setmWorkerId(workerId);
         String dstFile = String.format("%s/%s", ALLUXIODIR, fileId);
         fw.setmDstFile(dstFile);
-        fw.writeFile(buf);
+        fw.setBuf(buf);
+        t.start();
         mLocationMap.put(dstFile,workerId);
       }
     } catch (IOException | AlluxioException e) {
