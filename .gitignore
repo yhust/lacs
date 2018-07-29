@@ -49,3 +49,4 @@ target/
 tests.log*
 test_files/local_file
 config/*
+*.txt

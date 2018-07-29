@@ -196,7 +196,7 @@ public class LoadAwareMaster {
       return;
     }
     updateAlloc();
-    
+
   }
   /**
    * Read the configurations
@@ -357,9 +357,9 @@ public class LoadAwareMaster {
       else{ // ask for a token
         TokenBucket tokenBucket = mTokenPool.get(userId);
         mWaitRequestPool.put(userId, mWaitRequestPool.get(userId)+1); // one more waiting
-        LOG.info("Isolation mode --  Asking for token");
+        LOG.info("LACS mode --  Asking for token");
         tokenBucket.consume(1); // block
-        LOG.info("Isolation mode --  Token get " + CommonUtils.getCurrentMs());
+        LOG.info("LACS mode --  Token get " + CommonUtils.getCurrentMs());
         mWaitRequestPool.put(userId, mWaitRequestPool.get(userId)-1); // one finishes waiting
 //        try {
 //          synchronized (WorkerLoads){

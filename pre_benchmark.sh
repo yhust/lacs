@@ -16,9 +16,9 @@ python python/generate_rates.py $k $n $arrival_rate $zipf_factor $factor
 
 
 # Write test files
-bin/alluxio runLAWrite
+#bin/alluxio runLAWrite
 
 # Synchronize the pop file
-/root/spark-ec2/copy-dir /root/alluxio-la/pop.txt
+#/root/spark-ec2/copy-dir /root/alluxio-la/pop.txt
 
 echo Done
