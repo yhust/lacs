@@ -303,11 +303,21 @@ public final class RetryHandlingFileSystemMasterClient extends AbstractMasterCli
 
   @Override
   public synchronized void runLAWrite() throws Exception{
-    retryRPC(new RpcCallable<Boolean>() {
+    retryRPC(new RpcCallable<Void>() {
       @Override
-      public Boolean call() throws TException {
+      public Void call() throws TException {
         mClient.runLAWrite(new RunLAWriteTOptions());
+        return null;
+      }
+    });
+  }
 
+  @Override
+  public synchronized void getConf() throws Exception{
+    retryRPC(new RpcCallable<Void>() {
+      @Override
+      public Void call() throws TException {
+        mClient.getConf(new GetConfTOptions());
         return null;
       }
     });

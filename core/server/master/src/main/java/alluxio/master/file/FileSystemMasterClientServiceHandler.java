@@ -411,4 +411,21 @@ public final class FileSystemMasterClientServiceHandler implements
     });
   }
 
+  @Override
+  public GetConfTResponse getConf(final GetConfTOptions options)
+          throws AlluxioTException {
+    return RpcUtils.callAndLog(LOG, new RpcCallableThrowsIOException<GetConfTResponse>() {
+      @Override
+      public GetConfTResponse call() throws AlluxioException, IOException {
+        mFileSystemMaster.getConf();
+        return new GetConfTResponse();
+      }
+
+      @Override
+      public String toString() {
+        return String.format("RunLAWrite: options=%s", options);
+      }
+    });
+  }
+
 }

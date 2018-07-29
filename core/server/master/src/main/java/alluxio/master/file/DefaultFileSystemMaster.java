@@ -2707,6 +2707,12 @@ public final class DefaultFileSystemMaster extends AbstractMaster implements Fil
     LoadAwareMaster.runWrite();
 
   }
+
+  @Override
+  public void getConf() throws AlluxioException, IOException {
+    LoadAwareMaster.getConfig();
+
+  }
   /**
    * Unmounts a UFS path previously mounted onto an Alluxio path.
    * <p>

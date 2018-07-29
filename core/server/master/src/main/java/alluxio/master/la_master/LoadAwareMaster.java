@@ -53,6 +53,7 @@ public class LoadAwareMaster {
   private static Double mFileSize;
   private static Double mCacheSize; // of each worker
   private static int mWorkerCount;
+  private static int mUserCount;
   private static int mFileCount;
   private static Double mDelta; // disk delay
 
@@ -65,7 +66,7 @@ public class LoadAwareMaster {
   private static int mBucketSize; // the size of the 'leaky' token bucket
 
   private static Map<Integer, Integer> mWaitRequestPool = new ConcurrentHashMap<>(); // Record the number of waiting request of each user (after its tokens are used up). Need to be thread-safe.
-  private static int mMaxWaitRequestNumber = 20; // The maximum waiting requests for a BLOCKED user.
+  private static int mMaxWaitRequestNumber = 400; // The maximum waiting requests for a BLOCKED user.
   private static DefaultFileSystemMaster mFSMaster;
 
 
@@ -118,21 +119,16 @@ public class LoadAwareMaster {
    */
 
   public static void runWrite(){
+    getConfig();
     getAllocation();
     writeFile();
   }
 
 
   /**
-   * Run the python algorithm to get the cache allocation and block list.
-   *
-   * The output of the python program should be written to alloc.txt
-   *
-   *
+   * Read the configurations
    */
-
-  public static void getAllocation() {
-    LOG.info("Current dir: " + curDir);
+  public static void getConfig(){
     getWorkerCount();
     if(mWorkerCount>1) {
       // cluster mode
@@ -146,17 +142,32 @@ public class LoadAwareMaster {
       mBandwidth = Double.parseDouble(br.readLine());
       mFileSize = Double.parseDouble(br.readLine());
       mCacheSize = Double.parseDouble(br.readLine());
+      mUserCount = Integer.parseInt(br.readLine());
       mMode = br.readLine();
       try{
         mMaxWaitRequestNumber = Integer.parseInt(br.readLine());
       }catch(Exception e){}
       br.close();
     } catch (IOException e) {
-      LOG.info("Five parameters in config/config.txt are required: bandwidth, filesize, cachesize, delta(speed difference of memory and disk), and mode, separated in lines.");
+      LOG.info("Five parameters in config/config.txt are required: bandwidth, filesize, cachesize, usercount, and mode, separated in lines.");
       e.printStackTrace();
     }
-    mIsolateRate = mBandwidth / mFileSize * mWorkerCount;// ; //total rate per second
+    mIsolateRate = mBandwidth / mUserCount / mFileSize * mWorkerCount ;// ; //total rate per second
+    System.out.println("Isolate rate: " + mIsolateRate);
 
+  }
+
+
+  /**
+   * Run the python algorithm to get the cache allocation and block list.
+   *
+   * The output of the python program should be written to alloc.txt
+   *
+   *
+   */
+
+  public static void getAllocation() {
+    //LOG.info("Current dir: " + curDir);
     ArrayList<String> cmd = new ArrayList<String>();
     System.out.println("Worker count : " + mWorkerCount);
     if(mWorkerCount>1) {
@@ -238,12 +249,12 @@ public class LoadAwareMaster {
     }
     mFileCount=mLocation.size();
 
-    mBucketSize=mIsolateRate.intValue();
+    mBucketSize= 1; //mIsolateRate.intValue();
     mTokenPool.clear();
     for(Integer useId: mBlockList){
       TokenBucket tokenBucket = TokenBuckets.builder()
               .withCapacity(mBucketSize)
-              .withFixedIntervalRefillStrategy(mIsolateRate.longValue()*60, 1, TimeUnit.MINUTES) // the isolate rate must be larger than 1/60 accesses per second.
+              .withFixedIntervalRefillStrategy(mIsolateRate.longValue(), 1, TimeUnit.SECONDS) // the isolate rate must be larger than 1/60 accesses per second.
               .build();
       mTokenPool.put(useId, tokenBucket);
       mWaitRequestPool.put(useId, 0);
@@ -333,12 +344,16 @@ public class LoadAwareMaster {
     }
 
     else{
-      if(mWaitRequestPool.get(userId) > mMaxWaitRequestNumber) // too many requests waiting
+      if(mWaitRequestPool.get(userId) > mMaxWaitRequestNumber) { // too many requests waiting
+        LOG.info("LACS mode -- More than" + mMaxWaitRequestNumber + "waiting requests: Reject");
         return -1;
+      }
       else{ // ask for a token
         TokenBucket tokenBucket = mTokenPool.get(userId);
         mWaitRequestPool.put(userId, mWaitRequestPool.get(userId)+1); // one more waiting
+        LOG.info("Isolation mode --  Asking for token");
         tokenBucket.consume(1); // block
+        LOG.info("Isolation mode --  Token get " + CommonUtils.getCurrentMs());
         mWaitRequestPool.put(userId, mWaitRequestPool.get(userId)-1); // one finishes waiting
 //        try {
 //          synchronized (WorkerLoads){

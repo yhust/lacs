@@ -191,6 +191,8 @@ struct GetLATokenTResponse{
 struct RunLAWriteTOptions {}
 struct RunLAWriteTResponse {}
 
+struct GetConfTOptions {}
+struct GetConfTResponse {}
 
 /**
  * This interface contains file system master service endpoints for Alluxio clients.
@@ -358,6 +360,9 @@ service FileSystemMasterClientService extends common.AlluxioService {
 
   RunLAWriteTResponse runLAWrite(1: RunLAWriteTOptions option)
       throws (1: exception.AlluxioTException e)
+
+  GetConfTResponse getConf(1: GetConfTOptions option)
+        throws (1: exception.AlluxioTException e)
 }
 
 struct FileSystemHeartbeatTOptions {}

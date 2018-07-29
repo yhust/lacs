@@ -458,4 +458,16 @@ public class BaseFileSystem implements FileSystem {
     }
   }
 
+  @Override
+  public void getConf() throws Exception {
+    FileSystemMasterClient masterClient = mFileSystemContext.acquireMasterClient();
+    try {
+      masterClient.getConf();
+    } catch (Exception e) {
+      throw e;
+    } finally {
+      mFileSystemContext.releaseMasterClient(masterClient);
+    }
+  }
+
 }

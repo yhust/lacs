@@ -184,4 +184,5 @@ public interface FileSystemMasterClient extends Client {
   Integer getLAToken(String fileName, GetLATokenOptions options) throws IOException;
 
   void runLAWrite() throws Exception;
+  void getConf() throws Exception;
 }

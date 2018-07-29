@@ -443,6 +443,7 @@ public interface FileSystemMaster extends Master {
 
   int getLAToken(String fileName, GetLATokenOptions option)throws FileDoesNotExistException, InvalidPathException,AccessControlException;
   void runLAWrite() throws AlluxioException, IOException;
+  void getConf() throws AlluxioException, IOException;
 
   /**
    * Sets the file attribute.
