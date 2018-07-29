@@ -47,5 +47,4 @@ historical-data/*
 dependency-reduced-pom.xml
 target/
 tests.log*
-test_files/*
-config/*
+test_files/local_file
