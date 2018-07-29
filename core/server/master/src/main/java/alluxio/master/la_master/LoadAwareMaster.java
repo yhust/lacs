@@ -293,7 +293,8 @@ public class LoadAwareMaster {
         String dstFile = String.format("%s/%s", ALLUXIODIR, fileId);
         fw.setmDstFile(dstFile);
         fw.setBuf(buf);
-        t.start();
+        //t.start(); // multi-thread may fail
+        fw.run();
         mLocationMap.put(dstFile,workerId);
       }
     } catch (IOException | AlluxioException e) {
