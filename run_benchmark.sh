@@ -30,15 +30,26 @@ do
  ssh -l "root" "${slave}" "${SCRIPT}" # error of alluxio: unknown command
 done
 
+
+#To avoid congestion on the client side, submit the requests of fast users from two.
 for ((i = 10; i < 15; i++))
 do
  echo $i
  slave="${slave_arr[$((i + 10))]}" 
- SCRIPT="cd alluxio-la;PATH=$PATH python python/LABenchmark.py $i $(expr $total_count*$factor*$factor | bc) $(expr $rate*$factor*$factor | bc) > /tmp/pythonlog &"
+ SCRIPT="cd alluxio-la;PATH=$PATH python python/LABenchmark.py $i $(expr $total_count*$factor*$factori/2 | bc) $(expr $rate*$factor*$factor/2 | bc) > /tmp/pythonlog &"
  echo $slave
  echo $SCRIPT
  ssh -l "root" "${slave}" "${SCRIPT}" # error of alluxio: unknown command
 done
 
-
+#To avoid congestion on the client side, submit the requests of fast users from two.
+for ((i = 15; i < 20; i++))
+do
+ echo $i
+ slave="${slave_arr[$((i + 10))]}"
+ SCRIPT="cd alluxio-la;PATH=$PATH python python/LABenchmark.py $((i-5)) $(expr $total_count*$factor*$factori/2 | bc) $(expr $rate*$factor*$factor/2 | bc) > /tmp/pythonlog &"
+ echo $slave
+ echo $SCRIPT
+ ssh -l "root" "${slave}" "${SCRIPT}" # error of alluxio: unknown command
+done
 

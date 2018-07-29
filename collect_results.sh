@@ -10,12 +10,11 @@ touch results/all_cacheHit.txt
 #touch results/all_workerLoads.txt
 
 #SCRIPT="cd alluxio-la; ./bin/alluxio readTest &>/dev/null &"
-for ((i = 10; i < 25; i++))
+for ((i = 10; i < 10+$1; i++))
 do
     echo $i
     slave="${slave_arr[$i]}"
     echo $slave
-    #scp root@${slave_arr[$i]}:/root/alluxio-la/test_files/readTimes.txt test_files/$i.txt
     scp root@${slave_arr[$i]}:/root/alluxio-la/logs/readLatency.txt /root/alluxio-la/results/${i}_latency.txt
     cat results/${i}_latency.txt >> results/all_latency.txt
     scp root@${slave_arr[$i]}:/root/alluxio-la/logs/cacheHit.txt /root/alluxio-la/results/${i}_cacheHit.txt
