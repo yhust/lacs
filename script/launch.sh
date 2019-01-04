@@ -17,7 +17,7 @@ python3 $(cd `dirname $0`; cd ..; pwd)/flintrock/standalone.py run-command lacs 
 python3 $(cd `dirname $0`; cd ..; pwd)/flintrock/standalone.py run-command lacs 'sudo sed -i s/\$releasever/7/g /etc/yum.repos.d/epel-apache-maven.repo'
 python3 $(cd `dirname $0`; cd ..; pwd)/flintrock/standalone.py run-command lacs "sudo yum -y install apache-maven"
 
-#python3 $(cd `dirname $0`; cd ..; pwd)/flintrock/standalone.py describe lacs
+python3 $(cd `dirname $0`; cd ..; pwd)/flintrock/standalone.py describe lacs
 
 python3 $(cd `dirname $0`; cd ..; pwd)/flintrock/standalone.py run-command lacs "sudo yum -y install git"
 python3 $(cd `dirname $0`; cd ..; pwd)/flintrock/standalone.py run-command lacs "git clone https://github.com/yhust/lacs.git"
