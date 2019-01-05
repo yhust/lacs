@@ -87,8 +87,8 @@ public class getDelta {
     long diskTime = 0L;
 
     try{
-      FileWriter cacheLog = new FileWriter(String.format("cacheLatency_%s.txt",mFileSize));
-      FileWriter diskLog = new FileWriter(String.format("diskLatency_%s.txt",mFileSize));
+      FileWriter cacheLog = new FileWriter(String.format("cacheLatency_%s.txt",mFileSize), true);
+      FileWriter diskLog = new FileWriter(String.format("diskLatency_%s.txt",mFileSize),true);
       for(int i = 0; i< trial ; i++){
         FileInStream isM = mFS.openFile(memory, readOptions);
         FileInStream isD = mFS.openFile(disk, readOptions);

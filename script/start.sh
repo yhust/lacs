@@ -40,6 +40,7 @@ do
 done < $(cd `dirname $0`; cd ..; pwd)/flintrock/flintrock.txt
 
 
+python3 $(cd `dirname $0`; cd ..; pwd)/flintrock/standalone.py run-command lacs "mkdir ~/lacs/underFSStorage"
 
 # start alluxio
 read -r line < $(cd `dirname $0`; cd ..; pwd)/flintrock/flintrock.txt
