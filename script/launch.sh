@@ -27,7 +27,7 @@ python3 $(cd `dirname $0`; cd ..; pwd)/flintrock/standalone.py run-command lacs 
 python3 $(cd `dirname $0`; cd ..; pwd)/flintrock/standalone.py run-command lacs "sudo pip install numpy==1.14.4"
 python3 $(cd `dirname $0`; cd ..; pwd)/flintrock/standalone.py run-command lacs "sudo pip install cvxpy==0.4.9"
 
-python3 $(cd `dirname $0`; cd ..; pwd)/flintrock/standalone.py run-command lacs "cd alluxio-la;mvn clean install -DskipTests=true -Dlicense.skip=true -Dcheckstyle.skip -Dmaven.javadoc.skip=true"
+python3 $(cd `dirname $0`; cd ..; pwd)/flintrock/standalone.py run-command lacs "cd lacs;mvn clean install -DskipTests=true -Dlicense.skip=true -Dcheckstyle.skip -Dmaven.javadoc.skip=true"
 
 exit 0
 

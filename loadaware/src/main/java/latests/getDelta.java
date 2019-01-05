@@ -87,6 +87,8 @@ public class getDelta {
     long diskTime = 0L;
 
     try{
+      FileWriter cacheLog = new FileWriter("cacheLatency.txt");
+      FileWriter diskLog = new FileWriter("diskLatency.txt");
       for(int i = 0; i< trial ; i++){
         FileInStream isM = mFS.openFile(memory, readOptions);
         FileInStream isD = mFS.openFile(disk, readOptions);
@@ -95,15 +97,19 @@ public class getDelta {
         isM.read(buf);
         long latency = CommonUtils.getCurrentMs() - start;
         memoryTime += latency;
+        cacheLog.write(String.format("%s\t", latency));
         System.out.println("Read from memory ("+ i + "): " + latency);
         start = CommonUtils.getCurrentMs();
         isD.read(buf);
         Thread.sleep(isD.mFileLength/1024/1024);// 1ms per MB
         latency = CommonUtils.getCurrentMs() - start;
         diskTime +=latency;
+        diskLog.write(String.format("%s\t", latency));
         System.out.println("Slept for "+isD.mFileLength/1024/1024 + " ms.");
         System.out.println("Read from disk ("+ i + "): " + latency);
       }
+      diskLog.close();
+      cacheLog.close();
 
       double delta = (double)(diskTime - memoryTime) / (trial * 1000);
       System.out.println("### Delta = " + String.format("(%s - %s) / (%s x %s) = ", diskTime, memoryTime, trial, mFileSize) + delta);

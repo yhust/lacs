@@ -1,8 +1,11 @@
 package alluxio.master.la_master;
 
 import alluxio.AlluxioURI;
+import alluxio.client.ReadType;
+import alluxio.client.file.FileInStream;
 import alluxio.client.file.FileSystem;
 import alluxio.client.file.options.DeleteOptions;
+import alluxio.client.file.options.OpenFileOptions;
 import alluxio.exception.AlluxioException;
 import alluxio.master.file.DefaultFileSystemMaster;
 import alluxio.util.CommonUtils;
@@ -46,6 +49,7 @@ public class LoadAwareMaster {
        String LoadAware = "LoadAware";
        String MaxMinOptLatency = "MaxMinOptLatency";
        String Isolation = "Isolation";
+       String ModelTest = "ModelTest"; // test the accuracy of the M/D/1 queue model.
   }
   private static String mMode;
 
@@ -136,7 +140,7 @@ public class LoadAwareMaster {
     getWorkerCount();
     if(mWorkerCount>1) {
       // cluster mode
-      curDir = System.getProperty("user.dir") + "/alluxio-la";
+      curDir = System.getProperty("user.dir") + "/lacs";
     }
     CONF = curDir+"/config/config.txt"; //  the file to store the config statistics: "bandwidth \n filesize \n cachesize of each worker \n mode"
     ALLOC= curDir+"/alloc.txt"; // the file to store the output of the python algorithm
@@ -171,7 +175,7 @@ public class LoadAwareMaster {
       case ModeConstants.LoadAware: cmd.add(curDir + "/python/la_fair.py");break;
       case ModeConstants.MaxMinOptLatency: cmd.add(curDir + "/python/mm_opt.py");break;
       case ModeConstants.Isolation: cmd.add(curDir + "/python/isolation.py");break;
-      default: cmd.add(curDir + "/python/la_fair_allocator.py");break;
+      default: cmd.add(curDir + "/python/la_fair.py");break;
     }
     cmd.add(mBandwidth.toString());
     cmd.add(Integer.toString(mWorkerCount)); //get worker count
@@ -313,6 +317,22 @@ public class LoadAwareMaster {
   //todo The access counts (frequency of the previous period) should be logged to python/pop.txt
   public static int access(String fileName, int userId){
     //LOG.info("User id received at the lacs master " + userId);
+
+    // simulate disk I/O delay
+    AlluxioURI fileURI = new AlluxioURI(fileName);
+    FileSystem fs = FileSystem.Factory.get();
+    try {
+      int inMemoryPercentage = fs.getStatus(fileURI).getInMemoryPercentage();
+      FileInStream fis = fs.openFile(fileURI, OpenFileOptions.defaults().setReadType(ReadType.NO_CACHE));
+      long delay = fis.mFileLength * (100-inMemoryPercentage) /100 /1024/1024; // 1ms per MB on disk
+      Thread.sleep(delay);// 1ms per MB
+      System.out.println("Access file " + fileName + ". Sleep for " + delay + " ms.");
+    } catch (AlluxioException | IOException |InterruptedException e){
+      e.printStackTrace();
+    }
+
+
+
     System.out.println("Block list: " + Arrays.toString(mBlockList.toArray()));
     if(mMode.equals(ModeConstants.Isolation)){
       System.out.println("Isolation mode");
