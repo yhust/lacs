@@ -116,8 +116,8 @@ public class getDelta {
       //LoadAwareMaster t = new LoadAwareMaster();
       //LoadAwareMaster.setmDelta(delta);
       PrepareTests.setmDelta(delta);
-      FileWriter fw = new FileWriter("delta.txt");
-      fw.write(String.format("%s",delta));
+      FileWriter fw = new FileWriter("delta.txt",true);
+      fw.write(String.format("%s,%s\n",mFileSize,delta));
       fw.close();
 
     } catch(Exception e){
