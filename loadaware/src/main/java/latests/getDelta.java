@@ -111,7 +111,7 @@ public class getDelta {
       diskLog.close();
       cacheLog.close();
 
-      double delta = (double)(diskTime - memoryTime) / (trial * 1000);
+      double delta = (double)(diskTime - memoryTime) / (trial * mFileSize);
       System.out.println("### Delta = " + String.format("(%s - %s) / (%s x %s) = ", diskTime, memoryTime, trial, mFileSize) + delta);
       //LoadAwareMaster t = new LoadAwareMaster();
       //LoadAwareMaster.setmDelta(delta);
