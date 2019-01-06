@@ -6,6 +6,7 @@ import alluxio.client.LoadAwareFileReader;
 public class runRead {
 
   public static void main(String[] args){
-    LoadAwareFileReader.main(args);
+
+    //LoadAwareFileReader.main(args);
   }
 }
