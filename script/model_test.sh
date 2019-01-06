@@ -1,23 +1,17 @@
 #!/bin/bash
 
 # set flintrockPemPath as an environmental variable
+# $1 file size (in MB) $2 file number $3 access count for each test point
 
-
-
-# runDelta
+# write test files in the first tier
 read -r line < $(cd `dirname $0`; cd ..; pwd)/flintrock/flintrock.txt
 
+ssh -o StrictHostKeyChecking=no -i $flintrockPemPath ${line} "cd ~/lacs; bin/alluxio runModelTest $1 $2 $3"
 
-
-for ((i= 50; i < 350; i=$((i+50))))
-do
-	echo $i
-	ssh -o StrictHostKeyChecking=no -i $flintrockPemPath ${line} "cd ~/lacs;bin/alluxio runDelta $i 100"
-done
 
 # get logs
-mkdir ~/Desktop/delta_log
-scp -o StrictHostKeyChecking=no -i $flintrockPemPath -r ${line}:~/lacs/*.txt ~/Desktop/delta_log/
+mkdir ~/Desktop/model_log
+scp -o StrictHostKeyChecking=no -i $flintrockPemPath -r ${line}:~/lacs/logs/model_test.txt ~/Desktop/model_log/
 
 
 exit 0

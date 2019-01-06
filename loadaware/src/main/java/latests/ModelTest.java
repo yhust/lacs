@@ -2,14 +2,12 @@ package latests;
 import alluxio.AlluxioURI;
 import alluxio.client.LoadAwareFileReader;
 import alluxio.client.ReadType;
-import alluxio.client.file.FileInStream;
 import alluxio.client.file.FileOutStream;
 import alluxio.client.file.FileSystem;
 import alluxio.client.file.options.CreateFileOptions;
 import alluxio.client.file.options.DeleteOptions;
 import alluxio.client.file.options.OpenFileOptions;
 import alluxio.exception.AlluxioException;
-import alluxio.util.CommonUtils;
 import org.apache.commons.math3.distribution.ExponentialDistribution;
 import org.apache.commons.math3.distribution.ZipfDistribution;
 
