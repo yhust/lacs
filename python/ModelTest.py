@@ -38,5 +38,5 @@ def ModelTest(total_count, rate):
 
 
 if __name__ == "__main__":
-    ModelTest(int(sys.argv[1]),float(sys.argv[2]))
+    ModelTest(m
 
