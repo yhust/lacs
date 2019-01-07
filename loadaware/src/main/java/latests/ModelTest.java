@@ -122,7 +122,8 @@ public class ModelTest {
       int tier = 0;
       writeFiles(tier);
 
-      for(double rate = 0.2; rate<=1.5; rate+=0.2){
+      double[] rates = new double[]{1,2,3,4,5,5.2,5.4,5.6,5.8};
+      for(double rate:rates){
         mTimeLog.write(String.format("\n%s memory\n", rate));
         readFiles(count, rate);
         mTimeLog.flush();
@@ -131,8 +132,8 @@ public class ModelTest {
 
       tier = 1;
       writeFiles(tier);
-      for(double rate = 0.2; rate<=1.5; rate+=0.2){
-        mTimeLog.write(String.format("\n%s memory\n", rate));
+      for(double rate:rates){
+        mTimeLog.write(String.format("\n%s disk\n", rate));
         readFiles(count, rate);
         mTimeLog.flush();
       }
