@@ -360,9 +360,7 @@ public interface FileSystem {
   Integer getLAToken(String fileName, GetLATokenOptions options) throws IOException, AlluxioException;
 
   // get the token from the client to read a file
-  void runLAWrite() throws Exception; //throws IOException, AlluxioException;
+  void runLAWrite(int cacheSize) throws Exception; //throws IOException, AlluxioException;
 
-  // get/update the configuration of the lacs master
-  void getConf() throws Exception; //throws IOException, AlluxioException;
 
 }

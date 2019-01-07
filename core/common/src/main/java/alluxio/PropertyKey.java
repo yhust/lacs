@@ -253,7 +253,41 @@ public final class PropertyKey implements Comparable<PropertyKey> {
           .setDefaultValue("/leader")
           .setDescription("Leader directory in ZooKeeper.")
           .build();
+  // for lacs
+  public static final PropertyKey MODE =
+          new Builder(Name.MODE)
+                  .setDefaultValue("Test")
+                  .setDescription("Mode in lacs.")
+                  .build();
+  public static final PropertyKey BANDWIDTH =
+          new Builder(Name.BANDWIDTH)
+                  .setDefaultValue(614) //in MBps.    4.8Gbps = 614 MBps
+                  .setDescription("Bandwidth in lacs.")
+                  .build();
 
+  public static final PropertyKey DELTA =
+          new Builder(Name.DELTA)
+                  .setDefaultValue(0.2) //
+                  .setDescription("DELTA in lacs.")
+                  .build();
+
+  public static final PropertyKey FILE_SIZE =
+          new Builder(Name.FILE_SIZE)
+                  .setDefaultValue(100) // in MB
+                  .setDescription("FILE_SIZE in lacs.")
+                  .build();
+
+  public static final PropertyKey REP_FACTOR =
+          new Builder(Name.REP_FACTOR)
+                  .setDefaultValue(3) //
+                  .setDescription("Replication factor in lacs.")
+                  .build();
+
+  public static final PropertyKey IS_CLUSTER =
+          new Builder(Name.IS_CLUSTER)
+                  .setDefaultValue(true)
+                  .setDescription("Replication factor in lacs.")
+                  .build();
   /**
    * UFS related properties.
    *
@@ -2320,6 +2354,17 @@ public final class PropertyKey implements Comparable<PropertyKey> {
     public static final String SECURITY_GROUP_MAPPING_CLASS =
         "alluxio.security.group.mapping.class";
     public static final String SECURITY_LOGIN_USERNAME = "alluxio.security.login.username";
+
+
+
+    // for lacs
+    public static final String MODE = "alluxio.lacs.mode";
+    public static final String BANDWIDTH = "alluxio.lacs.bandwidth";
+    public static final String DELTA = "alluxio.lacs.delta";
+    public static final String FILE_SIZE = "alluxio.lacs.file_size";
+    public static final String REP_FACTOR = "alluxio.lacs.rep_factor";
+    public static final String IS_CLUSTER = "alluxio.lacs.is_cluster";
+
 
     private Name() {} // prevent instantiation
   }

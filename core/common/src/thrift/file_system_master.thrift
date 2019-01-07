@@ -358,11 +358,10 @@ service FileSystemMasterClientService extends common.AlluxioService {
   GetLATokenTResponse getLAToken(1: string alluxioPath, 2: GetLATokenTOptions option)
     throws (1: exception.AlluxioTException e)
 
-  RunLAWriteTResponse runLAWrite(1: RunLAWriteTOptions option)
+  RunLAWriteTResponse runLAWrite(1: i32 cacheSize)
       throws (1: exception.AlluxioTException e)
 
-  GetConfTResponse getConf(1: GetConfTOptions option)
-        throws (1: exception.AlluxioTException e)
+
 }
 
 struct FileSystemHeartbeatTOptions {}

@@ -395,35 +395,18 @@ public final class FileSystemMasterClientServiceHandler implements
 
 
   @Override
-  public RunLAWriteTResponse runLAWrite(final RunLAWriteTOptions options)
+  public RunLAWriteTResponse runLAWrite(final int cacheSize)
           throws AlluxioTException {
     return RpcUtils.callAndLog(LOG, new RpcCallableThrowsIOException<RunLAWriteTResponse>() {
       @Override
       public RunLAWriteTResponse call() throws AlluxioException, IOException {
-        mFileSystemMaster.runLAWrite();
+        mFileSystemMaster.runLAWrite(cacheSize);
         return new RunLAWriteTResponse();
       }
 
       @Override
       public String toString() {
-        return String.format("RunLAWrite: options=%s", options);
-      }
-    });
-  }
-
-  @Override
-  public GetConfTResponse getConf(final GetConfTOptions options)
-          throws AlluxioTException {
-    return RpcUtils.callAndLog(LOG, new RpcCallableThrowsIOException<GetConfTResponse>() {
-      @Override
-      public GetConfTResponse call() throws AlluxioException, IOException {
-        mFileSystemMaster.getConf();
-        return new GetConfTResponse();
-      }
-
-      @Override
-      public String toString() {
-        return String.format("RunLAWrite: options=%s", options);
+        return String.format("RunLAWrite: cacheSize=%s", cacheSize);
       }
     });
   }

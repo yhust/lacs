@@ -362,7 +362,7 @@ public final class DefaultFileSystemMaster extends AbstractMaster implements Fil
     mLAMaster = new LoadAwareMaster(this);
     //System.out.print("worker count set in lamaster: ");
     //System.out.println(mBlockMaster.getWorkerCount());
-    LoadAwareMaster.setWorkerCount(mBlockMaster.getWorkerCount()); // does not work. workers are not registered yet.
+    //LoadAwareMaster.setWorkerCount(mBlockMaster.getWorkerCount()); // does not work. workers are not registered yet.
 
   }
 
@@ -2703,16 +2703,12 @@ public final class DefaultFileSystemMaster extends AbstractMaster implements Fil
 
   }
   @Override
-  public void runLAWrite() throws AlluxioException, IOException {
-    LoadAwareMaster.runWrite();
+  public void runLAWrite(int cacheSize) throws AlluxioException, IOException {
+    LoadAwareMaster.runWrite(cacheSize);
 
   }
 
-  @Override
-  public void getConf() throws AlluxioException, IOException {
-    LoadAwareMaster.getConfig();
 
-  }
   /**
    * Unmounts a UFS path previously mounted onto an Alluxio path.
    * <p>

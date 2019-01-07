@@ -107,6 +107,8 @@ public class ModelTest {
     mFileSize = Long.parseLong(args[0]);
     mFileNumber = Integer.parseInt(args[1]);
     int count = Integer.parseInt(args[2]);
+    System.out.println(String.format("File size %s \t FileNumber %s \t count %s\t", mFileSize, mFileNumber, count));
+
     //float rate = Float.parseFloat(args[3]);
     mRandomNumberGenerator=new RandomNumberGenerator();
     ZipfDistribution zd = new ZipfDistribution(mFileNumber,1.05);
@@ -123,6 +125,7 @@ public class ModelTest {
       for(double rate = 0.2; rate<=1.5; rate+=0.2){
         mTimeLog.write(String.format("\n%s memory\n", rate));
         readFiles(count, rate);
+        mTimeLog.flush();
       }
 
 
@@ -131,8 +134,9 @@ public class ModelTest {
       for(double rate = 0.2; rate<=1.5; rate+=0.2){
         mTimeLog.write(String.format("\n%s memory\n", rate));
         readFiles(count, rate);
+        mTimeLog.flush();
       }
-
+      mTimeLog.close();
 
     }catch (IOException e){
       e.printStackTrace();

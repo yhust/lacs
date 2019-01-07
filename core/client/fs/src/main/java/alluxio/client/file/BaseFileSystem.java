@@ -447,10 +447,10 @@ public class BaseFileSystem implements FileSystem {
   }
 
   @Override
-  public void runLAWrite() throws Exception {
+  public void runLAWrite(int cacheSize) throws Exception {
     FileSystemMasterClient masterClient = mFileSystemContext.acquireMasterClient();
     try {
-      masterClient.runLAWrite();
+      masterClient.runLAWrite(cacheSize);
     } catch (Exception e) {
       throw e;
     } finally {
@@ -458,16 +458,5 @@ public class BaseFileSystem implements FileSystem {
     }
   }
 
-  @Override
-  public void getConf() throws Exception {
-    FileSystemMasterClient masterClient = mFileSystemContext.acquireMasterClient();
-    try {
-      masterClient.getConf();
-    } catch (Exception e) {
-      throw e;
-    } finally {
-      mFileSystemContext.releaseMasterClient(masterClient);
-    }
-  }
 
 }

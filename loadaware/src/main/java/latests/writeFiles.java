@@ -10,9 +10,10 @@ public class writeFiles {
   public static void main(String[] args){
     //LoadAwareMaster.writeFile();
     //PrepareTests.writeFile();
+    int cacheSize = Integer.parseInt(args[0]);
     FileSystem fileSystem = FileSystem.Factory.get();
     try{
-      fileSystem.runLAWrite();
+      fileSystem.runLAWrite(cacheSize);
     } catch(Exception e){
       e.printStackTrace();
     }

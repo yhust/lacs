@@ -294,7 +294,7 @@ public final class RetryHandlingFileSystemMasterClient extends AbstractMasterCli
       @Override
       public Integer call() throws TException {
         //System.out.println("User id at fs master client" + options.getUserId());
-        return Integer.valueOf(mClient.getLAToken(fileName, options.toThrift()).getToken());
+        return mClient.getLAToken(fileName, options.toThrift()).getToken();
 
         //return token;
       }
@@ -302,24 +302,14 @@ public final class RetryHandlingFileSystemMasterClient extends AbstractMasterCli
   }
 
   @Override
-  public synchronized void runLAWrite() throws Exception{
+  public synchronized void runLAWrite(int cacheSize) throws Exception{
     retryRPC(new RpcCallable<Void>() {
       @Override
       public Void call() throws TException {
-        mClient.runLAWrite(new RunLAWriteTOptions());
+        mClient.runLAWrite(cacheSize);
         return null;
       }
     });
   }
 
-  @Override
-  public synchronized void getConf() throws Exception{
-    retryRPC(new RpcCallable<Void>() {
-      @Override
-      public Void call() throws TException {
-        mClient.getConf(new GetConfTOptions());
-        return null;
-      }
-    });
-  }
 }
