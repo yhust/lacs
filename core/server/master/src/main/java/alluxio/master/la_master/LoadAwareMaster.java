@@ -170,7 +170,7 @@ public class LoadAwareMaster {
    * Get allocation and write files.
    */
 
-  public static void runWrite(int cacheSize){
+  public void runWrite(int cacheSize){
 
     mCacheSize = cacheSize;
     getPref(); //from pop.txt
@@ -194,7 +194,7 @@ public class LoadAwareMaster {
    *
    */
 
-  public static void getAllocation() {
+  public void getAllocation() {
 
     getWorkerCount();
     mIsolateRate = mBandwidth * mWorkerCount / mUserCount / mFileSize;//total rate per second
@@ -230,7 +230,13 @@ public class LoadAwareMaster {
     // Run python and wait till it ends.
     try {
       Process p = Runtime.getRuntime().exec(cmdArray);
-      p.waitFor(); //  block
+      new RunThread(p.getInputStream(), "INFO").start();
+      new RunThread(p.getErrorStream(),"ERR").start();
+      int value = p.waitFor(); //  block
+      if(value == 0)
+        System.out.println("complete");
+      else
+        System.out.println("failuer");
     } catch (IOException | InterruptedException e) {
       LOG.info("Wrong Message received: " + e);
       return;
@@ -438,6 +444,38 @@ public class LoadAwareMaster {
       }
     }
   }
+
+  /**
+   * To avoid deadlock when running python scripts with Runtime.exec()
+   */
+  class RunThread extends Thread
+  {
+    InputStream mIs;
+    String mPrintType;
+
+    RunThread(InputStream is, String printType)
+    {
+      mIs = is;
+      mPrintType = printType;
+    }
+
+    public void run()
+    {
+      try
+      {
+        InputStreamReader isr = new InputStreamReader(mIs);
+        BufferedReader br = new BufferedReader(isr);
+        String line=null;
+        while ( (line = br.readLine()) != null)
+          System.out.println(mPrintType + ">" + line);
+      } catch (IOException ioe)
+      {
+        ioe.printStackTrace();
+      }
+    }
+  }
+
+
 }
 
 

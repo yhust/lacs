@@ -2704,7 +2704,7 @@ public final class DefaultFileSystemMaster extends AbstractMaster implements Fil
   }
   @Override
   public void runLAWrite(int cacheSize) throws AlluxioException, IOException {
-    LoadAwareMaster.runWrite(cacheSize);
+    mLAMaster.runWrite(cacheSize);
 
   }
 
