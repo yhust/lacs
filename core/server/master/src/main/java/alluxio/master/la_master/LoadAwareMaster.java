@@ -134,7 +134,7 @@ public class LoadAwareMaster {
   private static void getPref(){
     if(mIsCluster)  // cluster mode
       curDir = System.getProperty("user.dir") + "/lacs";
-    String pop= curDir+"/pop.txt"; // the file to store the output of the python algorithm
+    String pop= curDir+"/python/pop.txt"; // the file to store the output of the python algorithm
     try{
       BufferedReader br = new BufferedReader(new FileReader(pop)); // the first line is locations
       int userNumber = 0;
@@ -236,7 +236,7 @@ public class LoadAwareMaster {
       if(value == 0)
         System.out.println("complete");
       else
-        System.out.println("failuer");
+        System.out.println("failure");
     } catch (IOException | InterruptedException e) {
       LOG.info("Wrong Message received: " + e);
       return;
