@@ -359,7 +359,6 @@ public interface FileSystem {
  // get the token from the client to read a file
   Integer getLAToken(String fileName, GetLATokenOptions options) throws IOException, AlluxioException;
 
-  // get the token from the client to read a file
   void runLAWrite(int cacheSize) throws Exception; //throws IOException, AlluxioException;
 
 

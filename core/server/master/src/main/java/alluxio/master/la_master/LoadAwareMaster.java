@@ -203,19 +203,14 @@ public class LoadAwareMaster {
 
     // run python to get alloc.txt
     ArrayList<String> cmd = new ArrayList<String>();
-
-    //if(mWorkerCount>1) {
-    //cmd.add("/usr/bin/python2.7");
-    //}
-    //else{
     cmd.add("python");
-    //}
+
     switch(mMode){
       case ModeConstants.MaxMinDefault: cmd.add(curDir + "/python/mm_default.py");break;
-      case ModeConstants.LoadAware: cmd.add(curDir + "/python/la_fair.py");break;
+      case ModeConstants.LoadAware: cmd.add(curDir + "/python/lacs.py");break;
       case ModeConstants.MaxMinOptLatency: cmd.add(curDir + "/python/mm_opt.py");break;
       case ModeConstants.Isolation: cmd.add(curDir + "/python/isolation.py");break;
-      default: cmd.add(curDir + "/python/la_fair.py");break;
+      default: cmd.add(curDir + "/python/lacs.py");break;
     }
     cmd.add(mBandwidth.toString());
     cmd.add(Integer.toString(mWorkerCount)); //get worker count
@@ -399,7 +394,7 @@ public class LoadAwareMaster {
    */
   //todo The access counts (frequency of the previous period) should be logged to python/pop.txt
   public static int access(String fileName, int userId){
-    //LOG.info("User id received at the lacs master " + userId);
+    LOG.info("User id received at the lacs master " + userId);
 
     if(mMode.equals(ModeConstants.Test)){ // no throttling, no need for the correct worker id
       return 0;

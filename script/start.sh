@@ -22,7 +22,7 @@ python3 $(cd `dirname $0`; cd ..; pwd)/flintrock/standalone.py run-command lacs 
 
 python3 $(cd `dirname $0`; cd ..; pwd)/flintrock/standalone.py run-command lacs "mkdir /tmp/alluxio"
 
-python3 $(cd `dirname $0`; cd ..; pwd)/flintrock/standalone.py run-command lacs "echo -e 'alluxio.worker.tieredstore.levels=2\nalluxio.worker.tieredstore.level0.alias=MEM\nalluxio.worker.tieredstore.level1.alias=HDD\nalluxio.worker.tieredstore.level1.dirs.path=/tmp/alluxio\nalluxio.worker.tieredstore.level1.dirs.quota=10GB' >> ~/lacs/conf/alluxio-site.properties" 
+python3 $(cd `dirname $0`; cd ..; pwd)/flintrock/standalone.py run-command lacs "echo -e 'alluxio.worker.tieredstore.levels=2\nalluxio.worker.tieredstore.level0.alias=MEM\nalluxio.worker.tieredstore.level1.alias=HDD\nalluxio.worker.tieredstore.level1.dirs.path=/tmp/alluxio\nalluxio.worker.tieredstore.level1.dirs.quota=10GB\nalluxio.lacs.mode=Test' >> ~/lacs/conf/alluxio-site.properties" 
 
 
 python3 $(cd `dirname $0`; cd ..; pwd)/flintrock/standalone.py run-command lacs "echo ${line:9} > ~/lacs/conf/masters"

@@ -9,7 +9,7 @@ import numpy as np
 from linear_relaxation import linear_relaxation
 import sys
 
-def get_iso_latency(mu_vec, c_vec, rates,delta): # unrounded performance
+def get_iso_latency(mu_vec, c_vec, rates, delta): # unrounded performance
     k = len(rates[:,0])
     n = len(rates[0,:])
     m = len(mu_vec)

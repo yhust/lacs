@@ -15,34 +15,17 @@ arrival_rate: request rate of normal users(as Poisson)
 zipf_factor: distribution
 factor: ratio of request rates (aggressive to normal)
 
+we need the absolute access rates to calculate the allocations.
 '''
 
-def generate_rates(k, n, arrival_rate, zipf_factor, factor):
+def generate_rates(n, arrival_rate):
+    zipf_factor = 1.05
+    factor = 2
+    k = 15
     rates = np.zeros((k,n))
     k = (int)(k)
-    # for index_u in range(0, k / 2):  # slow
-    #     for index_f in range(0, n):
-    #         # self.prference[i] = np.random.random(1)
-    #         rates[index_u,index_f] = np.random.exponential(Lambda)
-    # Lambda *= factor
-    # for index_u in range(k/2, k):  # slow
-    #     for index_f in range(0, n):
-    #         rates[index_u, index_f] = np.random.exponential(Lambda)
 
-    # for index_u in range(0, k/3): #  slow
-    #     for index_f in range(0, n):
-    #         rates[index_u,index_f] = np.random.exponential(Lambda)
-    # Lambda *= factor
-    # for index_u in range(k/3 ,k*2/3):  #  median
-    #     for index_f in range(0, n):
-    #         rates[index_u, index_f] = np.random.exponential(Lambda)
-    #
-    # Lambda *= factor                    # fast
-    # for index_u in range(k *2/ 3, k):  # half fast
-    #     for index_f in range(0, n):
-    #         rates[index_u, index_f] = np.random.exponential(Lambda)
 
-    # for motivation exp, only one user are fast
     for index_u in range(k/3):  # slow
         preference = np.random.permutation(n)
         for index_f in range(n):
@@ -50,7 +33,6 @@ def generate_rates(k, n, arrival_rate, zipf_factor, factor):
         # normalize
         rates[index_u,:] /= sum(rates[index_u,:])
         rates[index_u, :] *= arrival_rate
-
     arrival_rate *= factor
 
     for index_u in np.arange(k/3, 2*k/3):

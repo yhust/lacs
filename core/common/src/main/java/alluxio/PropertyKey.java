@@ -257,7 +257,7 @@ public final class PropertyKey implements Comparable<PropertyKey> {
   public static final PropertyKey MODE =
           new Builder(Name.MODE)
                   .setDefaultValue("Test")
-                  .setDescription("Mode in lacs.")
+                  .setDescription("Mode cd lacs.")
                   .build();
   public static final PropertyKey BANDWIDTH =
           new Builder(Name.BANDWIDTH)
@@ -267,7 +267,7 @@ public final class PropertyKey implements Comparable<PropertyKey> {
 
   public static final PropertyKey DELTA =
           new Builder(Name.DELTA)
-                  .setDefaultValue(0.2) //
+                  .setDefaultValue(0.1) // 1ms per MB, 0.1s for 100MB files
                   .setDescription("DELTA in lacs.")
                   .build();
 
