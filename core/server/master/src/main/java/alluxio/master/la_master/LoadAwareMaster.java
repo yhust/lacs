@@ -76,7 +76,7 @@ public class LoadAwareMaster {
   // get prefs, file count, and user count from pop.txt: getPref();
   private static int mFileCount;
   private static int mUserCount;
-  private static List<List<Double>> mPrefs;
+  private static List<List<Double>> mPrefs = new ArrayList<>();
 
 
   // get cache size as a input variable
@@ -90,9 +90,9 @@ public class LoadAwareMaster {
   private static Double mIsolateRate; // allowed TOTAL access rate per second, if a user is isolated // todo: per-worker throttling
 
   // allocation results
-  private static List<Integer> mBlockList = new ArrayList<Integer>();
-  private static List<Double> mCacheRatio = new ArrayList<Double>(); // of each file
-  private static List<Integer> mLocation = new ArrayList<Integer>(); // location of each file. Files are identified by integer ids.
+  private static List<Integer> mBlockList = new ArrayList<>();
+  private static List<Double> mCacheRatio = new ArrayList<>(); // of each file
+  private static List<Integer> mLocation = new ArrayList<>(); // location of each file. Files are identified by integer ids.
 
 
   // for throttling isolated users
