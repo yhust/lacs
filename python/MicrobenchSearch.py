@@ -3,11 +3,13 @@ import numpy as np
 from isolation import get_iso_latency
 from lacs import lacs
 from mm_default import mm_default
+import os
 
 
 rate1 = 20.0
 filenumber = 100
 for rate2 in range(29,36):
+
     generate_microbench_rates(filenumber, rate1, rate2)
 
 
@@ -33,6 +35,6 @@ for rate2 in range(29,36):
     avg_si, user_si, Lambda, Lambda_D = get_iso_latency(mu_vector, c_vector, rates,delta)
     #print rates
 
-    lacs(mu_vector, c_vector, rates, delta, user_si)
+    lacs(mu_vector, c_vector, rates, delta, user_si,0)
 
     mm_default(mu_vector, c_vector, rates, delta)

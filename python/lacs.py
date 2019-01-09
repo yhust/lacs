@@ -6,7 +6,12 @@ from copy import copy
 import sys
 import os
 
-def lacs(mu_vector, c_vector, rates, delta, user_si):
+def lacs(mu_vector, c_vector, rates, delta, user_si, is_cluster):
+    path = os.getcwd()
+    if(is_cluster==1):
+        path = os.getcwd() + '/lacs'
+
+
     k = len(rates[:, 1])  # user number
     n = len(rates[1, :])  # file number
     m = len(mu_vector)
@@ -47,7 +52,7 @@ def lacs(mu_vector, c_vector, rates, delta, user_si):
             final_user_latencies[unisolated_user_ids], latency_la, latency_la_rounded , loc_vec, cache_vec= la_fair_rounding(mu_vector * ( 1.0 * len(unisolated_user_ids)/k), c_vector, rates.copy(), delta, cachable_user_ids, unisolated_user_ids)
 
     # log the loc_vec, cache_vec and block_list in alloc.txt
-    f = open('alloc.txt','w')
+    f = open(path+'/alloc.txt','w')
     f.write(','.join("{:d}".format(loc) for loc in loc_vec))
     f.write("\n")
     f.write(','.join("{0:.2f}".format(ratio)for ratio in cache_vec))
@@ -57,7 +62,7 @@ def lacs(mu_vector, c_vector, rates, delta, user_si):
     f.close()
 
     # for debug
-    f = open('alloc_la.txt','w')
+    f = open(path+'/alloc_la.txt','w')
     f.write(','.join("{:d}".format(loc) for loc in loc_vec))
     f.write("\n")
     f.write(','.join("{0:.2f}".format(ratio)for ratio in cache_vec))
@@ -78,10 +83,15 @@ if __name__ == '__main__':
     filesize = float(sys.argv[3])
     cachesize = float(sys.argv[4])
     delta = float(sys.argv[5])
+    iscluster = int(sys.argv[6])
+
+
+    path = os.getcwd()
+    if(iscluster==1):
+        path = os.getcwd() + '/lacs'
 
     # read the rates from pop.txt
-    with open(os.getcwd()+"/lacs/pop.txt", "r") as f: # cluster
-    #with open("pop.txt", "r"):  # mac local
+    with open(path+'/pop.txt', "r") as f:
         lines = f.readlines()
         user_number = len(lines)
         file_number = len(lines[0].split(','))
@@ -95,7 +105,7 @@ if __name__ == '__main__':
     c_vector = np.ones(machine_number)*cachesize/filesize
     avg_si, user_si, Lambda, Lambda_D = get_iso_latency(mu_vector, c_vector, rates,delta)
     print rates
-    lacs(mu_vector, c_vector, rates, delta, user_si)
+    lacs(mu_vector, c_vector, rates, delta, user_si,iscluster)
 
 
     # todo: 1. for those isolated users, allow them to have their files cached. no!

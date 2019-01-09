@@ -34,6 +34,6 @@ for usernumber in np.arange(10, 22, 2):
     c_vector = np.ones(machine_number)*cachesize/filesize
     avg_si, user_si, Lambda, Lambda_D = get_iso_latency(mu_vector, c_vector, rates,delta)
     #print rates
-    lacs(mu_vector, c_vector, rates, delta, user_si)
+    lacs(mu_vector, c_vector, rates, delta, user_si,0)
 
     mm_default(mu_vector, c_vector, rates, delta)

@@ -6,8 +6,14 @@ Max-min cache allocation + default load balancing (max-free)
 from max_min_allocator import max_min_allocator
 import numpy as np
 import sys
+import os
 
-def mm_default(mu_vec, c_vec, rates, delta):
+def mm_default(mu_vec, c_vec, rates, delta, is_cluster):
+
+    path = os.getcwd()
+    if(is_cluster==1):
+        path = os.getcwd() + '/lacs'
+
     k = len(rates[:, 1])  # user number
     n = len(rates[1, :])  # file number
     m = len(c_vec)  # machine number
@@ -58,7 +64,7 @@ def mm_default(mu_vec, c_vec, rates, delta):
 
 
     # log the loc_vec, cache_vec and block_list in alloc.txt
-    f = open('alloc.txt','w')
+    f = open(path+'/alloc.txt','w')
     f.write(','.join("{:d}".format(loc) for loc in loc_vec))
     f.write("\n")
     f.write(','.join("{0:.2f}".format(ratio)for ratio in final_cache_vec))
@@ -67,7 +73,7 @@ def mm_default(mu_vec, c_vec, rates, delta):
     f.close()
 
     # for debug
-    f = open('alloc_mm_default.txt','w')
+    f = open(path+'/alloc_mm_default.txt','w')
     f.write(','.join("{:d}".format(loc) for loc in loc_vec))
     f.write("\n")
     f.write(','.join("{0:.2f}".format(ratio) for ratio in cache_vec))
@@ -76,7 +82,7 @@ def mm_default(mu_vec, c_vec, rates, delta):
     f.close()
 
     # log latency in theory
-    f = open('latency_mm_default.txt','w')
+    f = open(path+'/latency_mm_default.txt','w')
     f.write(','.join(str(latency) for latency in user_latencies))
     f.write("\n")
     f.write("%s\n" % latency_mm_default)
@@ -112,9 +118,14 @@ if __name__ == '__main__':
     filesize = float(sys.argv[3])
     cachesize = float(sys.argv[4])
     delta = float(sys.argv[5])
+    iscluster= int(sys.argv[6])
+
+    path = os.getcwd()
+    if(iscluster==1):
+        path = os.getcwd() + '/lacs'
 
     # read the rates from pop.txt
-    with open("pop.txt", "r") as f:
+    with open(path+"/pop.txt", "r") as f:
         lines = f.readlines()
         user_number = len(lines)
         file_number = len(lines[0].split(','))
@@ -129,4 +140,3 @@ if __name__ == '__main__':
     mm_default(mu_vector, c_vector, rates, delta)
 
 
-    # todo: 1. for those isolated users, allow them to have their files cached.

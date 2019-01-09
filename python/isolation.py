@@ -8,6 +8,7 @@ There could be multiple copies of the same file. Therefore, we need to output th
 import numpy as np
 from linear_relaxation import linear_relaxation
 import sys
+import os
 
 def get_iso_latency(mu_vec, c_vec, rates, delta): # unrounded performance
     k = len(rates[:,0])
@@ -20,6 +21,8 @@ def get_iso_latency(mu_vec, c_vec, rates, delta): # unrounded performance
     user_macnine_disk_rates = np.zeros((k, m))
     Lambda = np.zeros((k,m))
     Lambda_D = np.zeros((k,m))
+
+
 
     for index_u in range(k):
         Lambda[index_u,:], Lambda_D[index_u,:], iso_latency[index_u] = linear_relaxation(mu_vec / k, c_vec / k, rates[index_u, :].copy(), delta)
@@ -48,7 +51,10 @@ def get_iso_allocation(mu_vec, c_vec, rates,delta): # and also rounded performan
     c_vec_iso = c_vec/k
 
 
-    f= open('alloc.txt', 'w')
+    path = os.getcwd()
+    if(iscluster==1):
+        path = os.getcwd() + '/lacs'
+    f= open(path+'/alloc.txt', 'w')
     user_iso = np.zeros(k)
     rate_by_user = np.sum(rates, axis = 1)
 
@@ -175,9 +181,14 @@ if __name__ == '__main__':
     filesize = float(sys.argv[3])
     cachesize = float(sys.argv[4])
     delta = float(sys.argv[5])
+    iscluster = int(sys.argv[6])
+
+    path = os.getcwd()
+    if(iscluster==1):
+        path = os.getcwd() + '/lacs'
 
     # read the rates from pop.txt
-    with open("pop.txt", "r") as f:
+    with open(path+"/pop.txt", "r") as f:
         lines = f.readlines()
         user_number = len(lines)
         file_number = len(lines[0].split(','))

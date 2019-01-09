@@ -215,6 +215,10 @@ public class LoadAwareMaster {
     cmd.add(Integer.toString(mFileSize));
     cmd.add(Integer.toString(mCacheSize));
     cmd.add(mDelta.toString());
+    if(mIsCluster)
+      cmd.add(Integer.toString(1)); // to get the correct path
+    else
+      cmd.add(Integer.toString(0));
 
     // The python algorithm will read the log file of user access frequencies and output the cache allocation (position+ratio)
     // and the block list, all separated by commas. The path of the output file should be python/alloc.txt
@@ -237,7 +241,6 @@ public class LoadAwareMaster {
         System.out.println("failure");
     } catch (IOException | InterruptedException e) {
       LOG.info("Wrong Message received: " + e);
-      return;
     }
 
     // parse the output alloc.txt to get mLocation, mCacheRatio and mBlockList
