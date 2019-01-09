@@ -18,9 +18,8 @@ factor: ratio of request rates (aggressive to normal)
 we need the absolute access rates to calculate the allocations.
 '''
 
-def generate_rates(n, arrival_rate):
+def generate_rates(n, arrival_rate,factor):
     zipf_factor = 1.05
-    factor = 2
     k = 15
     rates = np.zeros((k,n))
     k = (int)(k)
@@ -64,9 +63,7 @@ def log_rates(k, rates):
 
 if __name__ == "__main__":
     #generate_rates(2, 4, 1, 1.05, 2)
-    k = (int)(sys.argv[1])
-    n = (int)(sys.argv[2])
-    arrival_rate = (float)(sys.argv[3])
-    zipf_factor = (float)(sys.argv[4])
-    factor = (float)(sys.argv[5])
-    generate_rates(k, n, arrival_rate, zipf_factor, factor)
+    n = (int)(sys.argv[1])
+    arrival_rate = (float)(sys.argv[2])
+    factor = (float)(sys.argv[3])
+    generate_rates(n, arrival_rate, factor)

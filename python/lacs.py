@@ -9,8 +9,8 @@ def lacs(mu_vector, c_vector, rates, delta, user_si):
     k = len(rates[:, 1])  # user number
     n = len(rates[1, :])  # file number
     m = len(mu_vector)
-    print mu_vector
-    print c_vector
+    #print mu_vector
+    #print c_vector
     user_latencies, latency_la, latency_la_rounded , loc_vec, cache_vec= la_fair_rounding(mu_vector, c_vector,
                                                                                            rates.copy(), delta)
     #print 'la first round', latency_la_rounded

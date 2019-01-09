@@ -6,6 +6,7 @@ Mannually generate user access rates for testing.
 import numpy as np
 from scipy.stats import zipf
 import sys
+import os
 
 
 '''
@@ -35,6 +36,8 @@ def generate_microbench_rates(n, rate_slow,rate_fast):
     return rates
 
 def log_rates(k, rates):
+
+    print os.getcwd()
     f = open('pop.txt', 'w')
     for index_u in range(k):
         f.write(','.join(np.array(map(str, rates[index_u,:]))))

@@ -1,20 +1,23 @@
-from generate_microbench_rates import generate_microbench_rates
+from generate_rates import generate_rates
 import numpy as np
 from isolation import get_iso_latency
 from lacs import lacs
 from mm_default import mm_default
 
 
-rate1 = 20.0
-filenumber = 100
-for rate2 in range(29,36):
-    generate_microbench_rates(filenumber, rate1, rate2)
+rate1 = 4.0
+filenumber = 500
+factor_share = 1.5
+factor_isolate= 2.4
+for factor in np.arange(1.5,2,0.1):
+    print factor
+    generate_rates(filenumber, rate1, factor)
 
 
     bandwidth = 614
-    machine_number = 10
-    filesize = 100  # 10 GB
-    cachesize = 400  # 5 GB
+    machine_number = 30
+    filesize = 100  # 50 GB
+    cachesize = 1000  # 15 GB
     delta = 0.1
 
     # read the rates from pop.txt
@@ -32,7 +35,6 @@ for rate2 in range(29,36):
     c_vector = np.ones(machine_number)*cachesize/filesize
     avg_si, user_si, Lambda, Lambda_D = get_iso_latency(mu_vector, c_vector, rates,delta)
     #print rates
-
     lacs(mu_vector, c_vector, rates, delta, user_si)
 
     mm_default(mu_vector, c_vector, rates, delta)

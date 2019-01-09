@@ -17,11 +17,12 @@ factor: ratio of request rates (aggressive to normal)
 
 '''
 
-def generate_google_rates(k, n, zipf_factor):
+def generate_google_rates(k, n):
     rates = np.zeros((k,n))
     k = (int)(k)
     fast_rate = 1.0/0.071648
     slow_rate = 1.0/7.429076
+    zipf_factor=1.05
 
     for index_u in range(k/2):  # slow
         preference = np.random.permutation(n)
@@ -56,4 +57,4 @@ if __name__ == "__main__":
     k = (int)(sys.argv[1])
     n = (int)(sys.argv[2])
     zipf_factor = (float)(sys.argv[3])
-    generate_google_rates(k, n,zipf_factor)
+    generate_google_rates(k, n)

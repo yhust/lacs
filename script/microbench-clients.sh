@@ -17,8 +17,11 @@ client2=${IPs[${#IPs[@]}-2]}
 rate1=$4
 rate2=$5
 
+echo 'start'
+read -r master < $(cd `dirname $0`; cd ..; pwd)/flintrock/flintrock.txt
 ssh -o StrictHostKeyChecking=no -i $flintrockPemPath ${master} "cd ~/lacs; python python/generate_microbench_rates.py $1 $rate1 $rate2; bin/alluxio runLAWrite $2"
 
+exit 0
 
 ssh -o StrictHostKeyChecking=no -i $flintrockPemPath ${client1} "cd ~/lacs;bin/alluxio runBenchmark 'microbench' $1 $rate1 $3 >> /tmp/log &"
 ssh -o StrictHostKeyChecking=no -i $flintrockPemPath ${client2} "cd ~/lacs;bin/alluxio runBenchmark 'microbench' $1 $rate2 $3 >> /tmp/log &"
