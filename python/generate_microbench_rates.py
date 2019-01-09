@@ -36,9 +36,7 @@ def generate_microbench_rates(n, rate_slow,rate_fast):
     return rates
 
 def log_rates(k, rates):
-
-    print os.getcwd()
-    f = open(os.getcwd()+'pop.txt', 'w')
+    f = open(os.getcwd()+'/pop.txt', 'w')
     for index_u in range(k):
         f.write(','.join(np.array(map(str, rates[index_u,:]))))
         f.write('\n')

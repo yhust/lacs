@@ -4,6 +4,7 @@ from la_fair_rounding import la_fair_rounding
 from isolation import get_iso_latency
 from copy import copy
 import sys
+import os
 
 def lacs(mu_vector, c_vector, rates, delta, user_si):
     k = len(rates[:, 1])  # user number
@@ -79,7 +80,7 @@ if __name__ == '__main__':
     delta = float(sys.argv[5])
 
     # read the rates from pop.txt
-    with open("pop.txt", "r") as f:
+    with open(os.getcwd()+"pop.txt", "r") as f:
         lines = f.readlines()
         user_number = len(lines)
         file_number = len(lines[0].split(','))
