@@ -80,7 +80,7 @@ if __name__ == '__main__':
     delta = float(sys.argv[5])
 
     # read the rates from pop.txt
-    with open(os.getcwd()+"/python/pop.txt", "r") as f: # cluster
+    with open(os.getcwd()+"/lacs/pop.txt", "r") as f: # cluster
     #with open("pop.txt", "r"):  # mac local
         lines = f.readlines()
         user_number = len(lines)
