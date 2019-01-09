@@ -21,10 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.*;
 import java.util.*;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingDeque;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.stream.IntStream;
 
 
@@ -134,7 +131,7 @@ public class LoadAwareMaster {
   private static void getPref(){
     if(mIsCluster)  // cluster mode
       curDir = System.getProperty("user.dir") + "/lacs";
-    String pop= curDir+"/python/pop.txt"; // the file to store the output of the python algorithm
+    String pop= curDir+"/pop.txt"; // the file to store the output of the python algorithm
     try{
       BufferedReader br = new BufferedReader(new FileReader(pop)); // the first line is locations
       int userNumber = 0;
@@ -174,6 +171,7 @@ public class LoadAwareMaster {
 
     mCacheSize = cacheSize;
     getPref(); //from pop.txt
+    getWorkerCount();
     if(mMode.equals(ModeConstants.Default)){
       writeFileDefault();
     }
@@ -196,7 +194,7 @@ public class LoadAwareMaster {
 
   public void getAllocation() {
 
-    getWorkerCount();
+
     mIsolateRate = mBandwidth * mWorkerCount / mUserCount / mFileSize;//total rate per second
     System.out.println("Isolate rate: " + mIsolateRate);
     //System.out.println("Worker count : " + mWorkerCount);
@@ -349,6 +347,15 @@ public class LoadAwareMaster {
      *  Cache the top popular (aggregated) files. Top 10% files has mRepFactor replicas.
      */
   private static void writeFileDefault(){
+    FileSystem fs = FileSystem.Factory.get();
+    AlluxioURI writeDir = new AlluxioURI(ALLUXIODIR);
+    try {
+      if (fs.exists(writeDir)) { // delete existing dir
+        fs.delete(writeDir, DeleteOptions.defaults().setRecursive(true).setUnchecked(true));
+      }
+    }catch(IOException | AlluxioException e){
+      e.printStackTrace();
+    }
 
     // get the aggregated preference order
     Double[] totalPref = new Double[mFileCount];
@@ -363,10 +370,10 @@ public class LoadAwareMaster {
             .mapToInt(ele -> ele).toArray();
 
     // start to write
-    FileSystem fs = FileSystem.Factory.get();
     byte[] buf = new byte[mFileSize*1024*1024];
     int usedQuota = 0;
     int totalCacheQuota  = mCacheSize*mWorkerCount/mFileSize;
+    System.out.println("Total cache quota: " + totalCacheQuota);
     CreateFileOptions writeOptions = CreateFileOptions.defaults().setWriteType(WriteType.MUST_CACHE);
     writeOptions.setWriteTier(0);
     try {
@@ -395,17 +402,30 @@ public class LoadAwareMaster {
   /**
    *  To issue tokens.
    * @param userId
-   * @param fileName intended for per-machine access control, together with the locationmap.
+   * @param fileId intended for per-machine access control, together with the locationmap.
    * @return the worker id. If the request is rejected, return -1
+   * In the repDefault mode, return the chosen replica number
    */
   //todo The access counts (frequency of the previous period) should be logged to python/pop.txt
-  public static int access(String fileName, int userId){
+  public static int access(String fileId, int userId){
     LOG.info("User id received at the lacs master " + userId);
 
     if(mMode.equals(ModeConstants.Test)){ // no throttling, no need for the correct worker id
       return 0;
-    }
-    else if(mMode.equals(ModeConstants.Isolation)){
+    }else if(mMode.equals(ModeConstants.Default)){
+      FileSystem fs = FileSystem.Factory.get();
+      try {
+        if(fs.exists(new AlluxioURI(String.format("%s/%s-copy-%s", ALLUXIODIR, fileId, mRepFactor - 1)))){
+          // have more than one replicas; choose one randomly
+          return ThreadLocalRandom.current().nextInt(0, mRepFactor);
+        }
+        else
+          return 0;
+      }catch(IOException | AlluxioException e){
+        e.printStackTrace();
+      }
+
+    }else if(mMode.equals(ModeConstants.Isolation)){
       System.out.println("Isolation mode");
       if(mWaitRequestPool.get(userId) > mMaxWaitRequestNumber) { // too many requests waiting
         LOG.info("Isolation mode -- More than" + mMaxWaitRequestNumber + "waiting requests: Reject");
@@ -418,14 +438,14 @@ public class LoadAwareMaster {
         tokenBucket.consume(1); // block
         LOG.info("Isolation mode --  Token get " + CommonUtils.getCurrentMs());
         mWaitRequestPool.put(userId, mWaitRequestPool.get(userId)-1); // one finishes waiting
-        return mLocation.get(Integer.parseInt(fileName));
+        return mLocation.get(Integer.parseInt(fileId));
       }
     }
 
     if(!mBlockList.contains(userId)){ // not in the list
       System.out.println("Mode: " + mMode);
       System.out.println("User " + userId + " not in the block list");
-      return mLocation.get(Integer.parseInt(fileName));
+      return mLocation.get(Integer.parseInt(fileId));
     }
 
     else{ // must be in the LACS mode
@@ -440,7 +460,7 @@ public class LoadAwareMaster {
         tokenBucket.consume(1); // block
         LOG.info("LACS mode --  Token get " + CommonUtils.getCurrentMs());
         mWaitRequestPool.put(userId, mWaitRequestPool.get(userId)-1); // one finishes waiting
-        return mLocation.get(Integer.parseInt(fileName));
+        return mLocation.get(Integer.parseInt(fileId));
       }
     }
   }

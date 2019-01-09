@@ -5,12 +5,12 @@ import org.apache.commons.math3.distribution.ExponentialDistribution;
 import org.apache.commons.math3.distribution.ZipfDistribution;
 
 import java.io.FileWriter;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by yuyinghao on 1/8/19.
@@ -27,15 +27,10 @@ public class ReadTest {
     private int mFileNumber;
     private RandomNumberGenerator mRandomNumberGenerator;
 
-    public ReadTest(int trial, FileWriter log){
+    public ReadTest(int fileNumber, int trial, FileWriter log){
+        mFileNumber = fileNumber;
         mTrial = trial;
         mTimeLog = log;
-//        try {
-//            mTimeLog = new FileWriter("logs/model_test.txt", true);
-//        } catch(IOException e){
-//            e.printStackTrace();
-//        }
-        //float rate = Float.parseFloat(args[3]);
         mRandomNumberGenerator=new RandomNumberGenerator();
         ZipfDistribution zd = new ZipfDistribution(mFileNumber,1.05);
         for(int i=1;i<=mFileNumber;i++) {
@@ -47,9 +42,6 @@ public class ReadTest {
     public void setRate(double rate){
         mRate = rate;
     }
-    public void setFileNumber(int fileNumber){
-        mFileNumber = fileNumber;
-    }
     public void setHitLog(FileWriter hitLog) { // not all
         mHitLog = hitLog;
     }
@@ -59,8 +51,7 @@ public class ReadTest {
         List<Future<LoadAwareFileReader.LACSReadResult>> results = new ArrayList<>();
 
         ExecutorService executorService = Executors.newCachedThreadPool();
-
-        try {
+        try{
             for (int i = 0; i < mTrial; i++) {
                 int fileId = mRandomNumberGenerator.getNext();
                 results.add(executorService.submit(new LoadAwareFileReader(fileId, 0)));
@@ -83,9 +74,15 @@ public class ReadTest {
                 }
             }
             avgLatency /= mTrial;
-            mTimeLog.write("\n\n" + avgLatency + "\t" + avgHR + "\n\n");
+            avgHR /= mTrial;
+            mTimeLog.write("\n\n" + avgLatency + "\n\n");
+            mHitLog.write("\n\n" + avgHR + "\n\n");
+
+            executorService.shutdown();
+            executorService.awaitTermination(1, TimeUnit.HOURS);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
 }

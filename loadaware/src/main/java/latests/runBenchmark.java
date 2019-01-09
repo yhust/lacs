@@ -32,31 +32,28 @@ public class runBenchmark {
 
   /**
    *
-   * parameters: Testtype; cache size (MB, of each worker); filesize (MB); filenumber; (base) accessrate;
+   * parameters: Testtype; filenumber; accessrate; repeat count
      */
   public static void main(String[] args){
     TestType = args[0];
-    mCacheSize = Integer.parseInt(args[1]);
-    mFileSize = Long.parseLong(args[2]);
-    mFileNumber = Integer.parseInt(args[3]);
-    mAccessRate = Double.parseDouble(args[4]);
-    mRepeat = Integer.parseInt(args[5]);
+    mFileNumber = Integer.parseInt(args[1]);
+    mAccessRate = Double.parseDouble(args[2]);
+    mRepeat = Integer.parseInt(args[3]);
 
-    System.out.println(String.format("Cache size (per worker) %s \t File size %s \t FileNumber %s \t Access rate %s \t trial %s\t", mCacheSize, mFileSize, mFileNumber, mAccessRate, mRepeat));
+    System.out.println(String.format("Test Type %s \t FileNumber %s \t Access rate %s \t trial %s\t", TestType, mFileNumber, mAccessRate, mRepeat));
 
 //    generatePref();
 //    writeFiles();
     try{
       mTimeLog= new FileWriter(String.format("logs/%s-time.txt",TestType),true);
       mHitLog= new FileWriter(String.format("logs/%s-hr.txt",TestType),true);
-      mReadTest = new ReadTest(mRepeat, mTimeLog);
-      mReadTest.setFileNumber(mFileNumber);
+      mReadTest = new ReadTest(mFileNumber, mRepeat, mTimeLog);
       mReadTest.setRate(mAccessRate);
       mReadTest.setHitLog(mHitLog);
-
       mReadTest.readFiles();
       mTimeLog.close();
       mHitLog.close();
+      System.out.println("Test completes.");
 
     }catch (IOException e){
       e.printStackTrace();

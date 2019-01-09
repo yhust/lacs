@@ -63,13 +63,13 @@ public class ModelTest {
 
     try{
       mTimeLog=new FileWriter("logs/model_test.txt",true);
-      mReadTest = new ReadTest(count,mTimeLog);
+      mReadTest = new ReadTest(mFileNumber, count,mTimeLog);
       int tier = 0;
       writeFiles(tier);
 
       double[] rates = new double[]{1,2,3,4,5,5.2,5.4,5.6,5.8};
 
-      mReadTest.setFileNumber(mFileNumber);
+      //mReadTest.setFileNumber();
       for(double rate:rates){
         mTimeLog.write(String.format("\n%s memory\n", rate));
         mReadTest.setRate(rate);

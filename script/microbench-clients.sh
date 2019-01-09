@@ -20,8 +20,8 @@ rate2=$5
 ssh -o StrictHostKeyChecking=no -i $flintrockPemPath ${master} "cd ~/lacs; python python/generate_microbench_rates.py $1 $rate1 $rate2; bin/alluxio runLAWrite $2"
 
 
-ssh -o StrictHostKeyChecking=no -i $flintrockPemPath ${client1} "cd ~/lacs;bin/alluxio runBenchmark 'microbench' $2 100 $1 $rate1 $3 >> /tmp/log &"
-ssh -o StrictHostKeyChecking=no -i $flintrockPemPath ${client2} "cd ~/lacs;bin/alluxio runBenchmark 'microbench' $2 100 $1 $rate2 $3 >> /tmp/log &"
+ssh -o StrictHostKeyChecking=no -i $flintrockPemPath ${client1} "cd ~/lacs;bin/alluxio runBenchmark 'microbench' $1 $rate1 $3 >> /tmp/log &"
+ssh -o StrictHostKeyChecking=no -i $flintrockPemPath ${client2} "cd ~/lacs;bin/alluxio runBenchmark 'microbench' $1 $rate2 $3 >> /tmp/log &"
 	
 	
 

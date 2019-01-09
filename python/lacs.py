@@ -28,16 +28,17 @@ def lacs(mu_vector, c_vector, rates, delta, user_si):
             if rate_by_user[index_u] >= sum(mu_vector)/k:
                 cachable_user_rates[index_u] = 0
                 cachable_user_ids.remove(index_u)
+                print "user ", index_u, "'s cache is revoked"
         final_user_latencies, latency_la, latency_la_rounded , loc_vec, cache_vec= la_fair_rounding(
             mu_vector, c_vector, rates.copy(), delta, cachable_user_ids, unisolated_user_ids)
 
-        while (user_si[unisolated_user_ids] < final_user_latencies[unisolated_user_ids]).any() and len(unisolated_user_ids)>0:
+        while (np.round(user_si[unisolated_user_ids], decimals=4) < np.round(final_user_latencies[unisolated_user_ids], decimals=4)).any() and len(unisolated_user_ids)>0:
 
             # todo: check whether we could re-balance the rates of this user so that no users will be affected.
 
             # if the above solutions do not work, block its rate to isolation: the worst case is where everyone gets isolated
             #if (user_si[unisolated_user_ids] < final_user_latencies[unisolated_user_ids]).any():
-            this_user_id = np.argmax(rate_by_user)
+            this_user_id = np.argmax(rate_by_user[unisolated_user_ids])
             unisolated_user_ids.remove(this_user_id)
             isolated_user_ids.append(this_user_id)
             print 'user', this_user_id, 'is isolated'

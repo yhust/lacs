@@ -26,6 +26,8 @@ def la_fair_rounding(mu_vec, c_vec, rates, delta, cachable_users = False, unisol
     # try:
     cachable_rates = rates[cachable_users,:].copy()
     cache_vec = la_fair_allocator(cachable_rates.copy(), sum(c_vec)) # the cache ratio vec
+    #print "cache_vec", cache_vec
+
     # except:
     #     1
     unisolated_rates = rates[unisolated_users, :].copy()
