@@ -11,7 +11,7 @@ ssh -o StrictHostKeyChecking=no -i $flintrockPemPath ${master} "cd ~/lacs;python
 
 # copy pop file to all nodes
 scp -o StrictHostKeyChecking=no -i $flintrockPemPath -r ${master}:~/lacs/pop.txt ~/Desktop/
-python3 $(cd `dirname $0`; cd ..; pwd)/flintrock/standalone.py copy-file lacs ~/Desktop/pop.txt ~/lacs/
+python3 $(cd `dirname $0`; cd ..; pwd)/flintrock/standalone.py copy-file lacs ~/Desktop/pop.txt /home/ec2-user/lacs/
 
 	# Run mm-default
 	#MaxMinDefault

@@ -32,11 +32,12 @@ public class ReadTest {
     private RandomNumberGenerator mRandomNumberGenerator;
     private int mUserId;
 
-    public ReadTest(int fileNumber, int trial, int userId, FileWriter log){
+    public ReadTest(int fileNumber, int trial, int userId, File popFile, FileWriter log){
         mFileNumber = fileNumber;
         mTrial = trial;
         mUserId = userId;
         mTimeLog = log;
+        mPopFile = popFile;
         mRandomNumberGenerator=new RandomNumberGenerator();
         // load the preferences
         try{
@@ -59,7 +60,6 @@ public class ReadTest {
     public void setHitLog(FileWriter hitLog) { // not all
         mHitLog = hitLog;
     }
-    public void setPopFile(File popFile) {mPopFile = popFile;}
 
     protected void readFiles() {
 

@@ -42,6 +42,7 @@ public class runBenchmark {
     System.out.println(String.format("Test Type %s \t FileNumber %s \t Access rate %s \t trial %s\t", TestType, mFileNumber, mAccessRate, mRepeat));
 
     String curDir = System.getProperty("user.dir");
+    System.out.println("curDir" + curDir);
 //    if(Configuration.getBoolean(PropertyKey.IS_CLUSTER)) {  // cluster mode
 //      curDir = System.getProperty("user.dir");
 //      System.out.println("curDir" + curDir);
@@ -55,11 +56,10 @@ public class runBenchmark {
       mHitLog= new FileWriter(String.format("%s/logs/%s-hr-%s.txt",curDir,TestType,mClientId),true);
       mTimeLog.write(String.format("Test Type %s \t FileNumber %s \t Access rate %s \t trial %s\n", TestType, mFileNumber, mAccessRate, mRepeat));
       mHitLog.write(String.format("Test Type %s \t FileNumber %s \t Access rate %s \t trial %s\n", TestType, mFileNumber, mAccessRate, mRepeat));
-      mReadTest = new ReadTest(mFileNumber, mRepeat, mClientId, mTimeLog);
+      mReadTest = new ReadTest(mFileNumber, mRepeat, mClientId, new File(curDir + "/pop.txt"), mTimeLog);
       mReadTest.setRate(mAccessRate);
       mReadTest.setHitLog(mHitLog);
       mReadTest.readFiles();
-      mReadTest.setPopFile(new File(curDir + "/pop.txt"));
       mTimeLog.close();
       mHitLog.close();
       System.out.println("Test completes.");

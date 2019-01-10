@@ -20,9 +20,9 @@ rate2=$4
 echo 'start'
 
 echo $client1
-ssh -o StrictHostKeyChecking=no -i $flintrockPemPath ${client1} "cd ~/lacs;bin/alluxio runLABenchmark 'microbench' $1 $rate1 $2 1 >> /tmp/log &"
+ssh -o StrictHostKeyChecking=no -i $flintrockPemPath ${client1} "cd ~/lacs;bin/alluxio runLABenchmark 'microbench' $1 $rate1 $2 1 >/tmp/log 2>/tmp/err &"
 echo $client2
-ssh -o StrictHostKeyChecking=no -i $flintrockPemPath ${client2} "cd ~/lacs;bin/alluxio runLABenchmark 'microbench' $1 $rate2 $2 2 >> /tmp/log &"
+ssh -o StrictHostKeyChecking=no -i $flintrockPemPath ${client2} "cd ~/lacs;bin/alluxio runLABenchmark 'microbench' $1 $rate2 $2 2 >/tmp/log 2>/tmp/err &"
 	
 
 
