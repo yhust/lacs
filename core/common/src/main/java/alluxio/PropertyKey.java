@@ -12,11 +12,11 @@
 package alluxio;
 
 import alluxio.exception.ExceptionMessage;
-
 import com.google.common.base.Objects;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Strings;
 
+import javax.annotation.concurrent.ThreadSafe;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.util.Arrays;
@@ -25,8 +25,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.annotation.concurrent.ThreadSafe;
 
 /**
  * Configuration property keys. This class provides a set of pre-defined property keys.
@@ -256,8 +254,8 @@ public final class PropertyKey implements Comparable<PropertyKey> {
   // for lacs
   public static final PropertyKey MODE =
           new Builder(Name.MODE)
-                  .setDefaultValue("Test")
-                  .setDescription("Mode cd lacs.")
+                  .setDefaultValue("LoadAware")
+                  .setDescription("Mode in lacs.")
                   .build();
   public static final PropertyKey BANDWIDTH =
           new Builder(Name.BANDWIDTH)
