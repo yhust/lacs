@@ -10,7 +10,11 @@ from linear_relaxation import linear_relaxation
 import sys
 import os
 
-def get_iso_latency(mu_vec, c_vec, rates, delta): # unrounded performance
+def get_iso_latency(mu_vec, c_vec, rates, delta,is_cluster): # unrounded performance
+    path = os.getcwd()
+    if(is_cluster==1):
+        path = os.getcwd() + '/lacs'
+
     k = len(rates[:,0])
     n = len(rates[0,:])
     m = len(mu_vec)
@@ -40,7 +44,7 @@ def get_iso_latency(mu_vec, c_vec, rates, delta): # unrounded performance
 
 
 
-def get_iso_allocation(mu_vec, c_vec, rates,delta): # and also rounded performance
+def get_iso_allocation(mu_vec, c_vec, rates,delta, is_cluster): # and also rounded performance
     # what if a user can't get stable performance, i.e., inf latency in theory, leave to max-free algorithm
     k = len(rates[:,0])
     n = len(rates[0,:])
@@ -52,7 +56,7 @@ def get_iso_allocation(mu_vec, c_vec, rates,delta): # and also rounded performan
 
 
     path = os.getcwd()
-    if(iscluster==1):
+    if(is_cluster==1):
         path = os.getcwd() + '/lacs'
     f= open(path+'/alloc.txt', 'w')
     user_iso = np.zeros(k)
@@ -203,4 +207,4 @@ if __name__ == '__main__':
     c_vector = np.ones(machine_number)*cachesize / filesize
 
     get_cache_hit(rates.copy(),c_vector)
-    #get_iso_allocation(mu_vector, c_vector, rates, delta)
+    get_iso_allocation(mu_vector, c_vector, rates, delta, iscluster)

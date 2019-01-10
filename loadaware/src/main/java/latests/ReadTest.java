@@ -88,10 +88,12 @@ public class ReadTest {
                 long latency = result.completeTime - submitTimes.get(i);
                 mTimeLog.write(String.format("%s\t", latency));
                 //avgLatency += result.latency;
-                avgLatency += latency;
-                avgHR += result.hit;
-                if(mHitLog!=null){
-                    mHitLog.write(String.format("%s\t",result.hit));
+                if(!result.blocked) {
+                    avgLatency += latency;
+                    avgHR += result.hit;
+                    if (mHitLog != null) {
+                        mHitLog.write(String.format("%s\t", result.hit));
+                    }
                 }
             }
             avgLatency /= mTrial;
