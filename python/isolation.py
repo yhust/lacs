@@ -59,6 +59,9 @@ def get_iso_allocation(mu_vec, c_vec, rates,delta, is_cluster): # and also round
     user_iso = np.zeros(k)
     rate_by_user = np.sum(rates, axis = 1)
 
+    total_cache_vec= np.zeros(n)
+    loc_vec = np.zeros(n,dtype=np.int32)
+
     for index_u in range(k):
         R_Lambda_M = np.zeros(m)  #  memory rate after rounding
         R_Lambda = np.zeros(m)  # total rate after rounding
@@ -68,7 +71,7 @@ def get_iso_allocation(mu_vec, c_vec, rates,delta, is_cluster): # and also round
         remaining_file_indices = np.copy(sorted_rate_indices)
 
         placed_file_indices = list()
-        loc_vec = np.zeros(n,dtype=np.int32)
+        #loc_vec = np.zeros(n,dtype=np.int32)
         cache_vec = np.zeros(n)
 
 
@@ -154,12 +157,17 @@ def get_iso_allocation(mu_vec, c_vec, rates,delta, is_cluster): # and also round
         latency /= sum(rate_by_file)
         user_iso[index_u]=latency
 
-        f.write(','.join("{:d}".format(loc) for loc in loc_vec))
-        f.write("\n")
-        f.write(','.join("{0:.2f}".format(ratio)for ratio in cache_vec))
-        f.write("\n")
-        f.write(','.join("{:d}".format(id) for id in range(k)))
-        f.write("\n")
+        total_cache_vec += cache_vec #todo： isolate with dedicated copies
+    for i in range(len(total_cache_vec)):
+        if(total_cache_vec[i]>1):
+            total_cache_vec[i]=1
+
+    f.write(','.join("{:d}".format(loc) for loc in loc_vec))
+    f.write("\n")
+    f.write(','.join("{0:.2f}".format(ratio)for ratio in total_cache_vec))
+    f.write("\n")
+    f.write(','.join("{:d}".format(id) for id in range(k)))
+    f.write("\n")
 
     f.close()
     avg_iso = np.dot(rate_by_user,iso_latency ) / sum(rate_by_user)

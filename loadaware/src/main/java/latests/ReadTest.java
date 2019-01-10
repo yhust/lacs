@@ -66,7 +66,7 @@ public class ReadTest {
         List<Future<LoadAwareFileReader.LACSReadResult>> results = new ArrayList<>();
         List<Long> submitTimes = new ArrayList<>();
 
-        ExecutorService executorService = Executors.newFixedThreadPool(30); //no more than 30 read threads in concurrent //Executors.newCachedThreadPool();
+        ExecutorService executorService = Executors.newFixedThreadPool(50); //no more than 30 read threads in concurrent //Executors.newCachedThreadPool();
         try{
             for (int i = 0; i < mTrial; i++) {
                 int fileId = mRandomNumberGenerator.getNext();
