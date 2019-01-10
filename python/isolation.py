@@ -157,7 +157,7 @@ def get_iso_allocation(mu_vec, c_vec, rates,delta, is_cluster): # and also round
         latency /= sum(rate_by_file)
         user_iso[index_u]=latency
 
-        total_cache_vec += cache_vec #todo： isolate with dedicated copies
+        total_cache_vec += cache_vec  # todo: isolate with dedicated copies
     for i in range(len(total_cache_vec)):
         if(total_cache_vec[i]>1):
             total_cache_vec[i]=1
