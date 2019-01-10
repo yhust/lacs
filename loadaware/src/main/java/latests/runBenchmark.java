@@ -4,6 +4,7 @@ import alluxio.Configuration;
 import alluxio.PropertyKey;
 import alluxio.client.file.FileSystem;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -46,10 +47,14 @@ public class runBenchmark {
 
     String curDir = System.getProperty("user.dir");
     if(Configuration.getBoolean(PropertyKey.IS_CLUSTER)) {  // cluster mode
-      curDir = System.getProperty("user.dir") + "/lacs";
+      curDir = System.getProperty("user.dir");
       System.out.println("curDir" + curDir);
     }
     try{
+      File logDir = new File(curDir + "/logs");
+      if(!logDir.exists())
+          logDir.mkdir();
+
       mTimeLog= new FileWriter(String.format("%s/logs/%s-time-%s.txt",curDir, TestType,mClientId),true);
       mHitLog= new FileWriter(String.format("%s/logs/%s-hr-%s.txt",curDir,TestType,mClientId),true);
       mReadTest = new ReadTest(mFileNumber, mRepeat, mTimeLog);
