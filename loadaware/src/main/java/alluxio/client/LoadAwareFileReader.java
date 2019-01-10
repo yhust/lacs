@@ -108,17 +108,18 @@ public class LoadAwareFileReader implements Callable{
                     byte[] buf = new byte[totalBytes];
                     if (mFileSystem.exists(cacheURI)) {
                         isCache.read(buf);
+                        isCache.close();
                     }
                     if (mFileSystem.exists(diskURI)) {
                         isDisk.read(buf, (int) cacheBytes, (int) diskBytes);
+                        isDisk.close();
                     }
                     //long endTimeMs = CommonUtils.getCurrentMs();
                     //mResult.latency = endTimeMs - startTimeMs;
                     mResult.completeTime = CommonUtils.getCurrentMs();
                     mResult.hit = (float) (cacheBytes) / totalBytes;
                     mResult.fileSize = totalBytes;
-                    isCache.close();
-                    isDisk.close();
+
                 } else {
                     mResult.blocked = true;
                     //mResult.latency = -1;
