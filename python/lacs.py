@@ -8,6 +8,7 @@ import os
 
 def lacs(mu_vector, c_vector, rates, delta, user_si, is_cluster):
     path = os.getcwd()
+    #print os.getcwd()
     if(is_cluster==1):
         path = os.getcwd() + '/lacs'
 
@@ -20,17 +21,17 @@ def lacs(mu_vector, c_vector, rates, delta, user_si, is_cluster):
     user_latencies, latency_la, latency_la_rounded , loc_vec, cache_vec= la_fair_rounding(mu_vector, c_vector,
                                                                                            rates.copy(), delta)
     #print 'la first round', latency_la_rounded
-    #unisolated_user_ids = range(k)
+    unisolated_user_ids = range(k)
     isolated_user_ids = list()
     cachable_user_rates = np.sum(rates,axis = 1) # only used for finding the next user with the highest rate. The rates of the removed users will be set to zero
     cachable_user_ids = range(k)
     final_user_latencies = user_latencies.copy()
 
     rate_by_user = np.sum(rates, axis= 1)
-    unisolated_user_ids = np.argsort(rate_by_user)[::-1] # initial: decending order by rates
+    rates_user_order = np.argsort(rate_by_user)[::-1] # initial: decending order by rates
 
 
-    if  (user_si[unisolated_user_ids] < final_user_latencies[unisolated_user_ids]).any():
+    if (np.round(user_si[unisolated_user_ids], decimals=4) < np.round(final_user_latencies[unisolated_user_ids], decimals=4)).any():
 
         # release the cache budget of all users whose rates are above the isolated threshold
         for index_u in range(k):
@@ -48,9 +49,9 @@ def lacs(mu_vector, c_vector, rates, delta, user_si, is_cluster):
             # if the above solutions do not work, block its rate to isolation: the worst case is where everyone gets isolated
             #if (user_si[unisolated_user_ids] < final_user_latencies[unisolated_user_ids]).any():
 
-            this_user_id = unisolated_user_ids[0] # the first one is the largest one  # np.argmax(rate_by_user[unisolated_user_ids])
-            unisolated_user_ids = np.delete(unisolated_user_ids,0)
-            #unisolated_user_ids.remove(this_user_id)
+            this_user_id = rates_user_order[0] # the first one is the largest one  # np.argmax(rate_by_user[unisolated_user_ids])
+            rates_user_order = np.delete(rates_user_order,0)
+            unisolated_user_ids.remove(this_user_id)
             isolated_user_ids.append(this_user_id)
             print 'user', this_user_id, 'is isolated'
             final_user_latencies[this_user_id]  = float('Inf')
