@@ -19,19 +19,21 @@ rate2=$5
 
 echo 'start'
 read -r master < $(cd `dirname $0`; cd ..; pwd)/flintrock/flintrock.txt
-ssh -o StrictHostKeyChecking=no -i $flintrockPemPath ${master} "cd ~/lacs; python python/generate_microbench_rates.py $1 $rate1 $rate2; bin/alluxio runLAWrite $2"
+#ssh -o StrictHostKeyChecking=no -i $flintrockPemPath ${master} "cd ~/lacs; python python/generate_microbench_rates.py $1 $rate1 $rate2; bin/alluxio runLAWrite $2"
 
-exit 0
+#exit 0
 
-ssh -o StrictHostKeyChecking=no -i $flintrockPemPath ${client1} "cd ~/lacs;bin/alluxio runBenchmark 'microbench' $1 $rate1 $3 >> /tmp/log &"
-ssh -o StrictHostKeyChecking=no -i $flintrockPemPath ${client2} "cd ~/lacs;bin/alluxio runBenchmark 'microbench' $1 $rate2 $3 >> /tmp/log &"
+ssh -o StrictHostKeyChecking=no -i $flintrockPemPath ${client1} "cd ~/lacs;bin/alluxio runBenchmark 'microbench' $1 $rate1 $3 1 >> /tmp/log &"
+ssh -o StrictHostKeyChecking=no -i $flintrockPemPath ${client2} "cd ~/lacs;bin/alluxio runBenchmark 'microbench' $1 $rate2 $3 2 >> /tmp/log &"
 	
 	
 
 
 # get logs
 mkdir ~/Desktop/microbench_log
-scp -o StrictHostKeyChecking=no -i $flintrockPemPath -r ${line}:~/lacs/logs/microbench* ~/Desktop/microbench_log/
-
+scp -o StrictHostKeyChecking=no -i $flintrockPemPath -r ${client1}:~/lacs/logs/microbench-time.txt ~/Desktop/microbench_log/1-time.txt
+scp -o StrictHostKeyChecking=no -i $flintrockPemPath -r ${client1}:~/lacs/logs/microbench-hr.txt ~/Desktop/microbench_log/1-hr.txt
+scp -o StrictHostKeyChecking=no -i $flintrockPemPath -r ${client2}:~/lacs/logs/microbench-time.txt ~/Desktop/microbench_log/2-time.txt
+scp -o StrictHostKeyChecking=no -i $flintrockPemPath -r ${client2}:~/lacs/logs/microbench-hr.txt ~/Desktop/microbench_log/2-hr.txt
 
 exit 0

@@ -6,6 +6,7 @@ Mannually generate user access rates for testing.
 import numpy as np
 from scipy.stats import zipf
 import sys
+import math
 
 
 '''
@@ -24,7 +25,8 @@ def generate_google_rates(k, n):
     slow_rate = 1.0/7.429076
     zipf_factor=1.05
 
-    for index_u in range(k/2):  # slow
+    slow_number = 7
+    for index_u in range((int)(slow_number)):  # slow
         preference = np.random.permutation(n)
         for index_f in range(n):
             rates[index_u, index_f] = zipf.pmf(preference[index_f]+1, zipf_factor)
@@ -34,7 +36,7 @@ def generate_google_rates(k, n):
 
 
 
-    for index_u in np.arange(k/2, k):
+    for index_u in np.arange(slow_number, k):
         preference = np.random.permutation(n)
         for index_f in range(n):
             rates[index_u, index_f] = zipf.pmf(preference[index_f] + 1, zipf_factor)

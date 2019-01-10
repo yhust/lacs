@@ -27,26 +27,29 @@ public class runBenchmark {
   private static FileWriter mTimeLog;
   private static FileWriter mHitLog;
   private static String TestType;
+  private static int mClientId;
 
 
 
   /**
    *
-   * parameters: Testtype; filenumber; accessrate; repeat count
+   * parameters: Testtype; filenumber; accessrate; repeat count;client id;
      */
   public static void main(String[] args){
     TestType = args[0];
     mFileNumber = Integer.parseInt(args[1]);
     mAccessRate = Double.parseDouble(args[2]);
     mRepeat = Integer.parseInt(args[3]);
+    mClientId = Integer.parseInt(args[4]);
 
     System.out.println(String.format("Test Type %s \t FileNumber %s \t Access rate %s \t trial %s\t", TestType, mFileNumber, mAccessRate, mRepeat));
 
-//    generatePref();
-//    writeFiles();
+    String curDir = System.getProperty("user.dir");
+    if(Configuration.getBoolean(PropertyKey.IS_CLUSTER))  // cluster mode
+      curDir = System.getProperty("user.dir") + "/lacs";
     try{
-      mTimeLog= new FileWriter(String.format("logs/%s-time.txt",TestType),true);
-      mHitLog= new FileWriter(String.format("logs/%s-hr.txt",TestType),true);
+      mTimeLog= new FileWriter(String.format("%s/logs/%s-time-%s.txt",curDir, TestType,mClientId),true);
+      mHitLog= new FileWriter(String.format("%s/logs/%s-hr-%s.txt",curDir,TestType,mClientId),true);
       mReadTest = new ReadTest(mFileNumber, mRepeat, mTimeLog);
       mReadTest.setRate(mAccessRate);
       mReadTest.setHitLog(mHitLog);

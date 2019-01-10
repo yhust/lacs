@@ -1,6 +1,7 @@
 package latests;
 
 import alluxio.client.LoadAwareFileReader;
+import alluxio.util.CommonUtils;
 import org.apache.commons.math3.distribution.ExponentialDistribution;
 import org.apache.commons.math3.distribution.ZipfDistribution;
 
@@ -49,11 +50,13 @@ public class ReadTest {
     protected void readFiles() {
 
         List<Future<LoadAwareFileReader.LACSReadResult>> results = new ArrayList<>();
+        List<Long> submitTimes = new ArrayList<>();
 
-        ExecutorService executorService = Executors.newCachedThreadPool();
+        ExecutorService executorService = Executors.newFixedThreadPool(30); //no more than 30 read threads in concurrent //Executors.newCachedThreadPool();
         try{
             for (int i = 0; i < mTrial; i++) {
                 int fileId = mRandomNumberGenerator.getNext();
+                submitTimes.add(CommonUtils.getCurrentMs());
                 results.add(executorService.submit(new LoadAwareFileReader(fileId, 0)));
 
                 // Access interval
@@ -64,10 +67,14 @@ public class ReadTest {
             }
             Double avgLatency = 0.0;
             Double avgHR = 0.0;
-            for (Future<LoadAwareFileReader.LACSReadResult> future : results) {
-                LoadAwareFileReader.LACSReadResult result = future.get();
-                mTimeLog.write(String.format("%s\t", result.latency));
-                avgLatency += result.latency;
+            for (int i = 0;i< mTrial;i++){
+                Future future = results.get(i);
+                LoadAwareFileReader.LACSReadResult result = (LoadAwareFileReader.LACSReadResult)future.get();
+                //mTimeLog.write(String.format("%s\t", result.latency));
+                long latency = result.completeTime - submitTimes.get(i);
+                mTimeLog.write(String.format("%s\t", latency));
+                //avgLatency += result.latency;
+                avgLatency += latency;
                 avgHR += result.hit;
                 if(mHitLog!=null){
                     mHitLog.write(String.format("%s\t",result.hit));
