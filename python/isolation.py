@@ -10,10 +10,7 @@ from linear_relaxation import linear_relaxation
 import sys
 import os
 
-def get_iso_latency(mu_vec, c_vec, rates, delta,is_cluster): # unrounded performance
-    path = os.getcwd()
-    if(is_cluster==1):
-        path = os.getcwd() + '/lacs'
+def get_iso_latency(mu_vec, c_vec, rates, delta): # unrounded performance
 
     k = len(rates[:,0])
     n = len(rates[0,:])
