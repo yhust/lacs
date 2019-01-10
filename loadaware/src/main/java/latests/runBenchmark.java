@@ -5,6 +5,7 @@ import alluxio.PropertyKey;
 import alluxio.client.file.FileSystem;
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -46,10 +47,10 @@ public class runBenchmark {
     System.out.println(String.format("Test Type %s \t FileNumber %s \t Access rate %s \t trial %s\t", TestType, mFileNumber, mAccessRate, mRepeat));
 
     String curDir = System.getProperty("user.dir");
-    if(Configuration.getBoolean(PropertyKey.IS_CLUSTER)) {  // cluster mode
-      curDir = System.getProperty("user.dir");
-      System.out.println("curDir" + curDir);
-    }
+//    if(Configuration.getBoolean(PropertyKey.IS_CLUSTER)) {  // cluster mode
+//      curDir = System.getProperty("user.dir");
+//      System.out.println("curDir" + curDir);
+//    }
     try{
       File logDir = new File(curDir + "/logs");
       if(!logDir.exists())
@@ -63,6 +64,7 @@ public class runBenchmark {
       mReadTest.setRate(mAccessRate);
       mReadTest.setHitLog(mHitLog);
       mReadTest.readFiles();
+      mReadTest.setPopFile(new FileReader(curDir + "/pop.txt"));
       mTimeLog.close();
       mHitLog.close();
       System.out.println("Test completes.");

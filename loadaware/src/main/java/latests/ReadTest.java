@@ -2,10 +2,12 @@ package latests;
 
 import alluxio.client.LoadAwareFileReader;
 import alluxio.util.CommonUtils;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.math3.distribution.ExponentialDistribution;
-import org.apache.commons.math3.distribution.ZipfDistribution;
 
+import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -23,19 +25,30 @@ public class ReadTest {
 
     private static FileWriter mTimeLog;
     private static FileWriter mHitLog=null;
+    private static File mPopFile;
     private int mTrial;
     private double mRate;
     private int mFileNumber;
     private RandomNumberGenerator mRandomNumberGenerator;
+    private int mUserId;
 
-    public ReadTest(int fileNumber, int trial, FileWriter log){
+    public ReadTest(int fileNumber, int trial, int userId, FileWriter log){
         mFileNumber = fileNumber;
         mTrial = trial;
+        mUserId = userId;
         mTimeLog = log;
         mRandomNumberGenerator=new RandomNumberGenerator();
-        ZipfDistribution zd = new ZipfDistribution(mFileNumber,1.05);
-        for(int i=1;i<=mFileNumber;i++) {
-            mRandomNumberGenerator.addNumber(i-1, zd.probability(i));
+        // load the preferences
+        try{
+            String popString = FileUtils.readLines(mPopFile).get(userId);
+            System.out.println("Pop file:" + popString);
+            String[] pops = popString.split(",");
+
+            for(int i=0;i<pops.length;i++) {
+                mRandomNumberGenerator.addNumber(i, Double.parseDouble(pops[i]));
+            }
+        }catch(IOException e){
+            e.printStackTrace();
         }
 
     }
@@ -46,13 +59,14 @@ public class ReadTest {
     public void setHitLog(FileWriter hitLog) { // not all
         mHitLog = hitLog;
     }
+    public void setPopFile(File popFile) {mPopFile = popFile;}
 
     protected void readFiles() {
 
         List<Future<LoadAwareFileReader.LACSReadResult>> results = new ArrayList<>();
         List<Long> submitTimes = new ArrayList<>();
 
-        ExecutorService executorService = Executors.newFixedThreadPool(30); //no more than 30 read threads in concurrent //Executors.newCachedThreadPool();
+        ExecutorService executorService = Executors.newFixedThreadPool(100); //no more than 30 read threads in concurrent //Executors.newCachedThreadPool();
         try{
             for (int i = 0; i < mTrial; i++) {
                 int fileId = mRandomNumberGenerator.getNext();
