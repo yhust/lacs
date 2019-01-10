@@ -45,8 +45,10 @@ public class runBenchmark {
     System.out.println(String.format("Test Type %s \t FileNumber %s \t Access rate %s \t trial %s\t", TestType, mFileNumber, mAccessRate, mRepeat));
 
     String curDir = System.getProperty("user.dir");
-    if(Configuration.getBoolean(PropertyKey.IS_CLUSTER))  // cluster mode
+    if(Configuration.getBoolean(PropertyKey.IS_CLUSTER)) {  // cluster mode
       curDir = System.getProperty("user.dir") + "/lacs";
+      System.out.println("curDir" + curDir);
+    }
     try{
       mTimeLog= new FileWriter(String.format("%s/logs/%s-time-%s.txt",curDir, TestType,mClientId),true);
       mHitLog= new FileWriter(String.format("%s/logs/%s-hr-%s.txt",curDir,TestType,mClientId),true);

@@ -30,10 +30,10 @@ ssh -o StrictHostKeyChecking=no -i $flintrockPemPath ${client2} "cd ~/lacs;bin/a
 
 
 # get logs
-mkdir ~/Desktop/microbench_log
-scp -o StrictHostKeyChecking=no -i $flintrockPemPath -r ${client1}:~/lacs/logs/microbench-time.txt ~/Desktop/microbench_log/1-time.txt
-scp -o StrictHostKeyChecking=no -i $flintrockPemPath -r ${client1}:~/lacs/logs/microbench-hr.txt ~/Desktop/microbench_log/1-hr.txt
-scp -o StrictHostKeyChecking=no -i $flintrockPemPath -r ${client2}:~/lacs/logs/microbench-time.txt ~/Desktop/microbench_log/2-time.txt
-scp -o StrictHostKeyChecking=no -i $flintrockPemPath -r ${client2}:~/lacs/logs/microbench-hr.txt ~/Desktop/microbench_log/2-hr.txt
+#mkdir ~/Desktop/microbench_log
+#scp -o StrictHostKeyChecking=no -i $flintrockPemPath -r ${client1}:~/lacs/logs/microbench-time.txt ~/Desktop/microbench_log/1-time.txt
+#scp -o StrictHostKeyChecking=no -i $flintrockPemPath -r ${client1}:~/lacs/logs/microbench-hr.txt ~/Desktop/microbench_log/1-hr.txt
+#scp -o StrictHostKeyChecking=no -i $flintrockPemPath -r ${client2}:~/lacs/logs/microbench-time.txt ~/Desktop/microbench_log/2-time.txt
+#scp -o StrictHostKeyChecking=no -i $flintrockPemPath -r ${client2}:~/lacs/logs/microbench-hr.txt ~/Desktop/microbench_log/2-hr.txt
 
 exit 0
