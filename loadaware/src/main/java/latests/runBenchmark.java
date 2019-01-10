@@ -57,6 +57,8 @@ public class runBenchmark {
 
       mTimeLog= new FileWriter(String.format("%s/logs/%s-time-%s.txt",curDir, TestType,mClientId),true);
       mHitLog= new FileWriter(String.format("%s/logs/%s-hr-%s.txt",curDir,TestType,mClientId),true);
+      mTimeLog.write(String.format("Test Type %s \t FileNumber %s \t Access rate %s \t trial %s\n", TestType, mFileNumber, mAccessRate, mRepeat));
+      mHitLog.write(String.format("Test Type %s \t FileNumber %s \t Access rate %s \t trial %s\n", TestType, mFileNumber, mAccessRate, mRepeat));
       mReadTest = new ReadTest(mFileNumber, mRepeat, mTimeLog);
       mReadTest.setRate(mAccessRate);
       mReadTest.setHitLog(mHitLog);
