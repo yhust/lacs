@@ -63,7 +63,7 @@ public class ModelTest {
 
     try{
       mTimeLog=new FileWriter("logs/model_test.txt",true);
-      mReadTest = new ReadTest(mFileNumber, count,mTimeLog);
+      mReadTest = new ReadTest(mFileNumber, count,0, mTimeLog);
       int tier = 0;
       writeFiles(tier);
 

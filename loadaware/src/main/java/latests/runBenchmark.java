@@ -1,15 +1,10 @@
 package latests;
 
-import alluxio.Configuration;
-import alluxio.PropertyKey;
 import alluxio.client.file.FileSystem;
 
 import java.io.File;
-import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by yyuau on 11/7/2018.
@@ -60,11 +55,11 @@ public class runBenchmark {
       mHitLog= new FileWriter(String.format("%s/logs/%s-hr-%s.txt",curDir,TestType,mClientId),true);
       mTimeLog.write(String.format("Test Type %s \t FileNumber %s \t Access rate %s \t trial %s\n", TestType, mFileNumber, mAccessRate, mRepeat));
       mHitLog.write(String.format("Test Type %s \t FileNumber %s \t Access rate %s \t trial %s\n", TestType, mFileNumber, mAccessRate, mRepeat));
-      mReadTest = new ReadTest(mFileNumber, mRepeat, mTimeLog);
+      mReadTest = new ReadTest(mFileNumber, mRepeat, mClientId, mTimeLog);
       mReadTest.setRate(mAccessRate);
       mReadTest.setHitLog(mHitLog);
       mReadTest.readFiles();
-      mReadTest.setPopFile(new FileReader(curDir + "/pop.txt"));
+      mReadTest.setPopFile(new File(curDir + "/pop.txt"));
       mTimeLog.close();
       mHitLog.close();
       System.out.println("Test completes.");
