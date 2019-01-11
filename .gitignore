@@ -52,5 +52,5 @@ config/*
 *.txt
 !flintrock/flintrock/templates/hadoop/conf/core-site.xml
 !flintrock/flintrock/templates/hadoop/conf/hdfs-site.xml
-!python/slow_interval.txt
-!python/fast_interval.txt
+!slow_interval.txt
+!fast_interval.txt
