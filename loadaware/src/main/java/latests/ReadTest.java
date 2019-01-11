@@ -66,12 +66,12 @@ public class ReadTest {
         List<Future<LoadAwareFileReader.LACSReadResult>> results = new ArrayList<>();
         List<Long> submitTimes = new ArrayList<>();
 
-        ExecutorService executorService = Executors.newFixedThreadPool(50); //no more than 30 read threads in concurrent //Executors.newCachedThreadPool();
+        ExecutorService executorService = Executors.newFixedThreadPool(100); //no more than 30 read threads in concurrent //Executors.newCachedThreadPool();
         try{
             for (int i = 0; i < mTrial; i++) {
                 int fileId = mRandomNumberGenerator.getNext();
                 submitTimes.add(CommonUtils.getCurrentMs());
-                results.add(executorService.submit(new LoadAwareFileReader(fileId, 0)));
+                results.add(executorService.submit(new LoadAwareFileReader(fileId, mUserId)));
 
                 // Access interval
                 Double interval = new ExponentialDistribution(1.0 / mRate).sample();

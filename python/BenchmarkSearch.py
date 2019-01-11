@@ -11,7 +11,7 @@ filenumber = 500
 factor_share = 1.5
 factor_isolate= 2.4
 for factor in np.arange(1.5,1.6,0.1):
-    factor = factor_share
+    factor = factor_isolate
     print factor
     generate_rates(filenumber, rate1, factor)
 
@@ -40,4 +40,4 @@ for factor in np.arange(1.5,1.6,0.1):
     lacs(mu_vector, c_vector, rates, delta, user_si,0)
 
     mm_default(mu_vector, c_vector, rates, delta,0)
-    get_iso_allocation(mu_vector, c_vector, rates, delta, 0)
+    #get_iso_allocation(mu_vector, c_vector, rates, delta, 0)
