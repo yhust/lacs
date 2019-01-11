@@ -71,7 +71,7 @@ public class ReadTestGoogleTrace {
             for (int i = 0; i < mTrial; i++) {
                 int fileId = mRandomNumberGenerator.getNext();
                 submitTimes.add(CommonUtils.getCurrentMs());
-                results.add(executorService.submit(new LoadAwareFileReader(fileId, 0)));
+                results.add(executorService.submit(new LoadAwareFileReader(fileId, mUserId)));
 
                 // Access interval
                 // Double interval = new ExponentialDistribution(1.0 / mRate).sample();

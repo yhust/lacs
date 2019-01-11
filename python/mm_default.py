@@ -137,6 +137,6 @@ if __name__ == '__main__':
     f.close()
     mu_vector = np.ones(machine_number)*bandwidth /filesize
     c_vector = np.ones(machine_number)*cachesize / filesize
-    mm_default(mu_vector, c_vector, rates, delta)
+    mm_default(mu_vector, c_vector, rates, delta,iscluster)
 
 
