@@ -2,7 +2,6 @@
 
 
 # $1 worker# $2 client#
-read -ra slave_arr -d '' <<<"$SLAVES"
 
 IPs=()
 index=0
@@ -16,7 +15,7 @@ do
     echo $i
     slave="${IPs[$i]}"
     echo $slave
-	ssh -o StrictHostKeyChecking=no -i $flintrockPemPath ${slave} "rm ~/lacs/logs/microbench*"
+	ssh -o StrictHostKeyChecking=no -i $flintrockPemPath ${slave} "rm ~/lacs/logs/benchmark*"
 done
 
 

@@ -15,6 +15,7 @@ import java.io.IOException;
 public class runBenchmark {
 
   private static ReadTest mReadTest;
+  private static ReadTestGoogleTrace mGoogleTest;
   private static long mFileSize; // in MB
   private static int mFileNumber;
   private static double mAccessRate;
@@ -25,12 +26,13 @@ public class runBenchmark {
   private static FileWriter mHitLog;
   private static String TestType;
   private static int mClientId;
+  private static int mClientType;
 
 
 
   /**
    *
-   * parameters: Testtype; filenumber; accessrate; repeat count;client id;
+   * parameters: Testtype; filenumber; accessrate; repeat count;client id; (client type )
      */
   public static void main(String[] args){
     TestType = args[0];
@@ -38,32 +40,42 @@ public class runBenchmark {
     mAccessRate = Double.parseDouble(args[2]);
     mRepeat = Integer.parseInt(args[3]);
     mClientId = Integer.parseInt(args[4]);
-
     System.out.println(String.format("Test Type %s \t FileNumber %s \t Access rate %s \t trial %s\t", TestType, mFileNumber, mAccessRate, mRepeat));
-
-    String curDir = System.getProperty("user.dir");
-    System.out.println("curDir" + curDir);
-//    if(Configuration.getBoolean(PropertyKey.IS_CLUSTER)) {  // cluster mode
-//      curDir = System.getProperty("user.dir");
-//      System.out.println("curDir" + curDir);
-//    }
-    try{
+    try {
+      String curDir = System.getProperty("user.dir");
+      System.out.println("curDir" + curDir);
+      //    if(Configuration.getBoolean(PropertyKey.IS_CLUSTER)) {  // cluster mode
+      //      curDir = System.getProperty("user.dir");
+      //      System.out.println("curDir" + curDir);
+      //    }
       File logDir = new File(curDir + "/logs");
-      if(!logDir.exists())
-          logDir.mkdir();
+      if (!logDir.exists())
+        logDir.mkdir();
 
-      mTimeLog= new FileWriter(String.format("%s/logs/%s-time-%s.txt",curDir, TestType,mClientId),true);
-      mHitLog= new FileWriter(String.format("%s/logs/%s-hr-%s.txt",curDir,TestType,mClientId),true);
+      mTimeLog = new FileWriter(String.format("%s/logs/%s-time-%s.txt", curDir, TestType, mClientId), true);
+      mHitLog = new FileWriter(String.format("%s/logs/%s-hr-%s.txt", curDir, TestType, mClientId), true);
       mTimeLog.write(String.format("Test Type %s \t FileNumber %s \t Access rate %s \t trial %s\n", TestType, mFileNumber, mAccessRate, mRepeat));
       mHitLog.write(String.format("Test Type %s \t FileNumber %s \t Access rate %s \t trial %s\n", TestType, mFileNumber, mAccessRate, mRepeat));
-      mReadTest = new ReadTest(mFileNumber, mRepeat, mClientId, new File(curDir + "/pop.txt"), mTimeLog);
-      mReadTest.setRate(mAccessRate);
-      mReadTest.setHitLog(mHitLog);
-      mReadTest.readFiles();
+      if (TestType.equals("Google")) {
+        mClientType = Integer.parseInt(args[5]);
+        File intervalFile;
+        if(mClientType==1) // 1 for fast users
+          intervalFile = new File(curDir+"/fast_interval.txt");
+        else // 0 zero slow users
+          intervalFile = new File(curDir+"/slow_interval.txt");
+        mGoogleTest = new ReadTestGoogleTrace(mFileNumber, mRepeat, mClientId, intervalFile, new File(curDir + "/pop.txt"), mTimeLog);
+        mGoogleTest.setHitLog(mHitLog);
+        mGoogleTest.readFiles();
+      }
+      else {
+        mReadTest = new ReadTest(mFileNumber, mRepeat, mClientId, new File(curDir + "/pop.txt"), mTimeLog);
+        mReadTest.setRate(mAccessRate);
+        mReadTest.setHitLog(mHitLog);
+        mReadTest.readFiles();
+      }
       mTimeLog.close();
       mHitLog.close();
       System.out.println("Test completes.");
-
     }catch (IOException e){
       e.printStackTrace();
     }

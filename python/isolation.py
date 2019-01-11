@@ -9,6 +9,7 @@ import numpy as np
 from linear_relaxation import linear_relaxation
 import sys
 import os
+import math
 
 def get_iso_latency(mu_vec, c_vec, rates, delta): # unrounded performance
 
@@ -84,18 +85,18 @@ def get_iso_allocation(mu_vec, c_vec, rates,delta, is_cluster): # and also round
 
                 # find the best-fit of memory-rate
                 for index_m in range(0, m):
-                    if R_Lambda[index_m] + rate < mu_vec_iso[index_m]:
-                        diff = Lambda[index_u, index_m] - Lambda_D[index_u, index_m] - R_Lambda_M[index_m]
-                        if diff > max_diff and c_vec_iso[index_m] - cache_usage[index_m] >= 1: #and Lambda[index_u, index_m] >= R_Lambda[index_m] + rate:
-                            best_fit_index_m = index_m
-                            max_diff = diff
+                    #if R_Lambda[index_m] + rate < mu_vec_iso[index_m]:
+                    diff = Lambda[index_u, index_m] - Lambda_D[index_u, index_m] - R_Lambda_M[index_m]
+                    if diff > max_diff and c_vec_iso[index_m] - cache_usage[index_m] > 0: #and Lambda[index_u, index_m] >= R_Lambda[index_m] + rate:
+                        best_fit_index_m = index_m
+                        max_diff = diff
                 if best_fit_index_m != -1:
                     placed_file_indices.append(index_f)
                     R_Lambda_M[best_fit_index_m] += rates[index_u, index_f]
                     R_Lambda[best_fit_index_m] += rates[index_u, index_f]
-                    cache_usage[best_fit_index_m] += 1
+                    cache_usage[best_fit_index_m] += min(1, c_vec_iso[index_m] - cache_usage[index_m])
                     loc_vec[index_f] = best_fit_index_m
-                    cache_vec[index_f] = 1
+                    cache_vec[index_f] = min(1, c_vec_iso[index_m] - cache_usage[index_m])
                 else:
                     break # no need to continue?
 
@@ -136,7 +137,8 @@ def get_iso_allocation(mu_vec, c_vec, rates,delta, is_cluster): # and also round
             if (available_rates[best_fit_index_m] < rate):
                 print 'No machine can hold a file with access rate %s' % rate
                 user_iso[index_u] = float('Inf')
-                break
+                #break go on
+
             placed_file_indices.append(index_f)
             R_Lambda[best_fit_index_m] += rates[index_u, index_f]
             loc_vec[index_f] = best_fit_index_m

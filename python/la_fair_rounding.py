@@ -184,6 +184,20 @@ def la_fair_rounding(mu_vec, c_vec, rates, delta, cachable_users = False, unisol
 
     latency_la_rounded = (sum(np.multiply(np.array(mu_vec), np.reciprocal(mu_vec - np.sum(R_Lambda,axis = 0)))) - m + sum(sum(
         R_Lambda_D)) * delta) / sum(rate_by_file)
+
+    # for the evaluations of rounding accuracy
+    #print (Lambda - sum(R_Lambda))/Lambda
+    f = open('rounding-accuracy-totalrate.txt', 'a')
+    f.write('\t'.join(np.array(map(str,(Lambda - sum(R_Lambda))/Lambda))))
+    f.write('\n')
+
+    f = open('rounding-accuracy-memoryrate.txt', 'a')
+    f.write('\t'.join(np.array(map(str,(Lambda_M - sum(R_Lambda_M))/Lambda_M))))
+    f.write('\n')
+    #print (Lambda_M - sum(R_Lambda_M))/Lambda_M
+
+
+
     return user_latencies, latency_la, latency_la_rounded, loc_vec, cache_vec
     # print R_Lambda, cache_usage, latency_rounded,cached_file_indices
 
