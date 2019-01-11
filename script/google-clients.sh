@@ -20,7 +20,7 @@ do
 	echo $i
  	client="${IPs[$i]}"
  	echo $client
- 	ssh -o StrictHostKeyChecking=no -i $flintrockPemPath ${client} "cd ~/lacs;bin/alluxio runLABenchmark 'Google' $filenumber $rate $accesscount $i $clientType >/tmp/log 2>/tmp/err &"
+ 	ssh -o StrictHostKeyChecking=no -i $flintrockPemPath ${client} "cd ~/lacs;bin/alluxio runLABenchmark 'Google' $filenumber -1 $accesscount $i $clientType 1>/tmp/log 2>/tmp/err &"
 done
 
 
@@ -31,7 +31,7 @@ do
 	echo $i
  	client="${IPs[$i]}"
  	echo $client
- 	ssh -o StrictHostKeyChecking=no -i $flintrockPemPath ${client} "cd ~/lacs;bin/alluxio runLABenchmark 'Google' $filenumber $rate $accesscount $i $clientType >/tmp/log 2>/tmp/err &"
+ 	ssh -o StrictHostKeyChecking=no -i $flintrockPemPath ${client} "cd ~/lacs;bin/alluxio runLABenchmark 'Google' $filenumber -1 $accesscount $i $clientType 1>/tmp/log 2>/tmp/err &"
 done
 
 exit 0
