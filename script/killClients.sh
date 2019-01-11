@@ -1,16 +1,20 @@
 #!/bin/bash
 
-#$1 worker number
 
-# set $flintrockPemPath as an environmental variable
+# $1 worker# $2 client#
 
+IPs=()
+index=0
+while read line ; do
+	IPs[$index]="$line"
+	let "index++"
+done <  $(cd `dirname $0`; cd ..; pwd)/flintrock/flintrock.txt
 
-i=1
-while read -r line
+for ((i = $1+1; i < $1+$2+1; i++))
 do
-    test $i -le $[1+$1] && let "i++" && continue
-    ssh -o StrictHostKeyChecking=no -i $flintrockPemPath  ${line} "ps ax | grep AlluxioGameSystemServer |awk -F ' ' '{print \$1}' | xargs kill -9" < /dev/null
-    let "i++"
-done < $(cd `dirname $0`; cd ..; pwd)/flintrock/flintrock.txt
-
+    echo $i
+    slave="${IPs[$i]}"
+    echo $slave
+    ssh -o StrictHostKeyChecking=no -i $flintrockPemPath  ${slave} "ps ax | grep runBenchmark |awk -F ' ' '{print \$1}' | xargs kill -9" < /dev/null
+done 
 exit 0

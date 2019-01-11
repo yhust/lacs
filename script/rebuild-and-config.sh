@@ -49,7 +49,8 @@ python3 $(cd `dirname $0`; cd ..; pwd)/flintrock/standalone.py run-command lacs 
 read -r line < $(cd `dirname $0`; cd ..; pwd)/flintrock/flintrock.txt
 ssh -o StrictHostKeyChecking=no -i $flintrockPemPath ${line} "~/lacs/bin/alluxio format;~/lacs/bin/alluxio-start.sh all SudoMount"
 
-
+#python3 $(cd `dirname $0`; cd ..; pwd)/flintrock/standalone.py copy-file lacs $(cd `dirname $0`; cd ..; pwd)/python/slow_interval.txt /home/ec2-user/lacs/
+#python3 $(cd `dirname $0`; cd ..; pwd)/flintrock/standalone.py copy-file lacs $(cd `dirname $0`; cd ..; pwd)/python/fast_interval.txt /home/ec2-user/lacs/
 
 exit 0
 

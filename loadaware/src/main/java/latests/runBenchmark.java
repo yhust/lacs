@@ -37,7 +37,7 @@ public class runBenchmark {
   public static void main(String[] args){
     TestType = args[0];
     mFileNumber = Integer.parseInt(args[1]);
-    mAccessRate = Double.parseDouble(args[2]);
+    //mAccessRate = Double.parseDouble(args[2]);
     mRepeat = Integer.parseInt(args[3]);
     mClientId = Integer.parseInt(args[4]);
     System.out.println(String.format("Test Type %s \t FileNumber %s \t Access rate %s \t trial %s\t", TestType, mFileNumber, mAccessRate, mRepeat));

@@ -17,10 +17,10 @@ echo 'slow clients'
 clientType=0
 for ((i = 31; i < 38; i++))
 do
-	echo $i
+	echo $((i-30))
  	client="${IPs[$i]}"
  	echo $client
- 	ssh -o StrictHostKeyChecking=no -i $flintrockPemPath ${client} "cd ~/lacs;bin/alluxio runLABenchmark 'Google' $filenumber -1 $accesscount $i $clientType 1>/tmp/log 2>/tmp/err &"
+ 	ssh -o StrictHostKeyChecking=no -i $flintrockPemPath ${client} "cd ~/lacs;bin/alluxio runLABenchmark 'Google' $filenumber -1 20 $((i-30)) $clientType 1>/tmp/log 2>/tmp/err &"
 done
 
 
@@ -28,10 +28,10 @@ echo 'fast clients'
 clientType=1
 for ((i = 38; i < 51; i++))
 do
-	echo $i
+	echo $((i-30))
  	client="${IPs[$i]}"
  	echo $client
- 	ssh -o StrictHostKeyChecking=no -i $flintrockPemPath ${client} "cd ~/lacs;bin/alluxio runLABenchmark 'Google' $filenumber -1 $accesscount $i $clientType 1>/tmp/log 2>/tmp/err &"
+ 	ssh -o StrictHostKeyChecking=no -i $flintrockPemPath ${client} "cd ~/lacs;bin/alluxio runLABenchmark 'Google' $filenumber -1 $accesscount $((i-30)) $clientType 1>/tmp/log 2>/tmp/err &"
 done
 
 exit 0
