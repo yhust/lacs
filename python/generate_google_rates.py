@@ -58,5 +58,4 @@ if __name__ == "__main__":
     #generate_rates(2, 4, 1, 1.05, 2)
     k = (int)(sys.argv[1])
     n = (int)(sys.argv[2])
-    zipf_factor = (float)(sys.argv[3])
     generate_google_rates(k, n)
